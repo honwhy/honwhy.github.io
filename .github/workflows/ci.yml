@@ -53,7 +53,7 @@ jobs:
       - name: Run build
         run: pnpm build
   deploy:
-    needs: build
+    needs: lint
     runs-on: ubuntu-latest
     environment:
       name: github-pages
