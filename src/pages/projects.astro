@@ -1,0 +1,66 @@
+---
+import aboutImg from "@/assets/about-astro.png";
+import PageLayout from "@/layouts/Base.astro";
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+
+const meta = {
+	description: "my projects of chrome extensions etc.",
+	title: "my projects",
+};
+const cactusTech: { desc: string; href: string; title: string; image?: string; icon?: string }[] = [
+	{
+		desc: "Markdown tool extensiono to connect mp.weixin.qq.com material service. 微信公众号文章编辑器插件支持使用官方素材库做图床",
+		href: "https://mpmd.pages.dev",
+		title: "mp-markdown-tool",
+		image: "/mpmd.png",
+	},
+	{
+		desc: "New BaiCiZhan Web Assistant, supporting features such as word lookup translation and vocabulary bookmarking. 新百词斩助手，支持同步生词本到百词斩APP",
+		href: "https://100-words.pages.dev",
+		title: "words-100-helper",
+		image: "/100-words.png",
+	},
+	{
+		desc: "City libraries connect to online services. 城市图书馆助手，支持在线查询提前知道是否有馆藏资源",
+		href: "https://welibrary.pages.dev",
+		title: "welibrary",
+		image: "/welibrary.svg",
+	},
+	{
+		desc: "Ftp connection pool implementation. FTP连接池实现",
+		href: "https://github.com/honwhy/ftpcp2",
+		title: "ftpcp2",
+		icon: "mdi:github",
+	},
+];
+---
+
+<PageLayout meta={meta}>
+	<h1 class="title mb-6">my projects</h1>
+	<div class="my-4 grid justify-center">
+		<dl class="space-y-4">
+			{
+				cactusTech.map(({ desc, href, title, image, icon }) => (
+					<div class="flex flex-col gap-2 md:flex-row">
+						<dt>
+							{image && <img src={image} alt={title} width="64" height="64" />}
+							{icon && (
+								<Icon aria-hidden="true" focusable="false" name={icon} width={64} height={64} />
+							)}
+						</dt>
+						<dd>
+							<span class="flex">
+								<a class="cactus-link" href={href} rel="noopener noreferrer" target="_blank">
+									{title}
+								</a>
+								:
+							</span>
+							{desc}
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+</PageLayout>
