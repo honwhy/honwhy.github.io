@@ -1,0 +1,22 @@
+---
+import wechatImg from "@/assets/wechat-donate.jpg";
+import alipayImg from "@/assets/alipay-donate.jpg";
+import PageLayout from "@/layouts/Base.astro";
+import { Image } from "astro:assets";
+const meta = {
+	description: "donate to support my projects",
+	title: "thanks for your supports",
+};
+---
+
+<PageLayout meta={meta}>
+	<h1 class="title mb-6">my projects</h1>
+	<div class="my-4 grid justify-center">
+        <div>
+            <Image alt="" class="" loading="eager" src={wechatImg} />
+        </div>
+        <div>
+            <Image alt="" class="" loading="eager" src={alipayImg} />
+        </div>
+	</div>
+</PageLayout>
