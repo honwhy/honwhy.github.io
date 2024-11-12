@@ -49,8 +49,8 @@ importers:
         version: 5.6.3
     devDependencies:
       '@iconify-json/mdi':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
       '@pagefind/default-ui':
         specifier: ^1.1.1
         version: 1.1.1
@@ -521,8 +521,8 @@ packages:
     resolution: {integrity: sha512-6EwiSjwWYP7pTckG6I5eyFANjPhmPjUX9JRLUSfNPC7FX7zK9gyZAfUEaECL6ALTpGX5AjnBq3C9XmVWPitNpw==}
     deprecated: Use @eslint/object-schema instead
 
-  '@iconify-json/mdi@1.2.0':
-    resolution: {integrity: sha512-E9/3l5Syg3wfuarorFodhn4s8YorxhH3U3U20LaNBNiqw1kFNIDWhF6HymuzAD35k7RH0OBasJ+ZUyFtVVV6eg==}
+  '@iconify-json/mdi@1.2.1':
+    resolution: {integrity: sha512-dSkQU78gsZV6Yxnq78+LuX7jzeFC/5NAmz7O3rh558GimGFcwMVY/OtqRowIzjqJBmMmWZft7wkFV4TrwRXjlg==}
 
   '@iconify/tools@4.0.6':
     resolution: {integrity: sha512-riEQggXVuZNXjRdo+aKT0rkzn2XHslIqat8mdW/oVu5mLmP/95Hi+iaq4keT7WwMD97jsYPXMQ6QMCw0EWpRNw==}
@@ -4506,7 +4506,7 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.2': {}
 
-  '@iconify-json/mdi@1.2.0':
+  '@iconify-json/mdi@1.2.1':
     dependencies:
       '@iconify/types': 2.0.0
 
