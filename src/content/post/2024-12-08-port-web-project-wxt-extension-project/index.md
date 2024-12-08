@@ -358,6 +358,35 @@ addViteConfig(wxt, () => ({
 }))
 ```
 
+## 解决打包体积过大问题
+
+这是一个遗留了大半年的问题，通过vite等官方指引配置`build?.rollupOptions.output.manualChunks` 并没有效果，而且还可能导致build 出错。。
+相关讨论[file of zip output is too large that expend firefox 4MB limit #765](https://github.com/wxt-dev/wxt/discussions/765)
+
+其中打包后单文件体积超过4MB的是options这个chunk，意思就是 option entrypoint 把所有依赖都打包一起了。 本次研究出来cdn js本地化的方案过程中，对`WXT`框架源码增加了不少认识，经过一番hacking，算是找到了改变打包配置的`WXT` hook。
+
+解决方案，选择哪些依赖单独分包，可以通过`npx wxt build --analyze`命令得到报告。
+```ts
+wxt.hook(`vite:build:extendConfig`, (_, config) => {
+  if (config.build?.rollupOptions?.input && config.build?.rollupOptions?.input) {
+    const input = config.build?.rollupOptions.input as Record<string, string>
+    if (input.options) {
+      const output = config.build?.rollupOptions.output as FakeRollupOptions
+      output.manualChunks = (id) => {
+        if (id.includes(`prettier`)) {
+          return `prettier-chunk`
+        }
+        if (id.includes(`highlight.js`)) {
+          return `highlight-chunk`
+        }
+      }
+    }
+  }
+})
+```
+
+之所以不能在全局配置`manualChunks`，是由于`WXT`是多模块的打包方式，在`background`这个entrypoint打包的时候配置分包方式会由于不支持而报错。而针对option entrypoint单独修改，在`WXT`调用`vite#build`方法前修改（请在`WXT`源码中搜索关键方法：buildEntrypoints），就可以顺利完成分包。分包的效果是options chunk主包体积减少，其他分包`/chunks`目录，被options chunk引入。
+
 ## 结语
 
 本次的改造保留了原有项目100%的功能，非常不容易，主要的举措是动态配置Entrypoint入口文件，利用Vite插件处理cdn js资源，hack Vue DevTools插件地址引用错误问题。对于dev和build两种模式区别处理cdn js资源的做法或许可以合并成一种，有待后续研究改进。
