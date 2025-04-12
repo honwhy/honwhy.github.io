@@ -393,10 +393,5 @@ wxt.hook(`vite:build:extendConfig`, (_, config) => {
 
 这款插件的最大好处就是引入了公众号素材库（图床）功能，在撰写公众号文章的时候不用使用其他图床，而且通过openapi形式与公众号素材库接口打通，粘贴图片即可上传并使用，包括预览效果都是支持的。
 
-相关使用教程，请参考[公众号文章编辑器插件教程](https://mpmd.pages.dev/tutorial/)。新版本插件即将发布审核上架，敬请期待！
+相关使用教程，请参考[公众号文章编辑器插件教程](https://mp.honwhy.wang/tutorial/)
 
----
-
-<center>
-    <img src="https://honwhy.wang/_astro/qrcode_mp.Di5Nhs5-_Z1czA9A.webp" style="width: 140px;">
-</center>
