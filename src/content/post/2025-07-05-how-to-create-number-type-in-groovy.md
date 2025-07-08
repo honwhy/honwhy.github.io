@@ -70,7 +70,7 @@ class NaNBigDecimal implements GroovyInterceptable {
     NaNBigDecimal(def val) {
         if (val == null || (val instanceof String && val.trim() == "")) {
             this.isNaN = true
-            this.value = BigDecimal.ZERO // 或者 null，根据需求决定是否允许 value 为 null
+            this.value = BigDecimal.ZERO
         } else {
             this.isNaN = false
             this.value = new BigDecimal(val.toString())
@@ -85,19 +85,16 @@ class NaNBigDecimal implements GroovyInterceptable {
             switch (name) {
                 case "compareTo":
                 case "equals":
-                case "<=>": // Groovy 的太空船操作符对应的方法
+                case "<=>":
                     return false
             }
         } else {
-            // 特殊处理比较方法的参数
             def transformedArgs = args.collect { arg ->
                 if (arg instanceof NaNBigDecimal) {
                     return arg.isNaN ? BigDecimal.ZERO : arg.value
                 }
                 return arg
             }
-
-            // 委托给 BigDecimal 的方法实现
             return value.invokeMethod(name, transformedArgs[0])
         }
     }
