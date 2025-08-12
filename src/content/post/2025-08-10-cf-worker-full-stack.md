@@ -10,3 +10,8 @@ draft: true
 
 ## 初始化框架
 
+### 搭建全栈化项目
+
+```
+npm create cloudflare@latest -- psychology-cards --framework=vue
+```
