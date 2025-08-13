@@ -15,3 +15,6 @@ draft: true
 ```
 npm create cloudflare@latest -- psychology-cards --framework=vue
 ```
+
+### 引入better-auth
+这一步的目的是使用`better-auth`的账号及登录方面的表设计。
