@@ -330,6 +330,34 @@ await db.transaction(async (tx) => {
     await tx.delete(schema.cardsTable).where(eq(schema.cardsTable.userId, userId));
 });
 ```
+
+## 环境变量管理
+
+虽然(官方文档)[https://developers.cloudflare.com/workers/configuration/environment-variables/] 已经讲解得很详细了，但是我这里要建议是一种恰当的做法。
+
+在开发环境 使用`.env` 配置文件，并且这个配置文件千万不要提交到代码仓库。
+```properties
+BETTER_AUTH_SECRET=
+BETTER_AUTH_BASE_URL=http://localhost:5173
+DRIZZLE_ACCOUNT_ID=
+DRIZZLE_DATABASE_ID=
+DRIZZLE_TOKEN=
+
+## jwt
+JWT_SECRET=
+JWT_EXPIRES_IN=
+
+##
+VITE_API_BASE_URL=/api
+```
+
+在生产环境建议通过dashboard 配置环境变量。 由于`cloudflare workers` 会在部署的时候把`wrangler.jsonc`或 `wrangler.toml` 当作唯一的来源`source of truth`，所以要调整相关配置
+
+```json
+keep_vars: true
+```
+不然执行`wrangler deploy`的话，在dashboard 配置的变量会覆盖和删除。
+
 ## 参考文档
 
 - [cloudflare workers](https://developers.cloudflare.com/)
