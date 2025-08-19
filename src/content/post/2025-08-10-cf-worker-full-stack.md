@@ -320,7 +320,7 @@ const db = c.get('db')
 const user = await db.select().from(schema.userTable).where(eq(schema.userTable.id, decodedPayload.userId)).limit(1).get();
 ```
 
-事务操作也是支持的，
+事务操作也是支持的。虽然普通情况下使用`db.transaction` 就可以开启事务了，
 
 ```ts
 await db.transaction(async (tx) => {
@@ -331,6 +331,7 @@ await db.transaction(async (tx) => {
 });
 ```
 
+但是，`cloudflare workers` `D1` 比较特别，通过这篇文章[whats-new-with-d1](https://blog.cloudflare.com/whats-new-with-d1/#transactions-are-a-unique-challenge)，建议采用`db.batch`。
 ## 环境变量管理
 
 虽然(官方文档)[https://developers.cloudflare.com/workers/configuration/environment-variables/] 已经讲解得很详细了，但是我这里要建议是一种恰当的做法。

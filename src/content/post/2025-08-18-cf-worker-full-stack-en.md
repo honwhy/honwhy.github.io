@@ -244,14 +244,18 @@ const db = c.get('db');
 const user = await db.select().from(schema.userTable).where(eq(schema.userTable.id, decodedPayload.userId)).limit(1).get();
 ```
 
-Transactions are also supported:
+Transaction operations are also supported. Normally, you can start a transaction simply by using `db.transaction`:
 
 ```ts
 await db.transaction(async (tx) => {
+    // Delete the user account
     await tx.delete(schema.userTable).where(eq(schema.userTable.id, userId));
+    // Delete the cards created by the user
     await tx.delete(schema.cardsTable).where(eq(schema.cardsTable.userId, userId));
 });
 ```
+
+However, `Cloudflare Workers` with `D1` is a bit special. As suggested in this article [What's new with D1](https://blog.cloudflare.com/whats-new-with-d1/#transactions-are-a-unique-challenge), it’s recommended to use `db.batch` instead.
 
 ## Environment Variables Management
 
