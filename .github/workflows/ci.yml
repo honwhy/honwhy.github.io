@@ -39,7 +39,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-      
+        
+      - name: Show working directory and contents
+        run: |
+          pwd
+          ls -al
+
       - name: Upload to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
