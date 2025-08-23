@@ -359,6 +359,165 @@ keep_vars: true
 ```
 不然执行`wrangler deploy`的话，在dashboard 配置的变量会覆盖和删除。
 
+## jwt
+
+虽然使用了`Hono` ，但是`Hono` 自带的`jwt` 方案在`cloudflare` 环境执行会由于缺少相关依赖而得不到支持。因此，建议自行实现。
+
+```ts
+export const signJWT = async (payload: Record<string, unknown>, secret: string, expiresIn = '7d') => {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: { name: 'SHA-256' } },
+    false,
+    ['sign']
+  );
+
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT'
+  };
+
+  // 计算过期时间
+  const exp = Math.floor(Date.now() / 1000) + (expiresIn === '7d' ? 7 * 24 * 60 * 60 : 3600); // 默认为7天过期
+
+  const payloadWithExp = { ...payload, exp };
+
+  const headerBase64 = base64UrlEncode(JSON.stringify(header));
+  const payloadBase64 = base64UrlEncode(JSON.stringify(payloadWithExp));
+
+  // 签名
+  const data = `${headerBase64}.${payloadBase64}`;
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+  const signatureBase64 = base64UrlEncode(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+
+  return `${data}.${signatureBase64}`;
+};
+
+// 编码
+const base64UrlEncode = (str: string) => {
+  return btoa(String.fromCharCode(...new TextEncoder().encode(str)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+};
+
+export const verifyJWT = async (token: string, secret: string) => {
+  const [headerBase64, payloadBase64, signatureBase64] = token.split('.');
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: { name: 'SHA-256' } },
+    false,
+    ['verify', 'sign']
+  );
+
+  const data = `${headerBase64}.${payloadBase64}`;
+
+  // 解码签名
+  const signatureBuffer = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    new TextEncoder().encode(data)
+  );
+
+  const computedSignatureBase64 = base64UrlEncode(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+
+  // 验证签名是否匹配
+  if (computedSignatureBase64 !== signatureBase64) {
+    throw new InvalidSignatureError('Invalid signature');
+  }
+
+  // 验证过期时间
+  const payload = JSON.parse(atob(payloadBase64));
+  const currentTime = Math.floor(Date.now() / 1000);
+  if (payload.exp && payload.exp < currentTime) {
+    throw new ExpiredTokenError('Token has expired');
+  }
+
+  return payload;
+};
+```
+
+## 疑难问题
+
+由于`better-auth` 是基于`session-cookie` 方案来管理登录态的，如果没有按照它的要求完整支持可能会遇到问题。
+
+比如在修改密码的时候，由于请求头中缺少Cookie信息，或者Cookie错误都会导致`changePassword`内部实现中获取`session`失败，最终导致调用API失败。
+
+```ts
+    const response = await auth.api.changePassword({
+      body: {
+        currentPassword,
+        newPassword,
+        revokeOtherSessions: true,
+      },
+      headers: c.req.raw.headers,
+      asResponse: true,
+    }).catch((error) => {
+      console.error('Change password error:', error);
+      return c.json({
+        success: false,
+        message: '当前密码错误'
+      }, 401);
+    })
+```
+
+解决办法是在登录的时候，手动设置cookie，然后在修改密码的时候传入准确的headers。
+
+### 登录时设置cookie
+
+```ts
+const response = await auth.api.signInEmail({
+  body: {
+    email: requestBody.email,
+    password: requestBody.password,
+  },
+  asResponse: true
+})
+responseCookies(c, response);
+
+export function responseCookies(c: Context, response: Response) {
+  // console.log('Login response headers:', response.headers);
+  const cookie = response.headers.get('Set-Cookie')?.split(';')[0].split('=')[1] || ''
+  // console.log('Extracted cookie:', cookie);
+  setCookie(c, 'better-auth.session_token', cookie,
+    {
+      httpOnly: true, secure: true, sameSite: 'Lax', path: '/'
+      , maxAge: 7 * 24 * 60 * 60 // 7天
+    })
+}
+```
+
+### 在修改密码时传入headers
+
+由于cookie 中存在%特殊符号，因为需要对请求headers 进行预处理，
+
+```ts
+const cookie = decodeURIComponent(c.req.header('Cookie') || '')
+const headers = new Headers(c.req.raw.headers);
+headers.set('Cookie', cookie);
+
+// ...
+const response = await auth.api.changePassword({
+  body: {
+    currentPassword,
+    newPassword,
+    revokeOtherSessions: true,
+  },
+  headers: headers,
+  asResponse: true,
+})
+```
+
+同时别忘记了，修改密码成功后，需要修改下cookie
+
+```ts
+responseCookies(c, response);
+```
+
 ## 参考文档
 
 - [cloudflare workers](https://developers.cloudflare.com/)

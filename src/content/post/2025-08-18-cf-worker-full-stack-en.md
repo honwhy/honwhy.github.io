@@ -286,6 +286,165 @@ keep_vars: true
 
 Otherwise, deploying with `wrangler deploy` may override or remove dashboard-configured variables.
 
+## JWT
+
+Although Hono is used, Hono's built-in JWT solution isn't supported in the Cloudflare environment due to missing dependencies. Therefore, it's recommended to implement it yourself.
+
+```ts
+export const signJWT = async (payload: Record<string, unknown>, secret: string, expiresIn = '7d') => {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: { name: 'SHA-256' } },
+    false,
+    ['sign']
+  );
+
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT'
+  };
+
+  // Calculate expiration time
+  const exp = Math.floor(Date.now() / 1000) + (expiresIn === '7d' ? 7 * 24 * 60 * 60 : 3600); // Default to 7 days expiration
+
+  const payloadWithExp = { ...payload, exp };
+
+  const headerBase64 = base64UrlEncode(JSON.stringify(header));
+  const payloadBase64 = base64UrlEncode(JSON.stringify(payloadWithExp));
+
+  // Sign
+  const data = `${headerBase64}.${payloadBase64}`;
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+  const signatureBase64 = base64UrlEncode(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+
+  return `${data}.${signatureBase64}`;
+};
+
+// Encode
+const base64UrlEncode = (str: string) => {
+  return btoa(String.fromCharCode(...new TextEncoder().encode(str)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+};
+
+export const verifyJWT = async (token: string, secret: string) => {
+  const [headerBase64, payloadBase64, signatureBase64] = token.split('.');
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: { name: 'SHA-256' } },
+    false,
+    ['verify', 'sign']
+  );
+
+  const data = `${headerBase64}.${payloadBase64}`;
+
+  // Decode signature
+  const signatureBuffer = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    new TextEncoder().encode(data)
+  );
+
+  const computedSignatureBase64 = base64UrlEncode(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+
+  // Verify signature match
+  if (computedSignatureBase64 !== signatureBase64) {
+    throw new InvalidSignatureError('Invalid signature');
+  }
+
+  // Verify expiration time
+  const payload = JSON.parse(atob(payloadBase64));
+  const currentTime = Math.floor(Date.now() / 1000);
+  if (payload.exp && payload.exp < currentTime) {
+    throw new ExpiredTokenError('Token has expired');
+  }
+
+  return payload;
+};
+```
+
+## Troubleshooting
+
+Since better-auth manages login state based on the session-cookie scheme, problems may occur if it's not fully supported as required.
+
+For example, when changing passwords, missing or incorrect cookies in the request headers can cause failure to retrieve the session in the internal implementation of `changePassword`, ultimately leading to API call failure.
+
+```ts
+    const response = await auth.api.changePassword({
+      body: {
+        currentPassword,
+        newPassword,
+        revokeOtherSessions: true,
+      },
+      headers: c.req.raw.headers,
+      asResponse: true,
+    }).catch((error) => {
+      console.error('Change password error:', error);
+      return c.json({
+        success: false,
+        message: 'Current password is incorrect'
+      }, 401);
+    })
+```
+
+The solution is to manually set the cookie during login and then pass accurate headers when changing the password.
+
+### Setting cookies during login
+
+```ts
+const response = await auth.api.signInEmail({
+  body: {
+    email: requestBody.email,
+    password: requestBody.password,
+  },
+  asResponse: true
+})
+responseCookies(c, response);
+
+export function responseCookies(c: Context, response: Response) {
+  // console.log('Login response headers:', response.headers);
+  const cookie = response.headers.get('Set-Cookie')?.split(';')[0].split('=')[1] || ''
+  // console.log('Extracted cookie:', cookie);
+  setCookie(c, 'better-auth.session_token', cookie,
+    {
+      httpOnly: true, secure: true, sameSite: 'Lax', path: '/'
+      , maxAge: 7 * 24 * 60 * 60 // 7 days
+    })
+}
+```
+
+### Passing headers when changing passwords
+
+Since cookies contain special characters like %, it's necessary to preprocess the request headers.
+
+```ts
+const cookie = decodeURIComponent(c.req.header('Cookie') || '')
+const headers = new Headers(c.req.raw.headers);
+headers.set('Cookie', cookie);
+
+// ...
+const response = await auth.api.changePassword({
+  body: {
+    currentPassword,
+    newPassword,
+    revokeOtherSessions: true,
+  },
+  headers: headers,
+  asResponse: true,
+})
+```
+
+Also, don't forget to update the cookie after a successful password change:
+
+```ts
+responseCookies(c, response);
+```
+
 ## References
 
 * [cloudflare workers](https://developers.cloudflare.com/)
