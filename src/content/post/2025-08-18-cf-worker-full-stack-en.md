@@ -368,6 +368,168 @@ export const verifyJWT = async (token: string, secret: string) => {
 };
 ```
 
+## Email Functionality
+
+The email functionality is an essential part of the website registration process, used to verify users' email addresses. After integrating `better-auth`, the capabilities for sending emails and token verification are available, but some adjustments are still needed to implement them in our project.
+
+### Integrating Resend
+
+We use the `Resend` service for email sending capabilities. First, you need to register for the Resend service, then add a domain in Resend. If your domain is managed on `Cloudflare`, by authorizing Resend, Resend will automatically add the relevant domain configurations on Cloudflare.
+
+Add a domain,
+![](../images/cf-workers-resend-1.png)
+
+Configure DNS MX records and TXT records,
+![](../images/cf-workers-resend-2.png)
+
+### Integration with better-auth
+
+First, you need to enable email verification. Refer to the documentation [require-email-verification](https://www.better-auth.com/docs/authentication/email-password#require-email-verification)
+
+```ts
+  emailVerification: {
+    sendVerificationEmail: async ({ user, token }) => {
+      await sendEmail(user.email, token, env.BETTER_AUTH_BASE_URL, env.RESEND_API_KEY);
+    },
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    expiresIn: 3600 * 24 // 24 hours
+  },
+```
+
+#### About sendOnSign
+
+The reason this option is emphasized is that it is the key to actually enabling email verification. The official documentation [require-email-verification](https://www.better-auth.com/docs/authentication/email-password#require-email-verification)
+
+```ts
+export const auth = betterAuth({
+  emailAndPassword: {
+    requireEmailVerification: true,
+  },
+});
+```
+
+doesn't actually work (suspected bug or caused by project configuration).
+
+The correct solution is to set `sendOnSignUp: true`, but the official documentation notes that this will send an email every time `signUpEmail` is called. The solution is to return to the business logic and control that an email is not registered twice.
+
+#### Implementing the sendEmail method
+
+Since it runs in the `Cloudflare Workers` environment, you can't get the Resend API key from `process.env.RESEND_API_KEY` like in a regular Node.js project. Here, we choose to pass the `env.RESEND_API_KEY` variable from the better-auth options configuration.
+
+A simple email sending function is as follows:
+
+```ts
+import { Resend } from "resend"
+
+export async function sendEmail(to: string, token: string, BETTER_AUTH_BASE_URL: string, RESEND_API_KEY: string) {
+  const resend = new Resend(RESEND_API_KEY);
+  
+  const emailHtml = `<a href="${BETTER_AUTH_BASE_URL}/verify?token=${token}" >Click to verify your email</a>`;
+
+  const { data, error } = await resend.emails.send({
+    from: "noreply@sandural.cc",
+    to,
+    subject: "Verify your email",
+    html: emailHtml,
+  });
+  
+  if (error) {
+    console.error("Failed to send email", error);
+    throw new Error("Email send failed");
+  }
+  
+  console.log("Email sent", data);
+  return data;
+}
+```
+
+However, this provides a poor user experience. It's better to rewrite the email content into rich text using AI to create a concise and beautiful email body.
+
+#### Verifying the token
+
+Clicking the email verification link `${BETTER_AUTH_BASE_URL}/verify?token=${token}` won't directly call the backend API. Instead, it will first try to open the frontend project, as any link opened in the browser is managed by the project's Vue router.
+
+Therefore, we need to add a frontend route and Vue page: `/verify` -> `Verify.Vue`, and then call the backend API in this Vue page.
+
+The backend API implementation is relatively simple: get the `better-auth` instance from the Cloudflare Workers context and call its `verifyEmail` API capability.
+
+```ts
+const result = await c.var.auth.api.verifyEmail({
+  query: { token },
+});
+```
+
+#### Resending email verification
+
+The token on the email verification link is valid for 24 hours. If the user forgets or doesn't receive it, they can choose to resend it. Considering that resending might cause resource waste, the project has a daily limit on the number of resends.
+
+The frontend calls the `/api/auth/resend-email` interface, which checks the user's login status before calling the `better-auth` `sendVerificationEmail` API.
+
+```ts
+// better-auth will regenerate and send a new email
+const result = await c.var.auth.api.sendVerificationEmail({
+  body: { email: user.email }
+});
+```
+
+## Image Hosting Functionality
+
+For the image hosting functionality, we use Cloudflare Workers' `R2`. The chosen solution is to upload via Cloudflare Workers binding, access via public URLs, and use a custom domain.
+
+### Image Upload Functionality
+
+```ts
+const formData = await c.req.formData();
+const file = formData.get('file') as File;
+const fileKey = getFileKey(user.id, file.name);
+// Upload to R2
+const putResult = await c.env.R2.put(fileKey, file.stream(), {
+  httpMetadata: {
+    contentType: file.type,
+  },
+  customMetadata: {
+    uploadedBy: user.id,
+  },
+});
+return c.json({
+  success: true,
+  message: 'File uploaded successfully',
+  fileUrl: `${c.env.R2_BUCKET_DOMAIN}/${fileKey}`
+});
+```
+
+In the production environment, after successful image upload, the frontend receives a URL similar to `https://i.sandural.cc/bhES2ttw9pHJvXYKKmzpo3MwDHnB/1756229492767-deepseek_mermaid_20250826_a901ed.png`
+
+In development (`dev`) mode, image resources are not actually uploaded to the cloud server but are stored in the `.wrangler/state/v3/r2` directory. To properly display images in `dev` mode, handle it as follows:
+
+```
+R2_BUCKET_DOMAIN=http://localhost:5173/images
+```
+
+Then add a backend route `/images/:key{.+}`, and read the stream from the R2 object storage using the `key` and return it.
+
+```ts
+const key = c.req.param("key")
+const obj = await c.env.R2.get(key)
+if (!obj) return c.text("Not found", 404)
+
+return new Response(obj.body, {
+  headers: {
+    "Content-Type": obj.httpMetadata?.contentType ?? "application/octet-stream",
+  },
+})
+```
+
+### Notes
+
+Since we use public URL access, the `*.r2.dev` subdomains provided by Cloudflare are basically inaccessible in China, so you must use your own independent domain, and a subdomain configuration is sufficient.
+
+Additionally, due to public URL access, it's recommended to properly configure CORS to prevent exceeding traffic limits.
+
+Configuration reference
+![](../images/cf-workers-r2-1.png)
+
 ## Troubleshooting
 
 Since better-auth manages login state based on the session-cookie scheme, problems may occur if it's not fully supported as required.
@@ -455,5 +617,5 @@ responseCookies(c, response);
 * [better-auth](https://www.better-auth.com/)
 * [drizzle](https://orm.drizzle.team/)
 * [cf-script](https://github.com/Thomascogez/cf-script)
-
+* [Resend](https://resend.com/)
 

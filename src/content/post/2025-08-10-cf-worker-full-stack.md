@@ -441,6 +441,159 @@ export const verifyJWT = async (token: string, secret: string) => {
 };
 ```
 
+## 邮件功能
+
+邮件功能是网站注册功能必要的一环，用于验证用户的邮箱。集成`better-auth` 后，接入邮件发送和token 验证的功能都具备了，但是要在我们项目中执行起来还需要一翻调整。
+
+### 接入Resend
+
+发送邮件的能力我们采用`Resend` 服务。首先需要注册`Resend` 服务，然后在Resend 服务中添加域名，如果你的域名刚好是在`cloudflare` 上管理的，那么通过授权给`Resend` ，`Resend` 会自动在`cloudfalre` 上添加相关域名配置。
+
+添加域名，
+![](../images/cf-workers-resend-1.png)
+
+配置DNS MX 记录 和TXT 记录，
+![](../images/cf-workers-resend-2.png)
+
+### 在better-auth 中集成
+
+首先需要开启邮箱验证功能，参考文档 [require-email-verification](https://www.better-auth.com/docs/authentication/email-password#require-email-verification)
+
+```ts
+  emailVerification: {
+    sendVerificationEmail: async ({ user, token }) => {
+      await sendEmail(user.email, token, env.BETTER_AUTH_BASE_URL, env.RESEND_API_KEY);
+    },
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    expiresIn: 3600 * 24 // 24 hour
+  },
+```
+
+#### 关于sendOnSign
+
+之所以强调这个选项，因为这个选项才是真正开启邮箱验证功能的关键。 官方的文档 [require-email-verification](https://www.better-auth.com/docs/authentication/email-password#require-email-verification)
+
+```ts
+export const auth = betterAuth({
+  emailAndPassword: {
+    requireEmailVerification: true,
+  },
+});
+```
+并没有实际的作用（疑似bug 或者 项目组装起来导致的）。
+
+正确的解法，还是设置`sendOnSignUp: true`，但是官方提示这个做法会在每次`signUpEmail` 都会发送一次邮件。  解决办法就是回归到业务逻辑，控制一个邮件不被注册两次。
+
+#### 实现sendEmail 方法
+
+由于是在`cloudflare workers` 环境中执行，因此无法像普通nodejs 项目那样从`process.env.RESEND_API_KEY` 获取到`Resend` 的 apikey，这里选择从better-auth options 配置中传入`env.RESEND_API_KEY` 变量。
+
+一个简单的邮件发送功能如下，
+
+```ts
+import { Resend } from "resend"
+
+export async function sendEmail(to: string, token: string, BETTER_AUTH_BASE_URL: string, RESEND_API_KEY: string) {
+  const resend = new Resend(RESEND_API_KEY);
+  
+  const emailHtml = `<a href="${BETTER_AUTH_BASE_URL}/verify?token=${token}" >点击验证您的邮箱</a>`;
+
+  const { data, error } = await resend.emails.send({
+    from: "noreply@sandural.cc",
+    to,
+    subject: "验证您的邮箱",
+    html: emailHtml,
+  });
+  
+  if (error) {
+    console.error("Failed to send email", error);
+    throw new Error("Email send failed");
+  }
+  
+  console.log("Email sent", data);
+  return data;
+}
+```
+但是这样子体验效果很差，最好通过AI 将邮件的正文重写处理成富文本形式，搭建一个简洁美观的邮件正文。
+
+#### 验证token
+
+点击上面的邮箱验证地址`${BETTER_AUTH_BASE_URL}/verify?token=${token}` 并不会里面请求后台接口，而是首先尝试打开前端项目，在浏览器页面打开的任何链接首先被这个项目Vue 路由管理接管了。
+因此，我们需要增加一个前端路由及Vue页面，`/verify` -> `Verify.Vue`，然后在这个Vue 页面中请求后台接口。
+
+后台接口实现逻辑比较简单，从`cloudflare workers` 上下文中拿到`better-auth` 实例，再调用它的`verfyEmail` api能力。
+```ts
+const result = await c.var.auth.api.verifyEmail({
+  query: { token },
+});
+```
+
+#### 重发邮箱验证
+
+邮箱验证链接上的token 有效期是24小时，如果用户忘记或者没有收到，可以选择重发。考虑到重发可能会造成资源浪费，项目中做了一个一天重复次数的限制。
+前端调用 `/api/auth/resend-email` 接口并通过用户登录态判断后，再去调用`better-auth` 的 `sendVerificationEmail` api。
+
+```ts
+// better-auth will regenerate and send a new email
+const result = await c.var.auth.api.sendVerificationEmail({
+  body: { email: user.email }
+});
+```
+## 图床功能
+
+图床功能选择的是`cloudflare workers` 的 `R2`。选择的方案是`cloudflare workers` binding 方式上传，通过公开的url进行访问，并搭配自定义的域名。
+
+### 上传图片功能
+
+```ts
+const formData = await c.req.formData();
+const file = formData.get('file') as File;
+const fileKey = getFileKey(user.id, file.name);
+// 上传到R2
+const putResult = await c.env.R2.put(fileKey, file.stream(), {
+  httpMetadata: {
+    contentType: file.type,
+  },
+  customMetadata: {
+    uploadedBy: user.id,
+  },
+});
+return c.json({
+  success: true,
+  message: '文件上传成功',
+  fileUrl: `${c.env.R2_BUCKET_DOMAIN}/${fileKey}`
+});
+```
+如果在生产环境，上传图片成功后，返回前端的是一个类似 `https://i.sandural.cc/bhES2ttw9pHJvXYKKmzpo3MwDHnB/1756229492767-deepseek_mermaid_20250826_a901ed.png` 
+
+在开发环境`dev` 模式下，图片资源并没有真正地上传到云端服务器，而是保存在`.wrangler/state/v3/r2` 目录下的，为了能够顺利在`dev` 模式回显图片，如下处理。
+
+```
+R2_BUCKET_DOMAIN=http://localhost:5173/images
+```
+然后增加一个后端路由`/images/:key{.+}` ，然后通过`key` 从`R2` 对象存储中读取流并返回
+
+```ts
+const key = c.req.param("key")
+const obj = await c.env.R2.get(key)
+if (!obj) return c.text("Not found", 404)
+
+return new Response(obj.body, {
+  headers: {
+    "Content-Type": obj.httpMetadata?.contentType ?? "application/octet-stream",
+  },
+})
+```
+
+### 注意事项
+
+由于采用了公开URL 访问的方式，`cloudflare` 提供的`*.r2.dev` 子域名在国内是基本无法访问的，所以必须搭配自己的独立域名，配置一个子域名即可。
+另外由于公开了URL 访问，建议做好CORS控制，防止流量使用超出额度。
+
+配置参考 
+![](../images/cf-workers-r2-1.png)
+
 ## 疑难问题
 
 由于`better-auth` 是基于`session-cookie` 方案来管理登录态的，如果没有按照它的要求完整支持可能会遇到问题。
@@ -448,21 +601,21 @@ export const verifyJWT = async (token: string, secret: string) => {
 比如在修改密码的时候，由于请求头中缺少Cookie信息，或者Cookie错误都会导致`changePassword`内部实现中获取`session`失败，最终导致调用API失败。
 
 ```ts
-    const response = await auth.api.changePassword({
-      body: {
-        currentPassword,
-        newPassword,
-        revokeOtherSessions: true,
-      },
-      headers: c.req.raw.headers,
-      asResponse: true,
-    }).catch((error) => {
-      console.error('Change password error:', error);
-      return c.json({
-        success: false,
-        message: '当前密码错误'
-      }, 401);
-    })
+const response = await auth.api.changePassword({
+  body: {
+    currentPassword,
+    newPassword,
+    revokeOtherSessions: true,
+  },
+  headers: c.req.raw.headers,
+  asResponse: true,
+}).catch((error) => {
+  console.error('Change password error:', error);
+  return c.json({
+    success: false,
+    message: '当前密码错误'
+  }, 401);
+})
 ```
 
 解决办法是在登录的时候，手动设置cookie，然后在修改密码的时候传入准确的headers。
@@ -528,3 +681,4 @@ responseCookies(c, response);
 - [better-auth](https://www.better-auth.com/)
 - [drizzle](https://orm.drizzle.team/)
 - [cf-script](https://github.com/Thomascogez/cf-script)
+- [Resend](https://resend.com/)
