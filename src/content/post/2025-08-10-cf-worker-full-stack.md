@@ -613,6 +613,70 @@ const response = await uploadApi.uploadImage(newFile);
 backgroundImage.value = response.fileUrl;
 ```
 
+### 后端图片压缩
+
+这次采用[jsquash](https://github.com/jamsinclair/jSquash/blob/main/examples/cloudflare-worker-esm-format/src/index.js) 的方案，
+仔细考虑后复用作者example的思路，将`jpeg/jpg/png` 等图片格式转换成`webp` 格式，这其实也是一种压缩图片的好思路。
+
+```ts
+import decodeJpeg, { init as initJpegWasm } from '@jsquash/jpeg/decode';
+import decodePng, { init as initPngWasm } from '@jsquash/png/decode';
+import encodeWebp, { init as initWebpWasm } from '@jsquash/webp/encode';
+
+// @Note, We need to manually import the WASM binaries below so that we can use them in the worker
+// CF Workers do not support dynamic imports
+// @ts-ignore
+import JPEG_DEC_WASM from "../../node_modules/@jsquash/jpeg/codec/dec/mozjpeg_dec.wasm";
+// @ts-ignore
+import PNG_DEC_WASM from "../../node_modules/@jsquash/png/codec/pkg/squoosh_png_bg.wasm";
+// @ts-ignore
+import WEBP_ENC_WASM from "../../node_modules/@jsquash/webp/codec/enc/webp_enc_simd.wasm";
+
+
+let putResult = null
+const extension = file.name.split('.').pop() as string
+const supportedExtensions = ['jpg', 'jpeg', 'png']
+if (supportedExtensions.includes(extension)) {
+  const imageData = await decodeImage(await file.arrayBuffer(), extension);
+  await initWebpWasm(WEBP_ENC_WASM);
+  const webpImage = await encodeWebp(imageData);
+  // 上传到R2
+  fileKey = fileKey.replace(/\.[^/.]+$/, '.webp')
+  putResult = await c.env.R2.put(fileKey, webpImage, {
+    httpMetadata: {
+      contentType: 'image/webp',
+    },
+    customMetadata: {
+      uploadedBy: user.id,
+    },
+  });
+} else {
+  // 上传到R2
+  putResult = await c.env.R2.put(fileKey, file.stream(), {
+    httpMetadata: {
+      contentType: file.type,
+    },
+    customMetadata: {
+      uploadedBy: user.id,
+    },
+  });
+}
+```
+
+要注意调整 `vite.config.ts`的配置，
+
+```ts
+export default defineConfig({
+  optimizeDeps: {
+    exclude: [
+      "@jsquash/png",
+      "@jsquash/jpeg",
+      "@jsquash/webp",
+    ]
+  }
+})
+```
+
 ### 注意事项
 
 由于采用了公开URL 访问的方式，`cloudflare` 提供的`*.r2.dev` 子域名在国内是基本无法访问的，所以必须搭配自己的独立域名，配置一个子域名即可。
@@ -709,3 +773,4 @@ responseCookies(c, response);
 - [drizzle](https://orm.drizzle.team/)
 - [cf-script](https://github.com/Thomascogez/cf-script)
 - [Resend](https://resend.com/)
+- [jSquash](https://github.com/jamsinclair/jSquash)

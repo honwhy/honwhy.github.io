@@ -548,6 +548,69 @@ const response = await uploadApi.uploadImage(newFile);
 backgroundImage.value = response.fileUrl;
 ```
 
+### Backend Image Compression
+
+This time, we adopt the solution from [jsquash](https://github.com/jamsinclair/jSquash/blob/main/examples/cloudflare-worker-esm-format/src/index.js). After careful consideration, we reuse the author's example approach, converting image formats such as jpeg/jpg/png to webp format, which is actually a good method for image compression.
+
+```ts
+import decodeJpeg, { init as initJpegWasm } from '@jsquash/jpeg/decode';
+import decodePng, { init as initPngWasm } from '@jsquash/png/decode';
+import encodeWebp, { init as initWebpWasm } from '@jsquash/webp/encode';
+
+// @Note, We need to manually import the WASM binaries below so that we can use them in the worker
+// CF Workers do not support dynamic imports
+// @ts-ignore
+import JPEG_DEC_WASM from "../../node_modules/@jsquash/jpeg/codec/dec/mozjpeg_dec.wasm";
+// @ts-ignore
+import PNG_DEC_WASM from "../../node_modules/@jsquash/png/codec/pkg/squoosh_png_bg.wasm";
+// @ts-ignore
+import WEBP_ENC_WASM from "../../node_modules/@jsquash/webp/codec/enc/webp_enc_simd.wasm";
+
+
+let putResult = null
+const extension = file.name.split('.').pop() as string
+const supportedExtensions = ['jpg', 'jpeg', 'png']
+if (supportedExtensions.includes(extension)) {
+  const imageData = await decodeImage(await file.arrayBuffer(), extension);
+  await initWebpWasm(WEBP_ENC_WASM);
+  const webpImage = await encodeWebp(imageData);
+  // Upload to R2
+  fileKey = fileKey.replace(/\.[^/.]+$/, '.webp')
+  putResult = await c.env.R2.put(fileKey, webpImage, {
+    httpMetadata: {
+      contentType: 'image/webp',
+    },
+    customMetadata: {
+      uploadedBy: user.id,
+    },
+  });
+} else {
+  // Upload to R2
+  putResult = await c.env.R2.put(fileKey, file.stream(), {
+    httpMetadata: {
+      contentType: file.type,
+    },
+    customMetadata: {
+      uploadedBy: user.id,
+    },
+  });
+}
+```
+
+Note that you need to adjust the configuration in `vite.config.ts`:
+
+```ts
+export default defineConfig({
+  optimizeDeps: {
+    exclude: [
+      "@jsquash/png",
+      "@jsquash/jpeg",
+      "@jsquash/webp",
+    ]
+  }
+})
+```
+
 ### Notes
 
 Since we use public URL access, the `*.r2.dev` subdomains provided by Cloudflare are basically inaccessible in China, so you must use your own independent domain, and a subdomain configuration is sufficient.
@@ -645,4 +708,4 @@ responseCookies(c, response);
 * [drizzle](https://orm.drizzle.team/)
 * [cf-script](https://github.com/Thomascogez/cf-script)
 * [Resend](https://resend.com/)
-
+* [jSquash](https://github.com/jamsinclair/jSquash)
