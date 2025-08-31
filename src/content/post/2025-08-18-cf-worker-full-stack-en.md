@@ -521,6 +521,33 @@ return new Response(obj.body, {
 })
 ```
 
+### Image Compression Functionality
+
+Frontend compression uses `browser-image-compression`
+```
+npm install browser-image-compression
+```
+
+Compress to 1MB in size:
+
+```ts
+import imageCompression from 'browser-image-compression';
+const options = {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+}
+const compressedFile = await imageCompression(file, options);
+const newFile = new File([compressedFile], file.name, {
+    type: compressedFile.type,
+    lastModified: Date.now(),
+});
+
+// Upload to server
+const response = await uploadApi.uploadImage(newFile);
+backgroundImage.value = response.fileUrl;
+```
+
 ### Notes
 
 Since we use public URL access, the `*.r2.dev` subdomains provided by Cloudflare are basically inaccessible in China, so you must use your own independent domain, and a subdomain configuration is sufficient.

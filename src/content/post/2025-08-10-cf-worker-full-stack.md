@@ -586,6 +586,33 @@ return new Response(obj.body, {
 })
 ```
 
+### 图片压缩功能
+
+前端压缩使用 `browser-image-compression`
+```
+npm install browser-image-compression
+```
+
+压缩到1M 大小，
+
+```ts
+import imageCompression from 'browser-image-compression';
+const options = {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+}
+const compressedFile = await imageCompression(file, options);
+const newFile = new File([compressedFile], file.name, {
+    type: compressedFile.type,
+    lastModified: Date.now(),
+});
+
+// 上传到服务器
+const response = await uploadApi.uploadImage(newFile);
+backgroundImage.value = response.fileUrl;
+```
+
 ### 注意事项
 
 由于采用了公开URL 访问的方式，`cloudflare` 提供的`*.r2.dev` 子域名在国内是基本无法访问的，所以必须搭配自己的独立域名，配置一个子域名即可。
