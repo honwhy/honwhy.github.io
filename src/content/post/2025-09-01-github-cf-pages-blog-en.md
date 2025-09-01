@@ -3,7 +3,6 @@ title: "Build Static Website: GitHub Pages & Cloudflare Pages"
 description: "Building a static website with GitHub Pages and Cloudflare Pages works perfectly for personal independent blogs and company product showcase pages."
 publishDate: "1 Sep 2025"
 tags: ["GitHub Pages", "Cloudflare Pages", "Independent Blogs"]
-draft: true
 ---
 
 > Building a static website with GitHub Pages and Cloudflare Pages is ideal for personal independent blogs and company product showcase pages.
