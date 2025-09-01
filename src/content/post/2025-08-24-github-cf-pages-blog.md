@@ -1,14 +1,14 @@
 ---
-title: "使用github pages和cloudflare pages搭建静态网站"
-description: "使用github pages和cloudflare pages搭建静态网站，非常适合个人独立博客网站，以及公司产品宣传介绍页面。"
+title: "使用Github Pages和Cloudflare Pages搭建静态网站"
+description: "使用Github Pages和Cloudflare Pages搭建静态网站，非常适合个人独立博客网站，以及公司产品宣传介绍页面。"
 publishDate: "24 Aug 2025"
-tags: ["github pages", "cloudflare pages", "独立博客"]
+tags: ["Github Pages", "Cloudflare Pages", "独立博客"]
 ---
 
 > 使用GitHub Pages和Cloudflare Pages搭建静态网站，非常适合个人独立博客及公司产品宣传页面。
 
 
-GitHub Pages刚推出时曾让人耳目一新——当大家还在折腾WordPress、调试各类主题时，静态网页技术的回归在部分场景下实现了**更快的响应速度与更优的用户体验**。用户只需创建与GitHub账号同名的仓库（如`honwhy.github.io`），上传静态网页文件，即可通过`honwhy.github.io`访问网站内容。
+GitHub Pages刚推出时有种惊醒梦中人的感觉——当大家还在折腾WordPress、调试各类主题时，静态网页技术的回归在部分场景下实现了**更快的响应速度与更优的用户体验**。用户只需创建与GitHub账号同名的仓库（如`honwhy.github.io`），上传静态网页文件，即可通过`honwhy.github.io`访问网站内容。
 
 若添加CNAME配置，还能通过自定义域名访问：例如将`honwhy.wang`通过CNAME解析到`honwhy.github.io`，即可用`honwhy.wang`打开网站。
 
@@ -73,7 +73,7 @@ Astro既适合制作落地页（Landing Page），也可用于搭建独立博客
 
 示例配置（Astro项目）：
 ```yml
-name: Deploy to GitHub Pages
+name: Deploy to Github Pages
 
 on:
   # 推送main分支时触发 workflow
@@ -113,7 +113,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }} # 部署后URL
     steps:
       # 部署到GitHub Pages
-      - name: Deploy to GitHub Pages
+      - name: Deploy to Github Pages
         id: deployment
         uses: actions/deploy-pages@v4
 ```
