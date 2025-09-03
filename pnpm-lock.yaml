@@ -15,8 +15,8 @@ dependencies:
     specifier: 4.0.12
     version: 4.0.12
   '@astrojs/sitemap':
-    specifier: 3.4.2
-    version: 3.4.2
+    specifier: 3.5.1
+    version: 3.5.1
   '@astrojs/tailwind':
     specifier: 6.0.2
     version: 6.0.2(astro@5.12.8)(tailwindcss@3.4.17)
@@ -279,8 +279,8 @@ packages:
       kleur: 4.1.5
     dev: false
 
-  /@astrojs/sitemap@3.4.2:
-    resolution: {integrity: sha512-wfN2dZzdkto6yaMtOFa/J9gc60YE3wl3rgSBoNJ+MU3lJVUMsDY9xf9uAVi8Mp/zEQKFDSJlQzBvqQUpw0Hf6g==}
+  /@astrojs/sitemap@3.5.1:
+    resolution: {integrity: sha512-uX5z52GLtQTgOe8r3jeGmFRYrFe52mdpLYJzqjvL1cdy5Kg3MLOZEvaZ/OCH0fSq0t7e50uJQ6oBMZG0ffszBg==}
     dependencies:
       sitemap: 8.0.0
       stream-replace-string: 2.0.0
@@ -1768,7 +1768,7 @@ packages:
   /@types/fontkit@2.0.8:
     resolution: {integrity: sha512-wN+8bYxIpJf+5oZdrdtaX04qUuWHcKxcDEgRS9Qm9ZClSHjzEn13SxUC+5eRM+4yXIeTYk8mTzLAWGF64847ew==}
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 24.3.0
     dev: false
 
   /@types/hast@3.0.4:
@@ -1814,16 +1814,16 @@ packages:
     resolution: {integrity: sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==}
     dev: false
 
-  /@types/node@24.1.0:
-    resolution: {integrity: sha512-ut5FthK5moxFKH2T1CUOC6ctR67rQRvvHdFLCD2Ql6KXmMuCrjsSsRI9UsLCm9M18BMwClv4pn327UvB7eeO1w==}
+  /@types/node@24.3.0:
+    resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
     dependencies:
-      undici-types: 7.8.0
+      undici-types: 7.10.0
     dev: false
 
   /@types/sax@1.2.7:
     resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 24.3.0
     dev: false
 
   /@types/semver@7.7.0:
@@ -1833,7 +1833,7 @@ packages:
   /@types/tar@6.1.13:
     resolution: {integrity: sha512-IznnlmU5f4WcGTh2ltRu/Ijpmk8wiWXfF0VA4s+HPjHZgvFggk1YaIkbo5krX/zUCzWF8N/l4+W/LNxnvAJ8nw==}
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 24.3.0
       minipass: 4.2.8
     dev: false
 
@@ -1847,7 +1847,7 @@ packages:
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
     requiresBuild: true
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 24.3.0
     dev: false
     optional: true
 
@@ -7606,8 +7606,8 @@ packages:
     resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
     dev: false
 
-  /undici-types@7.8.0:
-    resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
+  /undici-types@7.10.0:
+    resolution: {integrity: sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==}
     dev: false
 
   /undici@6.21.3:
