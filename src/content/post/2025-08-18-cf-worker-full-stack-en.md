@@ -620,6 +620,132 @@ Additionally, due to public URL access, it's recommended to properly configure C
 Configuration reference
 ![](../images/cf-workers-r2-1.png)
 
+## GitHub Login Integration
+
+### Create an OAuth App
+First, you need to create a developer app. Log in to GitHub, open https://github.com/settings/applications/new, and create an OAuth App. Since we only need to obtain the user's email address, using an OAuth App is the simplest and most convenient integration method.
+![](../images/github-oauth-app.png)
+
+Fill in the following information:
+- **Application homepage URL**: https://sandural.cc
+- **Authorization callback URL**: https://sandural.cc/callback/github  
+
+Many developers find it troublesome that only one URL can be filled in for the callback URL field, which means it cannot support development environments (e.g., http://localhost:5173/callback/github). However, it is recommended to use the production environment URL consistently—corresponding solutions will be introduced later in this document.
+
+After creation, you will obtain the `client_id` and `client_secret`.
+
+
+### Development Process
+Modify the `better-auth` configuration and add the following settings:
+
+Add `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` to the environment variables. Set `GITHUB_REDIRECT_URL` to `https://sandural.cc/callback/github` (fixed value).
+```ts
+socialProviders: {
+  github: { 
+    clientId: env.GITHUB_CLIENT_ID as string, 
+    clientSecret: env.GITHUB_CLIENT_SECRET as string,
+    redirectURI: env.GITHUB_REDIRECT_URL as string,
+  }, 
+},
+```
+
+### Page Modifications
+In a full-stack `Cloudflare Workers + Vue` project, integrating GitHub Login requires modifying the login page and adding a new callback authentication page.
+
+1. **Add a GitHub Login Button**  
+Call the backend API and use the API of the `better-auth` instance to initiate the first step of OAuth authorization login:
+```ts
+authRoutes.post('/login-social', async (c) => {
+  const requestBody = await c.req.json();
+  const auth = c.var.auth as ReturnType<typeof createAuth>;
+  try {
+    const { provider } = requestBody;
+    const response = await auth.api.signInSocial({
+      body: {
+        provider: provider,
+        callbackURL: 'https://sandural.cc/callback/github',
+      },
+    })
+    console.log('signInSocial result', response)
+    if (response?.url) {
+      return c.json({
+        success: true,
+        message: 'Login successful',
+        data: {
+          url: response.url
+        }
+      })
+    }
+  } catch(err) {
+    console.log('login-social error', err)
+  }
+  return c.json({error: 'Unknown error'}, 500)
+})
+```
+
+After the frontend obtains `response.url`, it redirects to this address, which opens the GitHub authorization login page. Once the user clicks **Authorize**, they will be redirected to `https://sandural.cc/callback/github?code=xxx&state=xxxx`.
+
+
+2. **Callback Authentication Page**  
+Due to the characteristics of a full-stack `Cloudflare Workers + Vue` project, after redirecting from GitHub to `https://sandural.cc/callback/github?code=xxx&state=xxxx`, the frontend Vue router will take over first, and the frontend page will be displayed. Therefore, a new callback authentication page is required.
+
+The callback authentication page needs to retrieve the `code` and `state` parameters from the URL query string and call the backend API to complete authentication:
+
+Since `better-auth` does not expose an API for OAuth login callback authentication, you can execute this process through its `handler()` method:
+```ts
+const requestBody = await c.req.json();
+const { state, code } = requestBody;
+const request = new Request(`https://sandural.cc/api/auth/callback/github?code=${code}&state=${state}`)
+console.log('request', request)
+const response = await auth.handler(request)
+```
+
+After completing the entire process, you will notice a new record added to `account`, where the value of the `provider_id` field is `github` (instead of `credential`).
+
+
+### Development Tips
+The entire GitHub OAuth process does not involve GitHub calling the sandural.cc service API; it is completed entirely through page redirects (i.e., in the local browser). Therefore, you can temporarily resolve `sandural.cc` to the local IP address `127.0.0.1` to work with the local environment for code development.
+
+1. **Configure the Hosts File**  
+Add the following entry to your system's Hosts file:
+```
+127.0.0.1 sandural.cc
+```
+
+2. **Enable HTTPS for Local Development**  
+By default, locally started services (e.g., `http://localhost:5173`) use the HTTP protocol, not HTTPS. To fix this, introduce a local self-signed certificate and start an HTTPS service via Vite:
+```ts
+import { defineConfig } from 'vite'
+import mkcert from 'vite-plugin-mkcert'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+		vue(),
+		vueDevTools(),
+		cloudflare(),
+		process.env.HTTPS === 'true' ? mkcert({ hosts: ['sandural.cc']}) : undefined
+	],
+	server: {
+		host: process.env.HTTPS === 'true' ? 'sandural.cc' : '0.0.0.0',
+		port: process.env.HTTPS === 'true' ? 443 : 5173
+	}
+})
+```
+
+3. **Update the Start Script in `package.json`**  
+Add an HTTPS-enabled development script:
+```json
+"scripts": {
+  "dev:https": "cross-env HTTPS=true vite"
+}
+```
+
+
+### Debugging Tips
+During debugging, you may need to repeatedly authorize and revoke authorization. You can manage this via the following URL: https://github.com/settings/applications
+![](../images/revoke-oauth-app.png)
+
 ## Troubleshooting
 
 Since better-auth manages login state based on the session-cookie scheme, problems may occur if it's not fully supported as required.

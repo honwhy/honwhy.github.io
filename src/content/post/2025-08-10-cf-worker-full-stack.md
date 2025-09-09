@@ -685,6 +685,131 @@ export default defineConfig({
 配置参考 
 ![](../images/cf-workers-r2-1.png)
 
+## 使用GitHub登录
+
+### 创建OAuth应用
+
+首先需要创建开发者应用，登录GitHub，打开 https://github.com/settings/applications/new ，创建OAuth应用。我们只需获取用户的邮箱地址，使用OAuth应用是最简单便捷的集成方式。
+![](../images/github-oauth-app.png)
+
+填写应用主页地址： https://sandural.cc
+
+授权通过回调地址：https://sandural.cc/callback/github 。不少开发者认为回调地址字段只能填写一个地址，无法为开发环境（如 http://localhost:5173/callback/github ）提供支持，这确实带来了一些麻烦。不过建议还是固定使用生产环境的地址，下文会介绍相应的解决技巧。
+
+创建完成后，可获取到`client_id`和`client_secret`。
+
+
+### 开发过程
+
+修改`better-auth`配置，添加如下配置：
+
+在环境变量中添加`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`，`GITHUB_REDIRECT_URL`固定设置为`https://sandural.cc/callback/github`。
+```ts
+socialProviders: {
+  github: { 
+    clientId: env.GITHUB_CLIENT_ID as string, 
+    clientSecret: env.GITHUB_CLIENT_SECRET as string,
+    redirectURI: env.GITHUB_REDIRECT_URL as string,
+  }, 
+},
+```
+
+页面改动：
+
+在`Cloudflare Workers + Vue`的全栈项目中，接入GitHub登录需要改造登录页面，并新增一个回调认证页面。
+
+新增GitHub登录按钮，调用后台接口，通过`better-auth`实例的API发起OAuth授权登录的第一步：
+```ts
+authRoutes.post('/login-social', async (c) => {
+  const requestBody = await c.req.json();
+  const auth = c.var.auth as ReturnType<typeof createAuth>;
+  try {
+    const { provider } = requestBody;
+    const response = await auth.api.signInSocial({
+      body: {
+        provider: provider,
+        callbackURL: 'https://sandural.cc/callback/github',
+      },
+    })
+    console.log('signInSocial result', response)
+    if (response?.url) {
+      return c.json({
+        success: true,
+        message: '登录成功',
+        data: {
+          url: response.url
+        }
+      })
+    }
+  } catch(err) {
+    console.log('login-social error', err)
+  }
+  return c.json({error: '未知错误'}, 500)
+})
+```
+
+前端获取到`response.url`后，跳转到该地址，会打开GitHub的授权登录页面。用户点击确认后，会跳转至`https://sandural.cc/callback/github?code=xxx&state=xxxx`。
+
+
+回调认证界面：
+
+由于`Cloudflare Workers + Vue`全栈项目的特点，从GitHub跳转至`https://sandural.cc/callback/github?code=xxx&state=xxxx`后，会先被前端Vue路由接管，展示前端页面。因此，需要新增一个回调认证页面。
+
+回调认证页面需从地址的query参数中获取`code`和`state`，调用后端接口完成认证：
+
+由于`better-auth`未暴露OAuth登录回调认证的API，但可通过其`handler()`方法执行该流程：
+```ts
+const requestBody = await c.req.json();
+const { state, code } = requestBody;
+const request = new Request(`https://sandural.cc/api/auth/callback/github?code=${code}&state=${state}`)
+console.log('request', request)
+const response = await auth.handler(request)
+```
+
+执行完整个流程后，会发现`account`中新增一条记录，其`provider_id`字段的值为`github`（而非`credential`）。
+
+
+### 开发技巧
+
+GitHub OAuth的整个流程不涉及GitHub调用sandural.cc的服务接口，均通过页面跳转完成（即在本地浏览器中进行）。因此，可将`sandural.cc`临时解析到本地的`127.0.0.1` IP地址，配合本地环境完成代码开发。
+
+配置Hosts文件：
+```
+127.0.0.1 sandural.cc
+```
+
+但本地启动的服务通常为`http://localhost:5173`，不使用HTTPS协议。解决办法是引入本地自签名证书，并通过Vite启动HTTPS服务：
+```ts
+import { defineConfig } from 'vite'
+import mkcert from 'vite-plugin-mkcert'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+		vue(),
+		vueDevTools(),
+		cloudflare(),
+		process.env.HTTPS === 'true' ? mkcert({ hosts: ['sandural.cc']}) : undefined
+	],
+	server: {
+		host: process.env.HTTPS === 'true' ? 'sandural.cc' : '0.0.0.0',
+		port: process.env.HTTPS === 'true' ? 443 : 5173
+	}
+})
+```
+
+调整`package.json`中的启动脚本：
+```json
+"scripts": {
+  "dev:https": "cross-env HTTPS=true vite"
+}
+```
+
+
+### 调试技巧
+调试过程中可能需要反复进行授权和撤销授权，可通过此地址管理：https://github.com/settings/applications
+![](../images/revoke-oauth-app.png)
+
 ## 疑难问题
 
 由于`better-auth` 是基于`session-cookie` 方案来管理登录态的，如果没有按照它的要求完整支持可能会遇到问题。
