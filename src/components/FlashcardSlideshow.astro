@@ -17,7 +17,7 @@ const { cards } = Astro.props;
 	</div>
 	<div class="slideshow-container">
 		<div class="slideshow-nav left-nav">
-			<button id="prev-button" aria-label="上一张卡片">&larr;</button>
+			<button id="prev-button" type="button" aria-label="上一张卡片">&larr;</button>
 		</div>
 
 		<div class="flashcard-stack">
@@ -44,12 +44,12 @@ const { cards } = Astro.props;
 		</div>
 
 		<div class="slideshow-nav right-nav">
-			<button id="next-button" aria-label="下一张卡片">&rarr;</button>
+			<button id="next-button" type="button" aria-label="下一张卡片">&rarr;</button>
 		</div>
 	</div>
 
 	<div class="slideshow-footer">
-		<button id="reset-button" aria-label="重置学习进度">
+		<button id="reset-button" type="button" aria-label="重置学习进度">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="24"
@@ -131,6 +131,7 @@ const { cards } = Astro.props;
 
 		const nextCard = (e) => {
 			e.preventDefault();
+			e.stopPropagation();
 			if (currentIndex < totalCards) {
 				currentIndex++;
 				updateDisplay();
@@ -139,6 +140,7 @@ const { cards } = Astro.props;
 
 		const prevCard = (e) => {
 			e.preventDefault();
+			e.stopPropagation();
 			if (currentIndex > 0) {
 				currentIndex--;
 				updateDisplay();
@@ -151,6 +153,7 @@ const { cards } = Astro.props;
 
 		const resetSlideshow = (e) => {
 			e.preventDefault();
+			e.stopPropagation();
 			currentIndex = 0;
 			updateDisplay();
 		};
@@ -171,9 +174,9 @@ const { cards } = Astro.props;
 		// 键盘快捷键支持
 		document.addEventListener("keydown", (event) => {
 			if (event.code === "ArrowRight") {
-				nextCard();
+				nextCard(event);
 			} else if (event.code === "ArrowLeft") {
-				prevCard();
+				prevCard(event);
 			} else if (event.code === "Space") {
 				event.preventDefault(); // 阻止滚动
 				const currentCard = slides[currentIndex]?.querySelector(".flashcard");
