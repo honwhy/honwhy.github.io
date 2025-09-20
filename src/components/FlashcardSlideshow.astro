@@ -129,14 +129,16 @@ const { cards } = Astro.props;
 			currentCardSpan.textContent = Math.min(currentIndex + 1, totalCards);
 		};
 
-		const nextCard = () => {
+		const nextCard = (e) => {
+			e.preventDefault();
 			if (currentIndex < totalCards) {
 				currentIndex++;
 				updateDisplay();
 			}
 		};
 
-		const prevCard = () => {
+		const prevCard = (e) => {
+			e.preventDefault();
 			if (currentIndex > 0) {
 				currentIndex--;
 				updateDisplay();
@@ -147,7 +149,8 @@ const { cards } = Astro.props;
 			target.closest(".flashcard").classList.toggle("is-flipped");
 		};
 
-		const resetSlideshow = () => {
+		const resetSlideshow = (e) => {
+			e.preventDefault();
 			currentIndex = 0;
 			updateDisplay();
 		};
