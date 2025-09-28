@@ -1,0 +1,673 @@
+---
+// PeterLynchMethod.astro
+
+// ==========================================================
+// 1. 组件脚本区域 (JavaScript Logic)
+// Astro 组件的客户端脚本应放在此处或使用 <script> 标签
+// 在这里定义 Chart.js 辅助函数和翻译数据，然后通过 <script> 标签传递给浏览器
+// ⚠️ 注意：由于涉及 DOM 操作和外部库（Chart.js），大部分逻辑必须在客户端运行，即放在 <script> 标签内。
+// 为了代码整洁，我们将把大部分逻辑直接保留在组件底部的 <script> 标签中。
+
+import PageLayout from "@/layouts/Base.astro";
+
+const meta = {
+	description: "The Investment Wisdom of Peter Lynch",
+	title: "Beating the Street",
+};
+
+const translations = {
+	en: {
+		title: "Beating the Street",
+		subtitle: "The Investment Wisdom of Peter Lynch",
+		intro:
+			"An exploration of the legendary investor's strategy that transformed the Magellan Fund and empowered everyday investors to conquer the market.",
+		coreTitle: "The Core Philosophy",
+		coreDesc:
+			"Peter Lynch's approach was revolutionary in its simplicity. He championed two fundamental ideas that stood in stark contrast to Wall Street's conventional wisdom.",
+		idea1Title: '"Invest in What You Know"',
+		idea1Desc:
+			"Find excellent companies in industries you understand from your daily life and work.",
+		idea2Title: "\"Ignore the 'Noise'\"",
+		idea2Desc: "Tune out short-term market forecasts and so-called expert predictions.",
+		growthTitle: "Magellan Fund's Legendary Growth (1977-1990)",
+		growthDesc:
+			"Under Lynch's 13-year tenure, the Magellan Fund's assets under management experienced astronomical growth, showcasing one of the most successful track records in financial history.",
+		returnsTitle: "Unprecedented Returns",
+		returnsDesc:
+			"This phenomenal growth was driven by a consistent ability to outperform the market.",
+		returnsAvg: "Average Annual",
+		returnsLabel: "Return",
+		returnsNote: "This performance turned a $10,000 investment in 1977 into over $280,000 by 1990.",
+		processTitle: "Lynch's Analytical Process",
+		processDesc:
+			"He followed a structured, yet practical, process for evaluating potential investments, focusing on fundamentals over speculation.",
+		step1: "Initial Screening",
+		step2: "Financial Analysis",
+		step3: "Industry Analysis",
+		step4: "Valuation",
+		dangerTitle: 'The Danger of "Hot" Stocks',
+		dangerDesc:
+			"Lynch found that the most hyped stocks in popular industries were often over-owned by institutions, leaving little room for undiscovered value. He preferred companies off Wall Street's radar.",
+		criteriaTitle: 'Criteria for an Ideal "Ten-Bagger"',
+		criteriaDesc:
+			"Lynch sought out companies with specific, often unglamorous, characteristics that gave them a durable competitive edge.",
+		tableCategory: "Category",
+		tableCharacteristic: "Characteristic",
+		tableWhy: "Why it's Good",
+		crit1Char: "It has a boring name or product",
+		crit1Why: "Avoids hype and fleeting interest",
+		crit2Char: "It does something disagreeable or dull",
+		crit2Why: "Low competition",
+		crit3Char: "It's in a no-growth industry",
+		crit3Why: "Established players, less disruption",
+		crit4Char: "It has a niche (e.g., a monopoly)",
+		crit4Why: "Pricing power and defensibility",
+		crit5Char: "Institutions don't own it",
+		crit5Why: "The stock is not over-analyzed",
+		analyzerTitle: "✨Lynch Analyzer",
+		analyzerDesc:
+			"Analyze a company or business idea according to Peter Lynch's philosophy. Enter your idea to get insights!",
+		apiKeyLabel: "API Key",
+		apiKeyPlaceholder: "Enter your Gemini API key",
+		apiKeyInfo: "Get your free API key from Google AI Studio",
+		apiKeyLink: "https://aistudio.google.com/api-keys",
+		analyzeBtn: "✨Analyze My Idea",
+		loadingText: "Analyzing...",
+		resultOutput: "Your analysis result will appear here.",
+		footerQuote: "The key to making money in stocks is not to get scared out of them.",
+		footerAuthor: "- Peter Lynch",
+	},
+	zh: {
+		title: "战胜华尔街",
+		subtitle: "彼得·林奇的投资智慧",
+		intro: "探索这位传奇投资者的投资策略，他不仅改变了麦哲伦基金，也让普通投资者有机会征服市场。",
+		coreTitle: "核心理念",
+		coreDesc:
+			"彼得·林奇的方法以其简单而具有革命性。他提出了两个与华尔街传统智慧截然不同的核心观点。",
+		idea1Title: "“投资你所了解的”",
+		idea1Desc: "从日常生活和工作中，寻找你熟悉行业中的优秀公司。",
+		idea2Title: "“忽略市场噪音”",
+		idea2Desc: "不要理会短期市场预测和所谓专家的言论。",
+		growthTitle: "麦哲伦基金的传奇增长（1977-1990）",
+		growthDesc:
+			"在林奇13年的任期内，麦哲伦基金的资产实现了惊人的增长，成为金融史上最成功的案例之一。",
+		returnsTitle: "前所未有的回报",
+		returnsDesc: "这种惊人的增长来自他持续超越市场的能力。",
+		returnsAvg: "平均年化",
+		returnsLabel: "回报率",
+		returnsNote: "这一表现让1977年投入的1万美元，到1990年变成了超过28万美元。",
+		processTitle: "林奇的分析流程",
+		processDesc: "他遵循结构化但务实的流程来评估潜在投资，注重基本面而非投机。",
+		step1: "初步筛选",
+		step2: "财务分析",
+		step3: "行业分析",
+		step4: "估值",
+		dangerTitle: "“热门股”的危险",
+		dangerDesc:
+			"林奇发现，在热门行业中被炒作最多的股票通常被机构过度持有，几乎没有被低估的机会。他更倾向于选择华尔街视线之外的公司。",
+		criteriaTitle: "理想“十倍股”的标准",
+		criteriaDesc: "林奇寻找具备一些独特且不显眼特征的公司，这些特征能带来持久的竞争优势。",
+		tableCategory: "类别",
+		tableCharacteristic: "特征",
+		tableWhy: "优势",
+		crit1Char: "公司名字或产品很无聊",
+		crit1Why: "避免炒作和短暂关注",
+		crit2Char: "公司业务令人反感或枯燥",
+		crit2Why: "竞争较少",
+		crit3Char: "处于零增长行业",
+		crit3Why: "老牌企业主导，变动较小",
+		crit4Char: "有利基市场（如垄断）",
+		crit4Why: "具备定价权和防御力",
+		crit5Char: "机构没有持有",
+		crit5Why: "股票没有被过度研究",
+		analyzerTitle: "✨林奇分析器",
+		analyzerDesc: "根据彼得·林奇的投资理念来分析公司或商业想法。输入你的想法，获取洞见！",
+		apiKeyLabel: "API 密钥",
+		apiKeyPlaceholder: "请输入你的 Gemini API 密钥",
+		apiKeyInfo: "从 Google AI Studio 获取您的免费 API 密钥",
+		apiKeyLink: "https://aistudio.google.com/api-keys",
+		analyzeBtn: "✨分析我的想法",
+		loadingText: "分析中...",
+		resultOutput: "你的分析结果将显示在这里。",
+		footerQuote: "在股票市场赚钱的关键是不要被吓跑。",
+		footerAuthor: "- 彼得·林奇",
+	},
+};
+
+// 传递给客户端脚本的 props
+// 避免直接暴露 API Key，在实际生产环境中，API 调用应该通过服务器端（Astro API 路由或外部服务）进行代理
+const apiKey = "";
+---
+
+<style>
+	body {
+		font-family: "Inter", sans-serif;
+		background-color: #f8f9fa;
+		max-width: 100vw;
+	}
+	:global(body) {
+		padding: 0;
+	}
+	:global(header#main-header) {
+		display: none;
+	}
+	:global(footer) {
+		display: none !important;
+	}
+	.chart-container {
+		position: relative;
+		width: 100%;
+		max-width: 500px;
+		margin-left: auto;
+		margin-right: auto;
+		height: 300px;
+		max-height: 350px;
+	}
+
+	@media (min-width: 768px) {
+		.chart-container {
+			height: 350px;
+			max-height: 400px;
+		}
+	}
+
+	.flow-arrow {
+		color: #f28f3b;
+		font-weight: 900;
+		font-size: 2rem;
+	}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+	href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap"
+	rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<PageLayout meta={meta}>
+	<div class="text-gray-800">
+		<div class="container mx-auto p-4 md:p-8">
+			<div class="mb-4 flex justify-end">
+				<button
+					id="langToggle"
+					class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
+					client:load>中文</button
+				>
+			</div>
+
+			<header class="mb-12 text-center">
+				<h1 id="title" class="text-4xl font-black uppercase text-[#593C8F] md:text-6xl">
+					Beating the Street
+				</h1>
+				<h2 id="subtitle" class="mt-2 text-2xl font-bold text-gray-700 md:text-3xl">
+					The Investment Wisdom of Peter Lynch
+				</h2>
+				<p id="intro" class="mx-auto mt-4 max-w-3xl text-gray-600">
+					An exploration of the legendary investor's strategy that transformed the Magellan Fund and
+					empowered everyday investors to conquer the market.
+				</p>
+			</header>
+
+			<main class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+				<div
+					class="grid grid-cols-1 gap-6 rounded-xl border-l-8 border-[#00A6A6] bg-white p-6 shadow-lg md:col-span-2 md:grid-cols-3 lg:col-span-3"
+				>
+					<div class="flex flex-col justify-center rounded-lg bg-white p-4 text-center">
+						<h3 id="coreTitle" class="text-2xl font-bold text-gray-900">The Core Philosophy</h3>
+						<p id="coreDesc" class="mt-2 text-gray-600">
+							Peter Lynch's approach was revolutionary in its simplicity. He championed two
+							fundamental ideas that stood in stark contrast to Wall Street's conventional wisdom.
+						</p>
+					</div>
+
+					<div class="flex flex-col justify-center rounded-lg bg-teal-50 p-4 text-center">
+						<span class="text-4xl">💡</span>
+						<p id="idea1Title" class="mt-2 text-lg font-bold text-teal-800">
+							"Invest in What You Know"
+						</p>
+						<p id="idea1Desc" class="text-sm text-teal-700">
+							Find excellent companies in industries you understand from your daily life and work.
+						</p>
+					</div>
+
+					<div class="flex flex-col justify-center rounded-lg bg-red-50 p-4 text-center">
+						<span class="text-4xl">🔇</span>
+						<p id="idea2Title" class="mt-2 text-lg font-bold text-red-800">"Ignore the 'Noise'"</p>
+						<p id="idea2Desc" class="text-sm text-red-700">
+							Tune out short-term market forecasts and so-called expert predictions.
+						</p>
+					</div>
+				</div>
+
+				<div class="rounded-xl bg-white p-6 shadow-lg lg:col-span-2">
+					<h3 id="growthTitle" class="mb-1 text-xl font-bold text-gray-900">
+						Magellan Fund's Legendary Growth (1977-1990)
+					</h3>
+					<p id="growthDesc" class="mb-4 text-sm text-gray-600">
+						Under Lynch's 13-year tenure, the Magellan Fund's assets under management experienced
+						astronomical growth, showcasing one of the most successful track records in financial
+						history.
+					</p>
+					<div class="chart-container">
+						<canvas id="growthChart"></canvas>
+					</div>
+				</div>
+
+				<div
+					class="flex flex-col items-center justify-center rounded-xl bg-white p-6 text-center shadow-lg"
+				>
+					<h3 id="returnsTitle" class="text-xl font-bold text-gray-900">Unprecedented Returns</h3>
+					<p id="returnsDesc" class="mb-4 mt-1 text-sm text-gray-600">
+						This phenomenal growth was driven by a consistent ability to outperform the market.
+					</p>
+					<div
+						class="flex h-48 w-48 flex-col items-center justify-center rounded-full bg-lime-100 shadow-inner"
+					>
+						<p class="text-5xl font-black text-[#C5D86D] drop-shadow-sm">29.2%</p>
+						<p id="returnsAvg" class="mt-1 font-bold text-lime-800">Average Annual</p>
+						<p id="returnsLabel" class="font-bold text-lime-800">Return</p>
+					</div>
+					<p id="returnsNote" class="mt-4 text-xs text-gray-500">
+						This performance turned a $10,000 investment in 1977 into over $280,000 by 1990.
+					</p>
+				</div>
+
+				<div class="rounded-xl bg-white p-6 shadow-lg md:col-span-2 lg:col-span-3">
+					<h3 id="processTitle" class="text-center text-xl font-bold text-gray-900">
+						Lynch's Analytical Process
+					</h3>
+					<p id="processDesc" class="mb-6 text-center text-sm text-gray-600">
+						He followed a structured, yet practical, process for evaluating potential investments,
+						focusing on fundamentals over speculation.
+					</p>
+					<div class="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:gap-0">
+						<div class="rounded-lg bg-gray-50 p-3 text-center shadow-sm">
+							<p class="text-2xl">🔍</p>
+							<p id="step1" class="font-semibold text-gray-700">Initial Screening</p>
+						</div>
+						<div class="flow-arrow mx-4 hidden md:block">→</div>
+						<div class="flow-arrow my-2 md:hidden">↓</div>
+						<div class="rounded-lg bg-gray-50 p-3 text-center shadow-sm">
+							<p class="text-2xl">📊</p>
+							<p id="step2" class="font-semibold text-gray-700">Financial Analysis</p>
+						</div>
+						<div class="flow-arrow mx-4 hidden md:block">→</div>
+						<div class="flow-arrow my-2 md:hidden">↓</div>
+						<div class="rounded-lg bg-gray-50 p-3 text-center shadow-sm">
+							<p class="text-2xl">🏭</p>
+							<p id="step3" class="font-semibold text-gray-700">Industry Analysis</p>
+						</div>
+						<div class="flow-arrow mx-4 hidden md:block">→</div>
+						<div class="flow-arrow my-2 md:hidden">↓</div>
+						<div class="rounded-lg bg-gray-50 p-3 text-center shadow-sm">
+							<p class="text-2xl">💰</p>
+							<p id="step4" class="font-semibold text-gray-700">Valuation</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-xl bg-white p-6 shadow-lg">
+					<h3 id="dangerTitle" class="mb-1 text-xl font-bold text-gray-900">
+						The Danger of "Hot" Stocks
+					</h3>
+					<p id="dangerDesc" class="mb-4 text-sm text-gray-600">
+						Lynch found that the most hyped stocks in popular industries were often over-owned by
+						institutions, leaving little room for undiscovered value. He preferred companies off
+						Wall Street's radar.
+					</p>
+					<div class="chart-container h-80">
+						<canvas id="ownershipChart"></canvas>
+					</div>
+				</div>
+
+				<div class="rounded-xl bg-white p-6 shadow-lg lg:col-span-2">
+					<h3 id="criteriaTitle" class="text-xl font-bold text-gray-900">
+						Criteria for an Ideal "Ten-Bagger"
+					</h3>
+					<p id="criteriaDesc" class="mb-4 text-sm text-gray-600">
+						Lynch sought out companies with specific, often unglamorous, characteristics that gave
+						them a durable competitive edge.
+					</p>
+					<div class="overflow-x-auto">
+						<table class="w-full text-left">
+							<thead class="bg-gray-100">
+								<tr>
+									<th id="tableCategory" class="p-3 text-sm font-semibold">Category</th>
+									<th id="tableCharacteristic" class="p-3 text-sm font-semibold">Characteristic</th>
+									<th id="tableWhy" class="p-3 text-sm font-semibold">Why it's Good</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="border-b">
+									<td class="p-3 font-bold text-[#E84855]">Name & Business</td>
+									<td class="p-3" id="crit1Char">It has a boring name or product</td>
+									<td class="p-3 text-gray-600" id="crit1Why">Avoids hype and fleeting interest</td>
+								</tr>
+								<tr class="border-b">
+									<td class="p-3 font-bold text-[#593C8F]">Operations</td>
+									<td class="p-3" id="crit2Char">It does something disagreeable or dull</td>
+									<td class="p-3 text-gray-600" id="crit2Why">Low competition</td>
+								</tr>
+								<tr class="border-b">
+									<td class="p-3 font-bold text-[#F28F3B]">Industry</td>
+									<td class="p-3" id="crit3Char">It's in a no-growth industry</td>
+									<td class="p-3 text-gray-600" id="crit3Why"
+										>Established players, less disruption</td
+									>
+								</tr>
+								<tr class="border-b">
+									<td class="p-3 font-bold text-[#00A6A6]">Advantage</td>
+									<td class="p-3" id="crit4Char">It has a niche (e.g., a monopoly)</td>
+									<td class="p-3 text-gray-600" id="crit4Why">Pricing power and defensibility</td>
+								</tr>
+								<tr>
+									<td class="p-3 font-bold text-[#C5D86D]">Ownership</td>
+									<td class="p-3" id="crit5Char">Institutions don't own it</td>
+									<td class="p-3 text-gray-600" id="crit5Why">The stock is not over-analyzed</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="rounded-xl bg-white p-6 shadow-lg lg:col-span-3">
+					<h3 id="analyzerTitle" class="text-center text-xl font-bold text-gray-900">
+						✨Lynch Analyzer
+					</h3>
+					<p id="analyzerDesc" class="mb-4 mt-2 text-center text-sm text-gray-600">
+						Analyze a company or business idea according to Peter Lynch's philosophy. Enter your
+						idea to get insights!
+					</p>
+					<div class="mx-auto max-w-xl">
+						<div class="mb-4">
+							<label
+								id="apiKeyLabel"
+								for="apiKeyInput"
+								class="mb-1 block text-sm font-medium text-gray-700">API Key</label
+							>
+							<input
+								type="password"
+								id="apiKeyInput"
+								class="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-[#00A6A6]"
+								placeholder="Enter your Gemini API key"
+							/>
+							<p class="mt-2 text-sm text-gray-500">
+								<span id="apiKeyInfo">Get your free API key from Google AI Studio:</span>
+								<a
+									href="https://aistudio.google.com/api-keys"
+									target="_blank"
+									id="apiKeyLink"
+									class="ml-1 text-[#00A6A6] hover:underline"
+								>
+									https://aistudio.google.com/api-keys
+								</a>
+							</p>
+						</div>
+						<textarea
+							id="ideaInput"
+							class="h-24 w-full resize-none rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-[#00A6A6]"
+							placeholder="For example: I recently noticed many people using a new smart toilet seat. Or: How does Apple fit Lynch's philosophy?"
+						></textarea>
+						<button
+							id="analyzeBtn"
+							class="focus:ring-offset-2 mt-4 w-full transform rounded-lg bg-[#00A6A6] px-4 py-2 font-bold text-white transition-transform hover:bg-[#008C8C] focus:outline-none focus:ring-2 focus:ring-[#00A6A6] active:scale-95"
+							client:load>✨Analyze My Idea</button
+						>
+						<div id="loadingIndicator" class="mt-4 hidden text-center">
+							<div
+								class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-t-4 border-gray-200 border-t-[#00A6A6]"
+							>
+							</div>
+							<p id="loadingText" class="mt-2 text-gray-500">Analyzing...</p>
+						</div>
+						<div id="resultOutput" class="mt-6 rounded-lg bg-gray-50 p-4 text-sm text-gray-800">
+							Your analysis result will appear here.
+						</div>
+					</div>
+				</div>
+			</main>
+
+			<footer class="mt-12 border-t py-6 text-center">
+				<p id="footerQuote" class="text-gray-600">
+					The key to making money in stocks is not to get scared out of them.
+				</p>
+				<p id="footerAuthor" class="mt-1 font-bold text-gray-800">- Peter Lynch</p>
+			</footer>
+		</div>
+	</div>
+</PageLayout>
+<script define:vars={{ translations, apiKey }}>
+	// define:vars 将 Astro 脚本区域的变量注入到客户端脚本中
+	document.addEventListener("DOMContentLoaded", (event) => {
+		// --- Chart Helper Functions ---
+		const wrapLabel = (label, maxWidth) => {
+			if (typeof label !== "string" || label.length <= maxWidth) {
+				return label;
+			}
+			const words = label.split(" ");
+			const lines = [];
+			let currentLine = "";
+			words.forEach((word) => {
+				if ((currentLine + " " + word).trim().length > maxWidth) {
+					lines.push(currentLine.trim());
+					currentLine = word;
+				} else {
+					currentLine = (currentLine + " " + word).trim();
+				}
+			});
+			if (currentLine) {
+				lines.push(currentLine.trim());
+			}
+			return lines;
+		};
+
+		const tooltipTitleCallback = (tooltipItems) => {
+			const item = tooltipItems[0];
+			let label = item.chart.data.labels[item.dataIndex];
+			if (Array.isArray(label)) {
+				return label.join(" ");
+			}
+			return label;
+		};
+
+		const energeticPalette = {
+			teal: "#00A6A6",
+			orange: "#F28F3B",
+			red: "#E84855",
+			lime: "#C5D86D",
+			purple: "#593C8F",
+			lightGray: "#F8F9FA",
+		};
+
+		// --- Growth Chart ---
+		const growthCtx = document.getElementById("growthChart").getContext("2d");
+		new Chart(growthCtx, {
+			type: "bar",
+			data: {
+				labels: ["1977 (Start)", "1990 (End)"],
+				datasets: [
+					{
+						label: "Assets Under Management ($ Millions)",
+						data: [20, 14000],
+						backgroundColor: [energeticPalette.teal, energeticPalette.purple],
+						borderColor: [energeticPalette.teal, energeticPalette.purple],
+						borderWidth: 1,
+					},
+				],
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					y: {
+						beginAtZero: true,
+						type: "logarithmic",
+						ticks: {
+							callback: function (value, index, values) {
+								if (value === 10 || value === 100 || value === 1000 || value === 10000) {
+									return "$" + value.toLocaleString() + "M";
+								}
+							},
+						},
+					},
+				},
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						callbacks: {
+							title: tooltipTitleCallback,
+							label: function (context) {
+								let label = context.dataset.label || "";
+								if (label) {
+									label += ": ";
+								}
+								if (context.parsed.y !== null) {
+									// 格式化为货币，假设数据单位是百万
+									label += new Intl.NumberFormat("en-US", {
+										style: "currency",
+										currency: "USD",
+										minimumFractionDigits: 0,
+										maximumFractionDigits: 0,
+									}).format(context.parsed.y * 1000000);
+								}
+								return label;
+							},
+						},
+					},
+				},
+			},
+		});
+
+		// --- Ownership Chart ---
+		const ownershipCtx = document.getElementById("ownershipChart").getContext("2d");
+		const originalOwnershipLabels = ["Hot Stock in Hot Industry", "Lynch's Ideal 'Boring' Stock"];
+		const wrappedOwnershipLabels = originalOwnershipLabels.map((label) => wrapLabel(label, 16));
+
+		new Chart(ownershipCtx, {
+			type: "bar",
+			data: {
+				labels: wrappedOwnershipLabels,
+				datasets: [
+					{
+						label: "Institutional Ownership %",
+						data: [39.1, 5],
+						backgroundColor: [energeticPalette.red, energeticPalette.lime],
+						borderColor: [energeticPalette.red, energeticPalette.lime],
+						borderWidth: 1,
+						maxBarThickness: 60,
+					},
+				],
+			},
+			options: {
+				indexAxis: "y",
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: { callbacks: { title: tooltipTitleCallback } },
+				},
+				scales: {
+					x: {
+						beginAtZero: true,
+						ticks: {
+							callback: function (value) {
+								return value + "%";
+							},
+						},
+					},
+				},
+			},
+		});
+
+		// --- Analyzer / Gemini API Logic ---
+		document.getElementById("analyzeBtn").addEventListener("click", async () => {
+			const input = document.getElementById("ideaInput").value;
+			const apiKey = document.getElementById("apiKeyInput").value;
+			const outputDiv = document.getElementById("resultOutput");
+			const loadingDiv = document.getElementById("loadingIndicator");
+
+			if (input.trim() === "") {
+				outputDiv.textContent =
+					currentLang === "zh"
+						? "请输入一个公司或想法进行分析。"
+						: "Please enter a company or idea for analysis.";
+				return;
+			}
+
+			if (!apiKey) {
+				outputDiv.textContent =
+					currentLang === "zh" ? "请输入 API 密钥。" : "Please enter an API key.";
+				return;
+			}
+
+			loadingDiv.classList.remove("hidden");
+			outputDiv.textContent = "";
+
+			const systemPrompt =
+				"你是一位经验丰富的金融分析师，专门研究彼得·林奇的投资理念。根据用户提供的公司或商业想法，用中文进行简洁的分析。请重点说明这个想法是否符合林奇的“平淡无奇”或“热门”股票标准，并简要解释原因。";
+			const userQuery = `分析以下公司或想法：${input}`;
+			const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+			const payload = {
+				contents: [{ parts: [{ text: userQuery }] }],
+				systemInstruction: { parts: [{ text: systemPrompt }] },
+			};
+
+			try {
+				const response = await fetch(apiUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(payload),
+				});
+
+				const result = await response.json();
+				const candidate = result.candidates?.[0];
+
+				if (candidate && candidate.content?.parts?.[0]?.text) {
+					const text = candidate.content.parts[0].text;
+					outputDiv.innerHTML = marked.parse(text);
+				} else {
+					outputDiv.textContent =
+						currentLang === "zh"
+							? "抱歉，无法生成分析结果。"
+							: "Sorry, could not generate analysis result.";
+				}
+			} catch (error) {
+				console.error("API Error:", error);
+				outputDiv.textContent =
+					currentLang === "zh"
+						? "API 请求失败，请稍后重试。"
+						: "API request failed, please try again later.";
+			} finally {
+				loadingDiv.classList.add("hidden");
+			}
+		});
+
+		// --- Language Toggle Logic ---
+		let currentLang = "en";
+		const toggleBtn = document.getElementById("langToggle");
+
+		function updateLanguage(lang) {
+			Object.keys(translations[lang]).forEach((id) => {
+				const el = document.getElementById(id);
+				if (el) el.textContent = translations[lang][id];
+			});
+			// 特殊处理链接元素
+			const apiKeyLinkEl = document.getElementById("apiKeyLink");
+			if (apiKeyLinkEl) {
+				apiKeyLinkEl.textContent = translations[lang].apiKeyLink;
+			}
+			toggleBtn.textContent = lang === "en" ? "中文" : "English";
+			currentLang = lang;
+		}
+
+		toggleBtn.addEventListener("click", () => {
+			updateLanguage(currentLang === "en" ? "zh" : "en");
+		});
+
+		// Initial language setting (optional: load from user preference or browser setting if needed)
+		// For simplicity, we assume English is the initial state defined in the HTML.
+		// If the HTML content is in English, this is not strictly needed on load.
+	});
+</script>
