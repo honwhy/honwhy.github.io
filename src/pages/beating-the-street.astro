@@ -186,7 +186,12 @@ const apiKey = "";
 <PageLayout meta={meta}>
 	<div class="text-gray-800">
 		<div class="container mx-auto p-4 md:p-8">
-			<div class="mb-4 flex justify-end">
+			<div class="flex justify-between mb-4">
+				<button
+					id="homeBtn"
+					class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
+					>回到首页</button
+				>
 				<button
 					id="langToggle"
 					class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
@@ -645,6 +650,7 @@ const apiKey = "";
 		// --- Language Toggle Logic ---
 		let currentLang = "en";
 		const toggleBtn = document.getElementById("langToggle");
+		const homeBtn = document.getElementById("homeBtn");
 
 		function updateLanguage(lang) {
 			Object.keys(translations[lang]).forEach((id) => {
@@ -657,11 +663,16 @@ const apiKey = "";
 				apiKeyLinkEl.textContent = translations[lang].apiKeyLink;
 			}
 			toggleBtn.textContent = lang === "en" ? "中文" : "English";
+			homeBtn.textContent = lang === "en" ? "回到首页" : "Back to Home";
 			currentLang = lang;
 		}
 
 		toggleBtn.addEventListener("click", () => {
 			updateLanguage(currentLang === "en" ? "zh" : "en");
+		});
+
+		homeBtn.addEventListener("click", () => {
+			window.location.href = "/";
 		});
 
 		// Initial language setting (optional: load from user preference or browser setting if needed)
