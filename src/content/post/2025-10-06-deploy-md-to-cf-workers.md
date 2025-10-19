@@ -41,7 +41,7 @@ pnpm web wrangler:deploy # 部署
 
 ![](https://fastly.jsdelivr.net/gh/bucketio/img9@main/2025/10/06/1759727426751-3cca9a93-c00a-4a40-ac37-492bdaf8dec7.png)
 
-可以看到deploy 成功后，cloudflare workers已经分配好了一个访问域名，比如`https://md-web.honwhy-wang.workers.dev`，通过这个域名就可以使用编辑器了。
+可以看到deploy 成功后，cloudflare workers已经分配好了一个访问域名，比如`https://md.honwhy-wang.workers.dev`，通过这个域名就可以使用编辑器了。
 
 ### 使用建议
 
@@ -78,7 +78,7 @@ pnpm web wrangler:deploy
 - 购买域名
 - 域名交给cloudflare 进行管理
 
-配置独立域名方式很简单，登录cloudflare 控制台，进入我们新建的`md-web` workers，打开配置tab，
+配置独立域名方式很简单，登录cloudflare 控制台，进入我们新建的`md` workers，打开配置tab，
 
 
 ![](https://fastly.jsdelivr.net/gh/bucketio/img1@main/2025/10/06/1759727977762-52c35ef1-900e-403e-ac78-e58c08394858.png)
