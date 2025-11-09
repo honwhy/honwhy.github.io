@@ -1,0 +1,227 @@
+---
+// DuanYongpingStyle.astro
+// ================================================
+// 双语介绍：段永平的投资风格
+// 风格参考 PeterLynchMethod.astro
+
+import PageLayout from "@/layouts/Base.astro";
+
+const meta = {
+	title: "The Investment Philosophy of Duan Yongping",
+	description: "A deep dive into Duan Yongping’s calm and rational investment philosophy.",
+};
+
+const translations = {
+	en: {
+		title: "The Art of Rational Investing",
+		subtitle: "The Investment Philosophy of Duan Yongping",
+		intro:
+			"A journey into the mind of China's legendary value investor — Duan Yongping, whose principles of simplicity, patience, and clarity inspired a generation of entrepreneurs and investors.",
+		coreTitle: "Core Investment Beliefs",
+		coreDesc:
+			"Duan Yongping’s philosophy emphasizes rationality, patience, and focus — a Chinese reflection of Buffett’s wisdom with his own Eastern restraint and practicality.",
+		idea1Title: "“Invest in Simplicity”",
+		idea1Desc: "Avoid complexity. Only invest when the business model and value are crystal clear.",
+		idea2Title: "“Do Fewer Things, but Do Them Well”",
+		idea2Desc:
+			"Concentrate on your best ideas. Quality over quantity — conviction over diversification.",
+		longTermTitle: "The Power of Long-Term Holding",
+		longTermDesc:
+			"Duan famously said: 'The best holding period is forever.' His investments in companies like Moutai and Apple demonstrate his faith in long-term compounding.",
+		longTermChartTitle: "Duan’s Legendary Holdings",
+		patienceTitle: "The Virtue of Patience",
+		patienceDesc:
+			"Duan often emphasizes that investing is 90% waiting. Most of the time, doing nothing is the right thing.",
+		principleTitle: "Principles He Lives By",
+		principleDesc:
+			"Each decision follows a simple but rigorous logic — focus on what he understands, avoid what he doesn't.",
+		principleList: [
+			"Buy great companies at a fair price",
+			"Think independently — not emotionally",
+			"Be patient and humble",
+			"Focus on business, not stock prices",
+		],
+		quote: "“Most of the time in investing, the best thing you can do is — nothing.”",
+		author: "- Duan Yongping",
+	},
+	zh: {
+		title: "理性投资的艺术",
+		subtitle: "段永平的投资哲学",
+		intro:
+			"探索中国传奇价值投资者段永平的思想世界——他以“简单、理性、耐心”的投资哲学，启发了无数企业家与投资人。",
+		coreTitle: "核心投资理念",
+		coreDesc:
+			"段永平的投资哲学强调理性、耐心与专注——这是东方智慧与巴菲特思想的交汇，也是他几十年稳健投资的根基。",
+		idea1Title: "“投资要简单”",
+		idea1Desc: "避免复杂，只投资自己能看懂、能算清的生意。",
+		idea2Title: "“少而精，专而准”",
+		idea2Desc: "集中投资于最有把握的机会——宁可错过，不可乱投。",
+		longTermTitle: "长期持有的力量",
+		longTermDesc:
+			"段永平常说：“最好的持有期是永远。” 他对茅台、苹果等公司的长期持有，正是复利信仰的体现。",
+		longTermChartTitle: "段永平的经典持仓",
+		patienceTitle: "耐心的智慧",
+		patienceDesc: "段永平常强调，投资有九成时间在等待——多数时候，“不动”就是正确的选择。",
+		principleTitle: "他奉行的原则",
+		principleDesc: "每一个决策都遵循简单但严谨的逻辑：懂的才投，不懂不碰。",
+		principleList: [
+			"好公司，合理价",
+			"独立思考，不随情绪起舞",
+			"保持耐心与谦逊",
+			"关注企业，不盯股价",
+		],
+		quote: "“在投资中，大多数时候最好的事情就是——什么都不做。”",
+		author: "- 段永平",
+	},
+};
+---
+
+<style>
+	:global(body) {
+		font-family: "Inter", sans-serif;
+		background-color: #f8f9fa;
+		max-width: 100vw !important;
+		padding: 0 !important;
+	}
+	:global(header#main-header) {
+		display: none;
+	}
+	:global(footer) {
+		display: none !important;
+	}
+</style>
+
+<PageLayout meta={meta}>
+	<div class="container mx-auto p-6 text-gray-800">
+		<div class="mb-6 flex justify-between">
+			<button
+				id="homeBtn"
+				class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
+				>Home</button
+			>
+			<button
+				id="langToggle"
+				class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
+				>中文</button
+			>
+		</div>
+
+		<header class="mb-10 text-center">
+			<h1 id="title" class="text-4xl font-black text-[#005B41] md:text-6xl">
+				The Art of Rational Investing
+			</h1>
+			<h2 id="subtitle" class="mt-2 text-2xl text-gray-700 md:text-3xl">
+				The Investment Philosophy of Duan Yongping
+			</h2>
+			<p id="intro" class="mx-auto mt-4 max-w-3xl text-gray-600">
+				A journey into the mind of China's legendary value investor — Duan Yongping.
+			</p>
+		</header>
+
+		<section class="grid gap-6 md:grid-cols-2">
+			<div class="rounded-xl bg-white p-6 shadow-md">
+				<h3 id="coreTitle" class="text-xl font-bold text-gray-900">Core Investment Beliefs</h3>
+				<p id="coreDesc" class="mt-2 text-gray-600">
+					Duan Yongping’s philosophy emphasizes rationality and patience.
+				</p>
+			</div>
+
+			<div class="grid gap-4">
+				<div class="rounded-lg bg-green-50 p-4 text-center">
+					<p class="text-4xl">🍃</p>
+					<p id="idea1Title" class="mt-2 font-semibold text-green-800">“Invest in Simplicity”</p>
+					<p id="idea1Desc" class="text-sm text-green-700">Avoid complexity. Invest in clarity.</p>
+				</div>
+				<div class="rounded-lg bg-yellow-50 p-4 text-center">
+					<p class="text-4xl">🎯</p>
+					<p id="idea2Title" class="mt-2 font-semibold text-yellow-800">
+						“Do Fewer Things, but Do Them Well”
+					</p>
+					<p id="idea2Desc" class="text-sm text-yellow-700">Concentrate on your best ideas.</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="mt-10 rounded-xl bg-white p-6 shadow-md">
+			<h3 id="longTermTitle" class="text-xl font-bold text-gray-900">
+				The Power of Long-Term Holding
+			</h3>
+			<p id="longTermDesc" class="mt-2 text-sm text-gray-600">
+				“The best holding period is forever.”
+			</p>
+			<div class="chart-container mt-4 h-64">
+				<canvas id="duanChart"></canvas>
+			</div>
+		</section>
+
+		<section class="mt-10 rounded-xl bg-white p-6 shadow-md">
+			<h3 id="patienceTitle" class="text-xl font-bold text-gray-900">The Virtue of Patience</h3>
+			<p id="patienceDesc" class="mt-2 text-sm text-gray-600">Investing is 90% waiting.</p>
+		</section>
+
+		<section class="mt-10 rounded-xl bg-white p-6 shadow-md">
+			<h3 id="principleTitle" class="text-xl font-bold text-gray-900">Principles He Lives By</h3>
+			<p id="principleDesc" class="mb-3 text-sm text-gray-600">Simple but rigorous logic.</p>
+			<ul id="principleList" class="list-disc pl-6 text-sm text-gray-700"></ul>
+		</section>
+
+		<footer class="mt-12 border-t pt-6 text-center">
+			<p id="quote" class="text-gray-600">
+				“Most of the time in investing, the best thing you can do is — nothing.”
+			</p>
+			<p id="author" class="mt-2 font-bold text-gray-800">- Duan Yongping</p>
+		</footer>
+	</div>
+</PageLayout>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script define:vars={{ translations }}>
+	document.addEventListener("DOMContentLoaded", () => {
+		let currentLang = "en";
+		const updateLang = (lang) => {
+			const t = translations[lang];
+			for (const key in t) {
+				const el = document.getElementById(key);
+				if (el) {
+					if (Array.isArray(t[key])) {
+						el.innerHTML = t[key].map((v) => `<li>${v}</li>`).join("");
+					} else {
+						el.textContent = t[key];
+					}
+				}
+			}
+			document.getElementById("langToggle").textContent = lang === "en" ? "中文" : "English";
+			currentLang = lang;
+		};
+
+		document.getElementById("langToggle").addEventListener("click", () => {
+			updateLang(currentLang === "en" ? "zh" : "en");
+		});
+
+		// --- Chart ---
+		const ctx = document.getElementById("duanChart").getContext("2d");
+		new Chart(ctx, {
+			type: "line",
+			data: {
+				labels: ["2010", "2015", "2020", "2025"],
+				datasets: [
+					{
+						label: "Cumulative Growth of Duan’s Core Holdings",
+						data: [1, 3, 8, 15],
+						borderColor: "#005B41",
+						backgroundColor: "rgba(0,91,65,0.2)",
+						fill: true,
+					},
+				],
+			},
+			options: {
+				responsive: true,
+				scales: {
+					y: { beginAtZero: true, title: { display: true, text: "Growth Multiple (x)" } },
+				},
+			},
+		});
+
+		updateLang("en");
+	});
+</script>
