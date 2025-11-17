@@ -71,6 +71,7 @@ const translations = {
 		apiKeyPlaceholder: "Enter your Gemini API key",
 		apiKeyInfo: "Get your free API key from Google AI Studio",
 		apiKeyLink: "https://aistudio.google.com/api-keys",
+		modelLabel: "Model",
 		analyzeBtn: "✨Analyze My Idea",
 		loadingText: "Analyzing...",
 		resultOutput: "Your analysis result will appear here.",
@@ -126,6 +127,7 @@ const translations = {
 		apiKeyPlaceholder: "请输入你的 Gemini API 密钥",
 		apiKeyInfo: "从 Google AI Studio 获取您的免费 API 密钥",
 		apiKeyLink: "https://aistudio.google.com/api-keys",
+		modelLabel: "模型",
 		analyzeBtn: "✨分析我的想法",
 		loadingText: "分析中...",
 		resultOutput: "你的分析结果将显示在这里。",
@@ -407,6 +409,23 @@ const apiKey = "";
 								</a>
 							</p>
 						</div>
+						<div class="mb-4">
+							<label
+								for="modelSelect"
+								class="mb-1 block text-sm font-medium text-gray-700"
+								id="modelLabel"
+							>
+								Model
+							</label>
+							<select
+								id="modelSelect"
+								class="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-[#00A6A6]"
+							>
+								<option value="gemini-flash-latest">gemini-flash-latest (default)</option>
+								<option value="gemini-2.5-flash">gemini-2.5-flash</option>
+								<option value="gemini-2.5-flash-preview-09-2025">gemini-2.5-flash-preview-09-2025</option>
+							</select>
+						</div>
 						<textarea
 							id="ideaInput"
 							class="h-24 w-full resize-none rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-[#00A6A6]"
@@ -415,7 +434,7 @@ const apiKey = "";
 						<button
 							id="analyzeBtn"
 							class="focus:ring-offset-2 mt-4 w-full transform rounded-lg bg-[#00A6A6] px-4 py-2 font-bold text-white transition-transform hover:bg-[#008C8C] focus:outline-none focus:ring-2 focus:ring-[#00A6A6] active:scale-95"
-							>✨Analyze My Idea</button
+							>✨<span id="analyzeBtnText">Analyze My Idea</span></button
 						>
 						<div id="loadingIndicator" class="mt-4 hidden text-center">
 							<div
@@ -587,6 +606,7 @@ const apiKey = "";
 		document.getElementById("analyzeBtn").addEventListener("click", async () => {
 			const input = document.getElementById("ideaInput").value;
 			const apiKey = document.getElementById("apiKeyInput").value;
+			const selectedModel = document.getElementById("modelSelect").value;
 			const outputDiv = document.getElementById("resultOutput");
 			const loadingDiv = document.getElementById("loadingIndicator");
 
@@ -610,7 +630,7 @@ const apiKey = "";
 			const systemPrompt =
 				"你是一位经验丰富的金融分析师，专门研究彼得·林奇的投资理念。根据用户提供的公司或商业想法，用中文进行简洁的分析。请重点说明这个想法是否符合林奇的“平淡无奇”或“热门”股票标准，并简要解释原因。";
 			const userQuery = `分析以下公司或想法：${input}`;
-			const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+			const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
 			const payload = {
 				contents: [{ parts: [{ text: userQuery }] }],
@@ -657,6 +677,12 @@ const apiKey = "";
 				const el = document.getElementById(id);
 				if (el) el.textContent = translations[lang][id];
 			});
+			// Update analyze button text specifically
+			const analyzeBtnTextEl = document.getElementById("analyzeBtnText");
+			if (analyzeBtnTextEl) analyzeBtnTextEl.textContent = translations[lang].analyzeBtn;
+			// Update model selection label
+			const modelLabelEl = document.getElementById("modelLabel");
+			if (modelLabelEl) modelLabelEl.textContent = translations[lang].modelLabel || "Model";
 			// 特殊处理链接元素
 			const apiKeyLinkEl = document.getElementById("apiKeyLink");
 			if (apiKeyLinkEl) {
