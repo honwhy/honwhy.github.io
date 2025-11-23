@@ -138,7 +138,7 @@ const translations = {
 
 // 传递给客户端脚本的 props
 // 避免直接暴露 API Key，在实际生产环境中，API 调用应该通过服务器端（Astro API 路由或外部服务）进行代理
-const defaultApiKey = "AIzaSyBNDAyxZ5iyGHwYDspR8Laa25wgh_gmJ3Y";
+const defaultApiKey = "";
 ---
 
 <style>
@@ -620,11 +620,11 @@ const defaultApiKey = "AIzaSyBNDAyxZ5iyGHwYDspR8Laa25wgh_gmJ3Y";
 				return;
 			}
 
-			if (!apiKey) {
-				outputDiv.textContent =
-					currentLang === "zh" ? "请输入 API 密钥。" : "Please enter an API key.";
-				return;
-			}
+			// if (!apiKey) {
+			// 	outputDiv.textContent =
+			// 		currentLang === "zh" ? "请输入 API 密钥。" : "Please enter an API key.";
+			// 	return;
+			// }
 
 			loadingDiv.classList.remove("hidden");
 			outputDiv.textContent = "";
@@ -632,7 +632,7 @@ const defaultApiKey = "AIzaSyBNDAyxZ5iyGHwYDspR8Laa25wgh_gmJ3Y";
 			const systemPrompt =
 				"你是一位经验丰富的金融分析师，专门研究彼得·林奇的投资理念。根据用户提供的公司或商业想法，用中文进行简洁的分析。请重点说明这个想法是否符合林奇的“平淡无奇”或“热门”股票标准，并简要解释原因。";
 			const userQuery = `分析以下公司或想法：${input}`;
-			const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+			const apiUrl = `https://gemini.honwhy.wang/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
 			const payload = {
 				contents: [{ parts: [{ text: userQuery }] }],
