@@ -11,7 +11,7 @@
 		"check": "astro check"
 	},
 	"dependencies": {
-		"@astrojs/check": "0.9.5",
+		"@astrojs/check": "0.9.6",
 		"@astrojs/mdx": "4.3.9",
 		"@astrojs/rss": "4.0.13",
 		"@astrojs/sitemap": "3.6.0",
@@ -26,7 +26,7 @@
 		"typescript": "^5.9.3"
 	},
 	"devDependencies": {
-		"@astrojs/check": "^0.9.4",
+		"@astrojs/check": "^0.9.6",
 		"@iconify-json/mdi": "^1.2.3",
 		"@pagefind/default-ui": "^1.4.0",
 		"@resvg/resvg-js": "^2.6.2",
