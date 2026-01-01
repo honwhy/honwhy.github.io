@@ -36,7 +36,7 @@
 		"@typescript-eslint/eslint-plugin": "^7.18.0",
 		"@typescript-eslint/parser": "^8.48.0",
 		"astro-eslint-parser": "^1.2.2",
-		"autoprefixer": "^10.4.22",
+		"autoprefixer": "^10.4.23",
 		"eslint": "^9.39.0",
 		"eslint-import-resolver-typescript": "^4.4.4",
 		"eslint-plugin-astro": "^1.5.0",
