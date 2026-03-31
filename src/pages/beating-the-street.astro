@@ -157,6 +157,149 @@ const defaultApiKey = "";
 	:global(footer) {
 		display: none !important;
 	}
+	
+	/* Color Variables for Light/Dark Mode */
+	:root {
+		--page-bg: #f8f9fa;
+		--card-bg: #ffffff;
+		--text-primary: #1f2937;
+		--text-secondary: #4b5563;
+		--text-muted: #6b7280;
+		--border-color: #e5e7eb;
+		--bg-gray-50: #f9fafb;
+		--bg-gray-100: #f3f4f6;
+		--bg-gray-200: #e5e7eb;
+		--bg-teal-50: #f0fdfa;
+		--bg-red-50: #fef2f2;
+		--bg-lime-100: #ecfccb;
+		--text-teal-800: #134e4a;
+		--text-teal-700: #155e75;
+		--text-red-800: #991b1b;
+		--text-red-700: #b91c1c;
+		--text-lime-800: #3f6212;
+		--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+		--shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+		--chart-grid: #e5e7eb;
+		--chart-text: #4b5563;
+	}
+
+	:root[data-theme="dark"] {
+		--page-bg: #0f172a;
+		--card-bg: #1e293b;
+		--text-primary: #f1f5f9;
+		--text-secondary: #cbd5e1;
+		--text-muted: #94a3b8;
+		--border-color: #334155;
+		--bg-gray-50: #1e293b;
+		--bg-gray-100: #334155;
+		--bg-gray-200: #475569;
+		--bg-teal-50: #0f3936;
+		--bg-red-50: #3f1515;
+		--bg-lime-100: #2d3a1a;
+		--text-teal-800: #99f6e4;
+		--text-teal-700: #5eead4;
+		--text-red-800: #fecaca;
+		--text-red-700: #fca5a5;
+		--text-lime-800: #bef264;
+		--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+		--shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.2);
+		--chart-grid: #475569;
+		--chart-text: #cbd5e1;
+	}
+
+	.text-gray-800 {
+		color: var(--text-primary);
+	}
+	
+	.bg-white {
+		background-color: var(--card-bg);
+	}
+	
+	.bg-gray-50 {
+		background-color: var(--bg-gray-50);
+	}
+	
+	.bg-gray-100 {
+		background-color: var(--bg-gray-100);
+	}
+	
+	.bg-gray-200 {
+		background-color: var(--bg-gray-200);
+	}
+	
+	.bg-teal-50 {
+		background-color: var(--bg-teal-50);
+	}
+	
+	.bg-red-50 {
+		background-color: var(--bg-red-50);
+	}
+	
+	.bg-lime-100 {
+		background-color: var(--bg-lime-100);
+	}
+	
+	.text-gray-900 {
+		color: var(--text-primary);
+	}
+	
+	.text-gray-700 {
+		color: var(--text-secondary);
+	}
+	
+	.text-gray-600 {
+		color: var(--text-muted);
+	}
+	
+	.text-gray-500 {
+		color: var(--text-muted);
+	}
+	
+	.text-teal-800 {
+		color: var(--text-teal-800);
+	}
+	
+	.text-teal-700 {
+		color: var(--text-teal-700);
+	}
+	
+	.text-red-800 {
+		color: var(--text-red-800);
+	}
+	
+	.text-red-700 {
+		color: var(--text-red-700);
+	}
+	
+	.text-lime-800 {
+		color: var(--text-lime-800);
+	}
+	
+	.border,
+	.rounded-lg,
+	.rounded-xl,
+	input,
+	select,
+	textarea {
+		border-color: var(--border-color);
+	}
+	
+	.shadow-lg {
+		box-shadow: var(--shadow-lg);
+	}
+	
+	.shadow-inner {
+		box-shadow: var(--shadow-inner);
+	}
+	
+	.shadow-sm {
+		box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	}
+	
+	:root[data-theme="dark"] .shadow-sm {
+		box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+	}
+
 	.chart-container {
 		position: relative;
 		width: 100%;
@@ -197,11 +340,19 @@ const defaultApiKey = "";
 					class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
 					>回到首页</button
 				>
-				<button
-					id="langToggle"
-					class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
-					>中文</button
-				>
+				<div class="flex gap-2">
+					<button
+						id="themeToggle"
+						class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
+						title="Toggle theme"
+						>🌙</button
+					>
+					<button
+						id="langToggle"
+						class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
+						>中文</button
+					>
+				</div>
 			</div>
 
 			<header class="mb-12 text-center">
@@ -467,6 +618,29 @@ const defaultApiKey = "";
 <script define:vars={{ translations, defaultApiKey }}>
 	// define:vars 将 Astro 脚本区域的变量注入到客户端脚本中
 	document.addEventListener("DOMContentLoaded", (event) => {
+		// --- Theme Management ---
+		const themeToggle = document.getElementById("themeToggle");
+		const root = document.documentElement;
+		
+		// Load saved theme or use system preference
+		const savedTheme = localStorage.getItem("theme");
+		const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+		const initialTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
+		
+		function setTheme(theme) {
+			root.setAttribute("data-theme", theme);
+			localStorage.setItem("theme", theme);
+			themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+		}
+		
+		// Initialize theme
+		setTheme(initialTheme);
+		
+		themeToggle.addEventListener("click", () => {
+			const currentTheme = root.getAttribute("data-theme") || "light";
+			setTheme(currentTheme === "dark" ? "light" : "dark");
+		});
+
 		// --- Chart Helper Functions ---
 		const wrapLabel = (label, maxWidth) => {
 			if (typeof label !== "string" || label.length <= maxWidth) {
