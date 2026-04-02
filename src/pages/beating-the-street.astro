@@ -631,6 +631,12 @@ const defaultApiKey = "";
 			root.setAttribute("data-theme", theme);
 			localStorage.setItem("theme", theme);
 			themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+			
+			// Update the outer #main container background color
+			const mainContainer = document.querySelector("#main");
+			if (mainContainer) {
+				mainContainer.style.backgroundColor = theme === "dark" ? "#0f172a" : "#f8f9fa";
+			}
 		}
 		
 		// Initialize theme
