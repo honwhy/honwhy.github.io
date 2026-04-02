@@ -157,7 +157,7 @@ const defaultApiKey = "";
 	:global(footer) {
 		display: none !important;
 	}
-	
+
 	/* Color Variables for Light/Dark Mode */
 	:root {
 		--page-bg: #f8f9fa;
@@ -210,71 +210,71 @@ const defaultApiKey = "";
 	.text-gray-800 {
 		color: var(--text-primary);
 	}
-	
+
 	.bg-white {
 		background-color: var(--card-bg);
 	}
-	
+
 	.bg-gray-50 {
 		background-color: var(--bg-gray-50);
 	}
-	
+
 	.bg-gray-100 {
 		background-color: var(--bg-gray-100);
 	}
-	
+
 	.bg-gray-200 {
 		background-color: var(--bg-gray-200);
 	}
-	
+
 	.bg-teal-50 {
 		background-color: var(--bg-teal-50);
 	}
-	
+
 	.bg-red-50 {
 		background-color: var(--bg-red-50);
 	}
-	
+
 	.bg-lime-100 {
 		background-color: var(--bg-lime-100);
 	}
-	
+
 	.text-gray-900 {
 		color: var(--text-primary);
 	}
-	
+
 	.text-gray-700 {
 		color: var(--text-secondary);
 	}
-	
+
 	.text-gray-600 {
 		color: var(--text-muted);
 	}
-	
+
 	.text-gray-500 {
 		color: var(--text-muted);
 	}
-	
+
 	.text-teal-800 {
 		color: var(--text-teal-800);
 	}
-	
+
 	.text-teal-700 {
 		color: var(--text-teal-700);
 	}
-	
+
 	.text-red-800 {
 		color: var(--text-red-800);
 	}
-	
+
 	.text-red-700 {
 		color: var(--text-red-700);
 	}
-	
+
 	.text-lime-800 {
 		color: var(--text-lime-800);
 	}
-	
+
 	.border,
 	.rounded-lg,
 	.rounded-xl,
@@ -283,19 +283,19 @@ const defaultApiKey = "";
 	textarea {
 		border-color: var(--border-color);
 	}
-	
+
 	.shadow-lg {
 		box-shadow: var(--shadow-lg);
 	}
-	
+
 	.shadow-inner {
 		box-shadow: var(--shadow-inner);
 	}
-	
+
 	.shadow-sm {
 		box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 	}
-	
+
 	:root[data-theme="dark"] .shadow-sm {
 		box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.2);
 	}
@@ -344,8 +344,7 @@ const defaultApiKey = "";
 					<button
 						id="themeToggle"
 						class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-300"
-						title="Toggle theme"
-						>🌙</button
+						title="Toggle theme">🌙</button
 					>
 					<button
 						id="langToggle"
@@ -621,27 +620,27 @@ const defaultApiKey = "";
 		// --- Theme Management ---
 		const themeToggle = document.getElementById("themeToggle");
 		const root = document.documentElement;
-		
+
 		// Load saved theme or use system preference
 		const savedTheme = localStorage.getItem("theme");
 		const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 		const initialTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
-		
+
 		function setTheme(theme) {
 			root.setAttribute("data-theme", theme);
 			localStorage.setItem("theme", theme);
 			themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
-			
+
 			// Update the outer #main container background color
 			const mainContainer = document.querySelector("#main");
 			if (mainContainer) {
 				mainContainer.style.backgroundColor = theme === "dark" ? "#0f172a" : "#f8f9fa";
 			}
 		}
-		
+
 		// Initialize theme
 		setTheme(initialTheme);
-		
+
 		themeToggle.addEventListener("click", () => {
 			const currentTheme = root.getAttribute("data-theme") || "light";
 			setTheme(currentTheme === "dark" ? "light" : "dark");
@@ -813,13 +812,22 @@ const defaultApiKey = "";
 			outputDiv.textContent = "";
 
 			const systemPrompt =
-				"你是一位经验丰富的金融分析师，专门研究彼得·林奇的投资理念。根据用户提供的公司或商业想法，用中文进行简洁的分析。请重点说明这个想法是否符合林奇的“平淡无奇”或“热门”股票标准，并简要解释原因。";
+				"你是一位经验丰富的金融分析师，专门研究彼得·林奇的投资理念。根据用户提供的公司或商业想法，用中文进行简洁的分析。请重点说明这个想法是否符合林奇的【平淡无奇】或【热门】股票标准，并简要解释原因。";
 			const userQuery = `分析以下公司或想法：${input}`;
-			const apiUrl = `https://gemini.honwhy.wang/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+			const apiUrl = `https://gemini.honwhy.wang/v1beta/openai/chat/completions?key=${apiKey}`;
 
 			const payload = {
-				contents: [{ parts: [{ text: userQuery }] }],
-				systemInstruction: { parts: [{ text: systemPrompt }] },
+				model: selectedModel,
+				messages: [
+					{
+						role: "system",
+						content: systemPrompt,
+					},
+					{
+						role: "user",
+						content: userQuery,
+					},
+				],
 			};
 
 			try {
@@ -830,10 +838,9 @@ const defaultApiKey = "";
 				});
 
 				const result = await response.json();
-				const candidate = result.candidates?.[0];
 
-				if (candidate && candidate.content?.parts?.[0]?.text) {
-					const text = candidate.content.parts[0].text;
+				if (result.choices && result.choices.length > 0 && result.choices[0].message?.content) {
+					const text = result.choices[0].message.content;
 					outputDiv.innerHTML = marked.parse(text);
 				} else {
 					outputDiv.textContent =
