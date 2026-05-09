@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章阅读</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #1a1a1a;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f5f5f5;
+            border-radius: 32px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            background: #fff;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .article-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 20px;
+        }
+
+        .article-content {
+            padding: 20px;
+            background: #fff;
+        }
+
+        .article-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .author-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-right: 12px;
+        }
+
+        .author-details {
+            flex: 1;
+        }
+
+        .author-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .publish-time {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .article-body {
+            font-size: 16px;
+            line-height: 1.9;
+            color: #333;
+            text-align: justify;
+        }
+
+        .article-body p {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .highlight-underline {
+            border-bottom: 2px solid #e74c3c;
+        }
+
+        .highlight-bg {
+            background: rgba(231, 76, 60, 0.2);
+            border-radius: 2px;
+            padding: 1px 0;
+        }
+
+        .tool-popup {
+            position: fixed;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.25s ease;
+            pointer-events: none;
+        }
+
+        .tool-popup.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .tool-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #f8f8f8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .tool-btn:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .tool-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #333;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .action-popup {
+            position: fixed;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+            padding: 16px 20px;
+            display: flex;
+            gap: 24px;
+            z-index: 1001;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.25s ease;
+            pointer-events: none;
+        }
+
+        .action-popup.show {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            min-width: 48px;
+        }
+
+        .action-item:active {
+            transform: scale(0.95);
+        }
+
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .action-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: #666;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .action-item.active .action-icon {
+            background: #e74c3c;
+        }
+
+        .action-item.active .action-icon svg {
+            stroke: #fff;
+        }
+
+        .action-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .comments-section {
+            background: #fff;
+            padding: 16px 20px;
+            border-top: 8px solid #f5f5f5;
+        }
+
+        .comments-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .comments-title::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: #e74c3c;
+            border-radius: 2px;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            flex-shrink: 0;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .comment-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-right: 8px;
+        }
+
+        .comment-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .comment-likes {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .comment-likes svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .bottom-toolbar {
+            background: #fff;
+            padding: 12px 20px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom, 20px));
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .toolbar-top {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 12px;
+        }
+
+        .toolbar-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-item:hover {
+            background: #f5f5f5;
+        }
+
+        .toolbar-item svg {
+            width: 18px;
+            height: 18px;
+            stroke: #666;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .toolbar-item span {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .toolbar-item.liked span,
+        .toolbar-item.liked svg {
+            color: #e74c3c;
+            stroke: #e74c3c;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 24px;
+            padding: 10px 16px;
+        }
+
+        .input-wrapper svg {
+            width: 18px;
+            height: 18px;
+            stroke: #999;
+            fill: none;
+            stroke-width: 2;
+            margin-right: 10px;
+        }
+
+        .comment-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+        }
+
+        .comment-input::placeholder {
+            color: #999;
+        }
+
+        .share-panel {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            width: 375px;
+            max-width: 100%;
+            background: #fff;
+            border-radius: 24px 24px 0 0;
+            padding: 24px 20px;
+            padding-bottom: calc(24px + env(safe-area-inset-bottom, 20px));
+            z-index: 2000;
+            transition: transform 0.35s cubic-bezier(0.32, 1, 0.23, 1);
+        }
+
+        .share-panel.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .share-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .share-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .share-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .share-users {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .share-user {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .share-user:active {
+            transform: scale(0.95);
+        }
+
+        .share-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .share-name {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 16px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            z-index: 3000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .selection {
+            background: rgba(231, 76, 60, 0.15);
+            border-radius: 2px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>100%</span>
+            </div>
+
+            <div class="article-container">
+                <div class="article-content">
+                    <h1 class="article-title">在细微处发现生活的美好</h1>
+
+                    <div class="author-info">
+                        <div class="author-avatar"></div>
+                        <div class="author-details">
+                            <div class="author-name">林间小溪</div>
+                            <div class="publish-time">2024年1月15日</div>
+                        </div>
+                    </div>
+
+                    <div class="article-body" id="articleBody">
+                        <p>清晨的阳光总是那么温柔，它不紧不慢地穿过窗帘的缝隙，在地板上投下细碎的光斑。我常常想，也许生活就是这样，不需要轰轰烈烈的壮举，而是在这些看似微不足道的细节里，蕴藏着最真实的幸福。</p>
+
+                        <p>走在上班的路上，偶然遇到一只在草地上嬉戏的小狗，它无忧无虑的样子让人心生羡慕。我们总是为未来焦虑，为过去懊恼，却很少好好珍惜当下的时光。也许，我们该向这些简单的小生命学习，活在当下，享受每一刻。</p>
+
+                        <p>工作中偶尔的空闲，我会泡一杯热茶，站在窗边发呆。蒸汽缓缓上升，在阳光下若隐若现，这时候我会想，所谓的岁月静好，大抵就是这幅模样吧。不必追求过多的物质，只需一颗懂得欣赏的心。</p>
+
+                        <p>傍晚时分，夕阳把天空染成了橘红色，路边的银杏树在风中轻轻摇曳，树叶像金色的蝴蝶在空中飞舞。这一刻，所有的疲惫仿佛都被治愈了。我举起手机，想把这份美好记录下来，却发现，最美的风景往往在心底。</p>
+
+                        <p>生活不需要太多的装饰，简单就好。一顿热腾腾的饭菜，一本有趣的书，一场朋友间的闲聊，这些都是平淡生活中的小确幸。愿我们都能在繁忙的生活中，保留一颗感受美好的心。</p>
+                    </div>
+                </div>
+
+                <div class="comments-section">
+                    <div class="comments-title">热门评论</div>
+                    <div class="comment-item">
+                        <div class="comment-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-name">星光点点</span>
+                                <span class="comment-time">2小时前</span>
+                            </div>
+                            <div class="comment-text">这篇文章写得太好了，让我感受到了生活的美好</div>
+                            <div class="comment-likes">
+                                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                <span>128</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <div class="comment-avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-name">暖阳如初</span>
+                                <span class="comment-time">5小时前</span>
+                            </div>
+                            <div class="comment-text">很有共鸣，现在的生活节奏太快，确实需要慢下来</div>
+                            <div class="comment-likes">
+                                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                <span>86</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-toolbar">
+                <div class="toolbar-top">
+                    <div class="toolbar-item" id="likeBtn">
+                        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        <span id="likeCount">1.2w</span>
+                    </div>
+                    <div class="toolbar-item" id="commentBtn">
+                        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <span>328</span>
+                    </div>
+                    <div class="toolbar-item" id="shareBtn">
+                        <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        <span>分享</span>
+                    </div>
+                </div>
+                <div class="input-wrapper" id="inputWrapper">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <input type="text" class="comment-input" placeholder="写下你的评论..." id="commentInput">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tool-popup" id="toolPopup">
+        <button class="tool-btn" id="underlineBtn" title="下划线">
+            <svg viewBox="0 0 24 24"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path><line x1="4" y1="21" x2="20" y2="21"></line></svg>
+        </button>
+        <button class="tool-btn" id="highlightBtn" title="高亮">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+        </button>
+    </div>
+
+    <div class="action-popup" id="actionPopup">
+        <div class="action-item" id="actionLike">
+            <div class="action-icon">
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </div>
+            <span class="action-label">点赞</span>
+        </div>
+        <div class="action-item" id="actionComment">
+            <div class="action-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <span class="action-label">评论</span>
+        </div>
+        <div class="action-item" id="actionShare">
+            <div class="action-icon">
+                <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </div>
+            <span class="action-label">分享</span>
+        </div>
+    </div>
+
+    <div class="share-overlay" id="shareOverlay"></div>
+    <div class="share-panel" id="sharePanel">
+        <div class="share-title">分享给好友</div>
+        <div class="share-users">
+            <div class="share-user" data-name="小明">
+                <div class="share-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                <span class="share-name">小明</span>
+            </div>
+            <div class="share-user" data-name="小红">
+                <div class="share-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                <span class="share-name">小红</span>
+            </div>
+            <div class="share-user" data-name="大白">
+                <div class="share-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                <span class="share-name">大白</span>
+            </div>
+            <div class="share-user" data-name="小绿">
+                <div class="share-avatar" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                <span class="share-name">小绿</span>
+            </div>
+            <div class="share-user" data-name="阿黄">
+                <div class="share-avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+                <span class="share-name">阿黄</span>
+            </div>
+            <div class="share-user" data-name="小紫">
+                <div class="share-avatar" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);"></div>
+                <span class="share-name">小紫</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const articleBody = document.getElementById('articleBody');
+        const toolPopup = document.getElementById('toolPopup');
+        const actionPopup = document.getElementById('actionPopup');
+        const sharePanel = document.getElementById('sharePanel');
+        const shareOverlay = document.getElementById('shareOverlay');
+        const toast = document.getElementById('toast');
+        const commentInput = document.getElementById('commentInput');
+        const likeBtn = document.getElementById('likeBtn');
+        const likeCount = document.getElementById('likeCount');
+
+        let currentSelection = null;
+        let selectedElement = null;
+        let likeCountNum = 12000;
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        function showSharePanel() {
+            sharePanel.classList.add('show');
+            shareOverlay.classList.add('show');
+        }
+
+        function hideSharePanel() {
+            sharePanel.classList.remove('show');
+            shareOverlay.classList.remove('show');
+        }
+
+        shareOverlay.addEventListener('click', hideSharePanel);
+
+        articleBody.addEventListener('mouseup', function(e) {
+            setTimeout(() => {
+                const selection = window.getSelection();
+                if (selection && selection.toString().trim().length > 0) {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+
+                    currentSelection = selection;
+
+                    toolPopup.style.left = rect.left + rect.width / 2 - 60 + 'px';
+                    toolPopup.style.top = rect.bottom + 12 + 'px';
+                    toolPopup.classList.add('show');
+
+                    actionPopup.classList.remove('show');
+                } else {
+                    if (!e.target.closest('.action-popup')) {
+                        toolPopup.classList.remove('show');
+                    }
+                }
+            }, 10);
+        });
+
+        document.addEventListener('mousedown', function(e) {
+            if (!toolPopup.contains(e.target) && !e.target.closest('.article-body')) {
+                toolPopup.classList.remove('show');
+            }
+        });
+
+        document.getElementById('underlineBtn').addEventListener('click', function() {
+            if (currentSelection && currentSelection.toString().trim().length > 0) {
+                const span = document.createElement('span');
+                span.className = 'highlight-underline';
+                span.textContent = currentSelection.toString();
+
+                const range = currentSelection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(span);
+
+                span.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showActionPopup(span);
+                });
+
+                currentSelection.removeAllRanges();
+                toolPopup.classList.remove('show');
+            }
+        });
+
+        document.getElementById('highlightBtn').addEventListener('click', function() {
+            if (currentSelection && currentSelection.toString().trim().length > 0) {
+                const span = document.createElement('span');
+                span.className = 'highlight-bg';
+                span.textContent = currentSelection.toString();
+
+                const range = currentSelection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(span);
+
+                span.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showActionPopup(span);
+                });
+
+                currentSelection.removeAllRanges();
+                toolPopup.classList.remove('show');
+            }
+        });
+
+        function showActionPopup(element) {
+            selectedElement = element;
+            const rect = element.getBoundingClientRect();
+
+            actionPopup.style.left = rect.left + rect.width / 2 - 90 + 'px';
+            actionPopup.style.top = rect.top - 70 + 'px';
+            actionPopup.classList.add('show');
+        }
+
+        document.getElementById('actionLike').addEventListener('click', function() {
+            this.classList.toggle('active');
+            if (this.classList.contains('active')) {
+                showToast('点赞成功 ❤️');
+            }
+            actionPopup.classList.remove('show');
+        });
+
+        document.getElementById('actionComment').addEventListener('click', function() {
+            showToast('评论已送达');
+            actionPopup.classList.remove('show');
+
+            setTimeout(() => {
+                document.querySelector('.article-container').scrollTo({
+                    top: document.querySelector('.article-container').scrollHeight,
+                    behavior: 'smooth'
+                });
+                commentInput.focus();
+            }, 300);
+        });
+
+        document.getElementById('actionShare').addEventListener('click', function() {
+            actionPopup.classList.remove('show');
+            showSharePanel();
+        });
+
+        document.querySelectorAll('.share-user').forEach(user => {
+            user.addEventListener('click', function() {
+                const name = this.dataset.name;
+                hideSharePanel();
+                showToast(`已分享给 ${name}`);
+            });
+        });
+
+        likeBtn.addEventListener('click', function() {
+            this.classList.toggle('liked');
+            if (this.classList.contains('liked')) {
+                likeCountNum += 1;
+                showToast('点赞成功 ❤️');
+            } else {
+                likeCountNum -= 1;
+            }
+            likeCount.textContent = likeCountNum >= 10000 ? (likeCountNum / 10000).toFixed(1) + 'w' : likeCountNum;
+        });
+
+        document.getElementById('commentBtn').addEventListener('click', function() {
+            document.querySelector('.article-container').scrollTo({
+                top: document.querySelector('.article-container').scrollHeight,
+                behavior: 'smooth'
+            });
+            setTimeout(() => {
+                commentInput.focus();
+            }, 500);
+        });
+
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            showSharePanel();
+        });
+
+        commentInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                showToast('评论发布成功');
+                this.value = '';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!actionPopup.contains(e.target) && !e.target.closest('.highlight-underline') && !e.target.closest('.highlight-bg')) {
+                actionPopup.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
