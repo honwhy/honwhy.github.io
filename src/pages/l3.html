@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前端专家架构师 · 在线模拟试卷（10 套精选题库）</title>
+<meta name="description" content="覆盖 Vue3 / React / 构建工具 / 浏览器原理 / 性能体系 / 架构深度共 10 套、300 道前端专家架构师模拟题，支持在线作答、自动判分与逐题解析。">
+<style>
+:root{
+  --brand:#4f46e5; --brand2:#7c3aed;
+  --ok:#16a34a; --ok-soft:rgba(22,163,74,.12);
+  --bad:#e11d48; --bad-soft:rgba(225,29,72,.1);
+  --warn:#d97706;
+  --c-a:#4f46e5; --c-a-bg:#eef2ff;
+  --c-b:#0284c7; --c-b-bg:#e0f2fe;
+  --c-c:#b45309; --c-c-bg:#fef3c7;
+  --c-d:#e11d48; --c-d-bg:#ffe4e6;
+}
+html[data-theme="light"]{
+  --bg:#eef1f8; --bg-deco:#e3e8f6;
+  --surface:#ffffff; --surface-2:#f6f7fc; --surface-3:#eef0f8;
+  --ink:#1b2140; --ink-2:#5a6278; --ink-3:#9aa1b6;
+  --line:#e4e7f1; --line-2:#d5d9e8;
+  --shadow:0 1px 2px rgba(24,31,70,.05),0 10px 30px -12px rgba(24,31,70,.18);
+  --shadow-lg:0 18px 50px -20px rgba(24,31,70,.28);
+  --glass:rgba(255,255,255,.85);
+}
+html[data-theme="dark"]{
+  --bg:#0d1020; --bg-deco:#151932;
+  --surface:#171a2d; --surface-2:#1d2138; --surface-3:#232845;
+  --ink:#eef0fa; --ink-2:#a7adc6; --ink-3:#6b7191;
+  --line:#282d48; --line-2:#363c5e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 34px -14px rgba(0,0,0,.55);
+  --shadow-lg:0 20px 55px -22px rgba(0,0,0,.7);
+  --glass:rgba(23,26,45,.82);
+  --c-a:#a5b4fc; --c-a-bg:rgba(99,102,241,.16);
+  --c-b:#7dd3fc; --c-b-bg:rgba(14,165,233,.16);
+  --c-c:#fcd34d; --c-c-bg:rgba(245,158,11,.15);
+  --c-d:#fda4af; --c-d-bg:rgba(244,63,94,.15);
+  --ok-soft:rgba(34,197,94,.14);
+  --bad-soft:rgba(244,63,94,.14);
+  color-scheme:dark;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  background:var(--bg); color:var(--ink);
+  min-height:100vh; line-height:1.6; letter-spacing:.01em;
+  background-image:radial-gradient(1100px 500px at 8% -8%,var(--bg-deco),transparent 60%),
+                   radial-gradient(900px 480px at 100% 0%,var(--bg-deco),transparent 55%);
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(99,102,241,.28)}
+button{font-family:inherit;cursor:pointer}
+a{color:inherit}
+*::-webkit-scrollbar{width:10px;height:8px}
+*::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-track{background:transparent}
+
+/* header */
+.sitehead{position:relative;overflow:hidden;
+  background:linear-gradient(118deg,#10122f 0%,#1f1a55 44%,#47287f 100%);color:#fff}
+.sitehead::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(460px 280px at 10% -50%,rgba(255,255,255,.16),transparent 70%),
+             radial-gradient(540px 340px at 94% 140%,rgba(167,139,250,.32),transparent 70%)}
+.sitehead .in{position:relative;max-width:1200px;margin:0 auto;padding:32px 26px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.brand{display:flex;gap:16px;align-items:center}
+.logo{width:54px;height:54px;border-radius:16px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 22px -10px rgba(0,0,0,.5);
+  font-family:Georgia,"Songti SC",serif;font-weight:700;font-size:27px;color:#fff}
+.brand h1{font-size:21px;font-weight:800;letter-spacing:.02em;line-height:1.3}
+.brand h1 b{background:linear-gradient(90deg,#c7d2fe,#ecd9ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{margin-top:4px;font-size:12.5px;color:rgba(255,255,255,.64);letter-spacing:.04em}
+.iconbtn{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);
+  color:#fff;font-size:17px;display:grid;place-items:center;transition:.2s}
+.iconbtn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
+.theme-ico .sun{display:none}
+html[data-theme="dark"] .theme-ico .sun{display:inline}
+html[data-theme="dark"] .theme-ico .moon{display:none}
+
+/* sticky paper tabs */
+.tabsbar{position:sticky;top:0;z-index:60;
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line)}
+.tabsbar .in{max-width:1200px;margin:0 auto;padding:10px 26px;display:flex;gap:8px;align-items:center;
+  overflow-x:auto;scrollbar-width:none}
+.tabsbar .in::-webkit-scrollbar{display:none}
+.tabbtn{flex:none;display:flex;align-items:center;gap:8px;padding:8px 13px;border-radius:11px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-2);
+  font-size:13.5px;font-weight:600;transition:.18s}
+.tabbtn:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-1px)}
+.tabbtn .no{font-family:Georgia,serif;font-weight:700;font-size:13px;color:var(--ink-3)}
+.tabbtn.active{background:linear-gradient(135deg,var(--brand),var(--brand2));border-color:transparent;color:#fff;
+  box-shadow:0 8px 18px -8px rgba(79,70,229,.7)}
+.tabbtn.active .no{color:rgba(255,255,255,.85)}
+.tabbtn .done{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
+
+/* layout */
+.page{max-width:1200px;margin:0 auto;padding:22px 26px 96px;display:grid;
+  grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
+.qcol{min-width:0}
+.byline{font-size:12.5px;color:var(--ink-3);margin:6px 2px 16px;letter-spacing:.03em;line-height:1.8}
+.byline b{color:var(--ink-2)}
+
+.paper-hero{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);
+  border-radius:20px;box-shadow:var(--shadow);padding:22px 24px;margin-bottom:18px}
+.paper-hero::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--brand),var(--brand2),#d946ef)}
+.kicker{font-size:11.5px;font-weight:800;letter-spacing:.22em;color:var(--brand);text-transform:uppercase}
+.paper-hero h2{margin-top:8px;font-size:23px;font-weight:800;letter-spacing:.01em}
+.paper-hero h2 em{font-style:normal;font-family:Georgia,"Songti SC",serif;color:var(--brand)}
+.paper-hero .sub{margin-top:6px;color:var(--ink-2);font-size:13.5px;line-height:1.8}
+.hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.mstat{font-size:12.5px;font-weight:600;color:var(--ink-2);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.mstat .dg{color:var(--brand);font-weight:800;font-family:Georgia,serif}
+.hintline{margin-top:12px;font-size:12.5px;color:var(--ink-3);display:flex;gap:16px;flex-wrap:wrap}
+.hintline .dotchip{display:inline-flex;align-items:center;gap:6px}
+.hintline .dotchip i{width:8px;height:8px;border-radius:50%;background:var(--brand)}
+
+/* questions */
+.part-band{display:flex;align-items:center;gap:14px;margin:26px 0 16px}
+.part-band .bar{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.part-band .pill{flex:none;border:1px solid var(--line-2);background:var(--surface);border-radius:10px;
+  padding:7px 13px;display:inline-flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700}
+.part-band .pill b{color:var(--brand)}
+.part-band .pill span{color:var(--ink-3);font-weight:600}
+
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);padding:20px 22px 18px;margin-bottom:16px;scroll-margin-top:96px;
+  transition:box-shadow .25s;position:relative;animation:rise .45s ease both}
+.qcard:hover{box-shadow:var(--shadow-lg)}
+.qcard.is-current{box-shadow:0 0 0 2px var(--brand),var(--shadow-lg)}
+.qcard.bad{border-color:rgba(225,29,72,.45)}
+.qcard.good{border-color:rgba(22,163,74,.45)}
+.q-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.qtags{display:flex;align-items:center;gap:10px}
+.schip{font-size:11.5px;font-weight:800;letter-spacing:.04em;border-radius:7px;padding:3px 9px}
+.schip.single{color:var(--brand);background:var(--c-a-bg)}
+.schip.multiple{color:var(--c-c);background:var(--c-c-bg)}
+.qno{font-family:Georgia,"Songti SC",serif;font-weight:700;font-size:16px;color:var(--ink);
+  display:inline-flex;align-items:baseline}
+.qno small{font-size:11px;color:var(--ink-3);margin-right:2px;font-family:inherit}
+.qstate{font-size:12px;font-weight:700;border-radius:999px;padding:3px 11px;flex:none}
+.qstate.s-none{color:var(--ink-3);background:var(--surface-3)}
+.qstate.s-answered{color:var(--brand);background:var(--c-a-bg)}
+.qstate.s-right{color:var(--ok);background:var(--ok-soft)}
+.qstate.s-wrong{color:var(--bad);background:var(--bad-soft)}
+.q-text{font-size:15.5px;font-weight:550;line-height:1.78;color:var(--ink);margin-bottom:14px}
+.q-text code,.opt .txt code{background:var(--surface-3);border:1px solid var(--line);border-radius:5px;
+  padding:.5px 6px;font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;font-size:13px;color:#6d5bd0}
+html[data-theme="dark"] .q-text code,html[data-theme="dark"] .opt .txt code{color:#c4b5fd}
+
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+  border:1.5px solid var(--line);background:var(--surface);border-radius:13px;padding:11px 14px;
+  transition:.16s;font-size:14.5px;line-height:1.66;color:var(--ink)}
+.opt:hover{border-color:var(--line-2);background:var(--surface-2);transform:translateX(2px)}
+.opt .oval{flex:none;width:27px;height:27px;border-radius:9px;display:grid;place-items:center;
+  font-weight:800;font-size:13px;font-family:Georgia,serif;margin-top:1px;transition:.16s}
+.opt .oval.a{background:var(--c-a-bg);color:var(--c-a)}
+.opt .oval.b{background:var(--c-b-bg);color:var(--c-b)}
+.opt .oval.c{background:var(--c-c-bg);color:var(--c-c)}
+.opt .oval.d{background:var(--c-d-bg);color:var(--c-d)}
+.opt .oval.plain{background:var(--surface-3);color:var(--ink-3)}
+.opt .txt{flex:1}
+.opt .mark{flex:none;width:20px;font-size:15px;font-weight:800;margin-top:2px;display:grid;place-items:center;
+  opacity:0;transform:scale(.4);transition:.15s}
+.opt.selected{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 6%,var(--surface));
+  box-shadow:0 6px 16px -10px var(--brand)}
+.opt.selected .oval{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;box-shadow:0 4px 10px -4px var(--brand)}
+.opt.selected .mark{opacity:1;transform:none;color:var(--brand);content:"✓"}
+.qcard.locked .opt{cursor:default}
+.qcard.locked .opt:hover{transform:none;background:var(--surface)}
+.qcard.locked .opt.st-correct:hover{background:var(--ok-soft)}
+.qcard.locked .opt.st-wrong:hover{background:var(--bad-soft)}
+.qcard.locked .opt.st-miss:hover{background:transparent}
+.opt.st-correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.st-correct .oval{background:var(--ok);color:#fff;box-shadow:0 4px 10px -4px var(--ok)}
+.opt.st-correct .mark{opacity:1;transform:none;color:var(--ok)}
+.opt.st-wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.st-wrong .oval{background:var(--bad);color:#fff;box-shadow:0 4px 10px -4px var(--bad)}
+.opt.st-wrong .mark{opacity:1;transform:none;color:var(--bad)}
+.opt.st-miss{border-color:var(--ok);border-style:dashed;background:transparent}
+.opt.st-miss .oval{background:transparent;color:var(--ok);box-shadow:inset 0 0 0 1.5px var(--ok)}
+.opt.st-miss .mark{opacity:1;transform:none;color:var(--ok);width:auto;font-size:11.5px;font-weight:700}
+
+.q-explain{margin-top:16px;border-top:1px dashed var(--line-2);padding-top:14px;animation:fadein .3s}
+.q-explain.hidden{display:none}
+.ex-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.ex-title{font-size:12.5px;font-weight:800;color:var(--brand);letter-spacing:.12em;display:flex;align-items:center;gap:7px}
+.ex-title::before{content:"";width:14px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+.ex-keys{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
+.ex-keys .klab{font-weight:600}
+.kpill{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:8px;
+  background:var(--ok-soft);color:var(--ok);font-weight:800;font-family:Georgia,serif;font-size:14px;
+  border:1px solid rgba(22,163,74,.35)}
+.ex-text{font-size:13.5px;line-height:1.9;color:var(--ink-2);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.ex-text code{background:var(--surface-3);border:1px solid var(--line);border-radius:4px;
+  padding:0 5px;font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12.5px;color:#6d5bd0}
+html[data-theme="dark"] .ex-text code{color:#c4b5fd}
+
+/* result hero */
+.res-top{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.ringwrap{position:relative;flex:none}
+.ringwrap svg{transform:rotate(-90deg);display:block}
+.ring-bg{stroke:var(--surface-3)}
+.ring-fg{stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
+.ring-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring-num b{font-size:32px;font-weight:800;font-family:Georgia,serif;color:var(--ink);line-height:1}
+.ring-num span{font-size:11px;color:var(--ink-3);display:block;margin-top:3px;letter-spacing:.08em}
+.res-stats{display:flex;gap:10px;flex-wrap:wrap;flex:1}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:10px 20px;min-width:88px}
+.stat b{display:block;font-size:21px;font-weight:800;font-family:Georgia,serif;line-height:1.2}
+.stat span{font-size:11.5px;color:var(--ink-3);letter-spacing:.05em}
+.stat.ok b{color:var(--ok)}.stat.bad b{color:var(--bad)}.stat.gain b{color:var(--brand)}
+.res-note{margin-top:14px;font-size:12.5px;color:var(--ink-3);line-height:1.8;
+  border-top:1px dashed var(--line);padding-top:12px}
+.res-note b{color:var(--ink-2)}
+.wronglist{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wronglist .wlab{font-size:12px;color:var(--ink-3);margin-right:2px}
+.wchip{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:12.5px;font-weight:700;
+  background:var(--bad-soft);color:var(--bad);cursor:pointer;border:1px solid rgba(225,29,72,.25);transition:.15s}
+.wchip:hover{transform:translateY(-2px);box-shadow:0 6px 14px -8px var(--bad)}
+
+/* sidebar */
+.sidebar{position:sticky;top:88px;display:flex;flex-direction:column;gap:16px}
+.score-panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+  padding:16px 18px;display:flex;align-items:center;gap:14px}
+.sp-num{flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--brand) calc(var(--p,0)*1%),var(--surface-3) 0);position:relative}
+.sp-num::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--surface)}
+.sp-num b{position:relative;font-family:Georgia,serif;font-size:19px;font-weight:800;color:var(--brand);line-height:1}
+.sp-num b i{font-style:normal;font-size:11px;color:var(--ink-3)}
+.sp-txt{flex:1}
+.sp-txt b{font-size:14px;display:block;line-height:1.3}
+.sp-txt span{font-size:12px;color:var(--ink-3)}
+.grade-badge{font-size:11px;font-weight:800;color:var(--ok);letter-spacing:.08em;border-radius:999px;
+  background:var(--ok-soft);padding:3px 9px;flex:none}
+.grade-badge.ing{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.sheet .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:15px 18px 12px;border-bottom:1px solid var(--line)}
+.sheet .sheet-head h3{font-size:14.5px;font-weight:800;display:flex;align-items:center;gap:9px}
+.sheet .sheet-head h3 .ico{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;font-size:13px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+.sheet .answered{font-size:12px;color:var(--ink-3);font-weight:600}
+.sheet .answered b{color:var(--brand);font-family:Georgia,serif;font-size:15px}
+.sheet-body{padding:14px 16px}
+.grid30{display:grid;grid-template-columns:repeat(10,1fr);gap:7px}
+.cell{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--line-2);background:var(--surface);
+  display:grid;place-items:center;font-size:11.5px;font-weight:700;color:var(--ink-3);
+  font-family:Georgia,serif;transition:.13s;cursor:pointer}
+.cell:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-1px)}
+.cell.fill{border-color:transparent;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+  box-shadow:0 4px 10px -5px var(--brand)}
+.cell.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.cell.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.cell.skip{border-style:dashed;color:var(--ink-3);opacity:.8}
+.legend{display:flex;gap:12px;flex-wrap:wrap;padding:10px 18px 13px;border-top:1px solid var(--line);
+  font-size:11.5px;color:var(--ink-3)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3.5px;flex:none}
+.legend i.c1{background:linear-gradient(135deg,var(--brand),var(--brand2))}
+.legend i.c2{background:var(--ok)}
+.legend i.c3{background:var(--bad)}
+.legend i.c4{border:1.5px dashed var(--line-2)}
+.sheet-actions{padding:0 16px 16px;display:flex;flex-direction:column;gap:9px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;
+  font-weight:700;font-size:14px;padding:11px 16px;border:1.5px solid transparent;transition:.16s;line-height:1.2}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+  box-shadow:0 10px 20px -10px var(--brand)}
+.btn-primary:hover{filter:brightness(1.07);box-shadow:0 14px 26px -12px var(--brand)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;filter:none}
+.btn-ghost{border-color:var(--line-2);background:var(--surface);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--bad);color:var(--bad)}
+.btn-soft{border-color:var(--line-2);background:var(--surface-2);color:var(--ink-2)}
+.btn-soft:hover{border-color:var(--brand);color:var(--brand)}
+
+/* mobile dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--line);box-shadow:0 -12px 34px -20px rgba(0,0,0,.45);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+.dock .dock-top{display:flex;align-items:center;gap:10px}
+.dock .d-count{font-size:13px;font-weight:700;color:var(--ink-2);flex:none}
+.dock .d-count b{color:var(--brand);font-family:Georgia,serif}
+.dock .d-actions{display:flex;gap:8px;flex:1;justify-content:flex-end}
+.dock .btn{padding:9px 14px;font-size:13.5px}
+.dock-grid{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding:2px;scrollbar-width:none}
+.dock-grid::-webkit-scrollbar{display:none}
+.dgcell{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:700;
+  font-family:Georgia,serif;color:var(--ink-3);border:1.5px solid var(--line-2);background:var(--surface);cursor:pointer}
+.dgcell.fill{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-color:transparent}
+.dgcell.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.dgcell.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.dgcell.skip{border-style:dashed}
+
+.footer{max-width:1200px;margin:0 auto;padding:26px;text-align:center;color:var(--ink-3);font-size:12.5px;
+  border-top:1px solid var(--line);letter-spacing:.05em}
+.footer b{color:var(--ink-2)}
+
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+@media (max-width:1120px){
+  .page{grid-template-columns:1fr}
+  .sidebar{position:static}
+  .grid30{grid-template-columns:repeat(15,1fr)}
+  .dock{display:block}
+}
+@media (min-width:1121px){ .dock{display:none} }
+@media (max-width:680px){
+  .sitehead .in{padding:22px 18px 20px}
+  .logo{width:46px;height:46px;font-size:22px;border-radius:13px}
+  .brand h1{font-size:17px}
+  .brand p{font-size:11px}
+  .tabsbar .in{padding:8px 14px}
+  .page{padding:16px 14px 132px}
+  .paper-hero{padding:18px 16px}
+  .paper-hero h2{font-size:19px}
+  .qcard{padding:16px 15px 14px;scroll-margin-top:88px}
+  .byline{padding:0 2px}
+  .grid30{grid-template-columns:repeat(10,1fr);gap:6px}
+}
+</style>
+</head>
+<body>
+
+<header class="sitehead">
+  <div class="in">
+    <div class="brand">
+      <div class="logo">F</div>
+      <div>
+        <h1>前端专家 · <b>架构师模拟题库</b></h1>
+        <p>核心原理 × 源码机制 × 架构决策 ｜ 10 套精选模拟试卷 · 300 道深度题</p>
+      </div>
+    </div>
+    <button class="iconbtn theme-ico" id="themeBtn" title="切换深色 / 浅色主题">
+      <span class="moon">&#9789;</span><span class="sun">&#9728;</span>
+    </button>
+  </div>
+</header>
+
+<nav class="tabsbar" aria-label="试卷切换">
+  <div class="in" id="paperTabs"></div>
+</nav>
+
+<main class="page">
+  <div class="qcol">
+    <div class="byline">答题说明：每套含 <b>20 道单选题</b> 与 <b>10 道不定项选择题</b>（多选 / 少选 / 错选均不得分）。作答进度自动保存于本地，可随时切换试卷、交卷判分、复盘解析并重新作答。</div>
+    <div id="qcolWrap"></div>
+  </div>
+
+  <aside class="sidebar" id="sidebar"></aside>
+</main>
+
+<div class="dock" id="dock"></div>
+
+<footer class="footer">已收录 <b>10 套 × 30 题</b> = 300 道前端架构师级考题 ｜ 判分规则：单选与不定项均按「完全正确」计 1 分，满分 30 分</footer>
+
+<noscript><div style="padding:60px;text-align:center;color:#666">本页为交互式试卷，请启用 JavaScript 后使用。</div></noscript>
+
+<script id="quizData" type="application/json">[{"n":1,"title":"模拟试卷 1","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"在 Vue3 的响应式系统中，使用 Proxy 替代 Object.defineProperty 实现响应式，其最核心、最不可替代的优势体现在以下哪个场景？","opts":[{"l":"A","t":"对数组通过下标进行访问和修改时的拦截效率更高"},{"l":"B","t":"能够直接拦截对象属性的新增（add）与删除（delete）操作，而无需预先定义属性"},{"l":"C","t":"对基本类型（string、number 等）的包装对象处理更完善"},{"l":"D","t":"在原型链上查找属性时性能显著优于 defineProperty"}],"key":"B","mode":"single","expl":"Object.defineProperty 只能劫持已经存在的属性，新增或删除属性无法被感知，必须通过 Vue.set / Vue.delete 额外处理。Proxy 可以直接拦截 defineProperty、deleteProperty 等操作，这是最本质的优势。A 虽然 Proxy 对数组也更好，但不是“最核心不可替代”的点。","modeTitle":"单选题"},{"n":2,"text":"React 的 Fiber 架构采用 current 树与 workInProgress 树的双缓冲机制，其最主要的设计目的是什么？","opts":[{"l":"A","t":"通过复用节点大幅降低内存占用"},{"l":"B","t":"支持可中断的渲染过程与基于优先级的调度，使高优先级更新可以打断低优先级更新"},{"l":"C","t":"简化 Diff 算法的实现复杂度"},{"l":"D","t":"加快最终 commit 阶段的 DOM 操作速度"}],"key":"B","mode":"single","expl":"双缓冲的核心价值是让 React 可以在内存中构建新的 Fiber 树（workInProgress），并在任意时刻被高优先级任务打断，然后从断点继续或丢弃，最终一次 commit 到 DOM。这是 Concurrent 特性的基础。","modeTitle":"单选题"},{"n":3,"text":"在浏览器 JavaScript 事件循环（Event Loop）中，microtask 队列（如 Promise.then、queueMicrotask、MutationObserver）的执行时机是怎样的？","opts":[{"l":"A","t":"所有 macrotask 全部执行完毕后，才统一清空一次 microtask 队列"},{"l":"B","t":"每一个 macrotask 执行完成后，会立即清空当前 microtask 队列中的所有任务，然后再执行下一个 macrotask 或进行渲染"},{"l":"C","t":"只在浏览器进行页面渲染之前统一清空一次"},{"l":"D","t":"仅在主线程空闲时（requestIdleCallback）执行"}],"key":"B","mode":"single","expl":"规范明确规定：每执行完一个 macrotask，就会清空 microtask 队列，直到队列为空，然后才会进行渲染或执行下一个 macrotask。这是 Promise 能“插队”的根本原因。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 的条件类型写作 \u003ccode>T extends U ? X : Y\u003c/code>。当 T 是一个联合类型（Union Type）时，编译器会如何处理这个条件类型？","opts":[{"l":"A","t":"将联合类型取交集后再进行判断"},{"l":"B","t":"对联合类型中的每一个成员分别进行条件判断（分配性 / distributive），然后将结果重新组成联合类型"},{"l":"C","t":"直接将整个条件类型收敛为 never"},{"l":"D","t":"编译器会报错，提示无法对联合类型进行条件判断"}],"key":"B","mode":"single","expl":"TypeScript 条件类型对联合类型默认是分布式的（distributive conditional types）。例如 \u003ccode>T extends any ? T[] : never\u003c/code> 当 T 为 \u003ccode>A | B\u003c/code> 时会变成 \u003ccode>A[] | B[]\u003c/code>。","modeTitle":"单选题"},{"n":5,"text":"Vite 在开发服务器启动时会对依赖进行预构建（optimizeDeps），其最核心要解决的问题是什么？","opts":[{"l":"A","t":"减少浏览器发起的 HTTP 请求数量"},{"l":"B","t":"将项目中使用的 CommonJS 或 UMD 格式的依赖转换为 ESM 格式，并进行缓存，避免开发时反复进行格式转换"},{"l":"C","t":"实现生产环境级别的 Tree-shaking"},{"l":"D","t":"为所有依赖生成完整的 SourceMap"}],"key":"B","mode":"single","expl":"浏览器原生 ESM 无法直接处理 CommonJS 依赖。Vite 在首次启动时用 esbuild 把依赖转成 ESM 并缓存到 \u003ccode>node_modules/.vite\u003c/code>，后续直接复用，这是开发启动快的关键。","modeTitle":"单选题"},{"n":6,"text":"Webpack 的 Module Federation（模块联邦）在运行时加载远程模块的核心实现原理是基于什么？","opts":[{"l":"A","t":"传统的 JSONP 回调加载"},{"l":"B","t":"动态 import（dynamic import）结合共享作用域（share scope）来管理远程模块与共享依赖"},{"l":"C","t":"通过 Service Worker 拦截请求并注入模块"},{"l":"D","t":"将远程模块编译为 WebAssembly 后加载"}],"key":"B","mode":"single","expl":"Module Federation 运行时通过 \u003ccode>__webpack_require__.l\u003c/code> 等实现动态加载远程入口，并使用 share scope 解决共享依赖的版本协商问题。","modeTitle":"单选题"},{"n":7,"text":"在 Koa 的中间件洋葱模型（onion model）中，当一个中间件执行到 \u003ccode>await next()\u003c/code> 之后的代码时，其执行时机是？","opts":[{"l":"A","t":"所有后续（下游）中间件全部执行完毕并返回后"},{"l":"B","t":"当前整个请求生命周期结束时"},{"l":"C","t":"下一个中间件即将开始执行之前"},{"l":"D","t":"仅在错误捕获中间件被触发时"}],"key":"A","mode":"single","expl":"洋葱模型的执行顺序是：中间件1前半 → 中间件2前半 → … → 最内层 → 中间件2后半 → 中间件1后半。\u003ccode>await next()\u003c/code> 之后的代码属于“返回”阶段。","modeTitle":"单选题"},{"n":8,"text":"Vue Router 在使用 HTML5 History 模式（mode: 'history'）时，如果浏览器不支持 \u003ccode>history.pushState\u003c/code> API，框架实际的降级策略是什么？","opts":[{"l":"A","t":"自动强制切换为 hash 模式"},{"l":"B","t":"回退到 abstract 模式（内存路由）"},{"l":"C","t":"使用 \u003ccode>location.replace\u003c/code> 模拟路由跳转"},{"l":"D","t":"完全依赖服务端配置，前端不做任何降级"}],"key":"A","mode":"single","expl":"Vue Router 源码中会检测 \u003ccode>supportsPushState\u003c/code>，不支持时自动 fallback 到 hash 模式。","modeTitle":"单选题"},{"n":9,"text":"在 React 的 StrictMode 下（开发环境），\u003ccode>useEffect\u003c/code> 的清理函数（cleanup function）会额外被触发一次的主要原因是？","opts":[{"l":"A","t":"为了模拟组件“挂载 → 卸载 → 再挂载”的过程，帮助开发者发现副作用没有正确清理的问题"},{"l":"B","t":"为了强制所有副作用同步执行，避免异步问题"},{"l":"C","t":"为了更严格地比较依赖数组是否发生变化"},{"l":"D","t":"为了提前触发垃圾回收，降低内存占用"}],"key":"A","mode":"single","expl":"StrictMode 在开发环境会故意双调用 mount → unmount → mount，用于暴露“订阅了但没取消订阅”等副作用问题。","modeTitle":"单选题"},{"n":10,"text":"使用运行时 CSS-in-JS 方案（如 styled-components、emotion 的 runtime 模式）时，最主要的性能瓶颈通常出现在哪个环节？","opts":[{"l":"A","t":"样式规则本身的计算（CSS 解析）"},{"l":"B","t":"大量动态生成的样式导致频繁的 CSSOM 操作，以及样式缓存失效带来的重复计算与插入"},{"l":"C","t":"JavaScript 引擎解析组件代码的速度"},{"l":"D","t":"样式文件的网络请求时间"}],"key":"B","mode":"single","expl":"运行时 CSS-in-JS 的最大问题是每次渲染都可能产生新的 style 标签或修改 CSSOM，导致样式重计算和缓存失效，尤其在大型应用中非常明显。","modeTitle":"单选题"},{"n":11,"text":"Node.js 的 Stream 实现了背压（backpressure）机制。它主要通过什么方式来控制数据的生产与消费速度，防止内存溢出？","opts":[{"l":"A","t":"限制事件监听器（EventEmitter）的最大数量"},{"l":"B","t":"通过 \u003ccode>highWaterMark\u003c/code> 阈值，当缓冲区达到阈值时，\u003ccode>writable.write()\u003c/code> 返回 false，并触发 \u003ccode>drain\u003c/code> 事件，或可读流调用 \u003ccode>pause()\u003c/code> / \u003ccode>resume()\u003c/code>"},{"l":"C","t":"强制所有读写操作变为同步执行"},{"l":"D","t":"使用全局 Buffer 池进行内存复用"}],"key":"B","mode":"single","expl":"这是 Node.js Stream 文档明确描述的背压实现方式。","modeTitle":"单选题"},{"n":12,"text":"Vue3 的模板编译器会把带有 \u003ccode>v-if\u003c/code> / \u003ccode>v-for\u003c/code> 等动态指令的模板编译成带有 Block Tree 的渲染函数。其最核心的目的是什么？","opts":[{"l":"A","t":"单纯减少生成的虚拟 DOM 节点总数量"},{"l":"B","t":"通过 Block Tree + PatchFlags 实现“靶向更新”，在更新时可以跳过大量静态节点的 Diff 比较"},{"l":"C","t":"主要为了支持服务端渲染（SSR）的流式输出"},{"l":"D","t":"简化运行时 Patch 算法的代码量"}],"key":"B","mode":"single","expl":"Block Tree 让 Vue 知道哪些节点是动态的，PatchFlags 进一步标记动态类型，更新时可以跳过静态内容，这是 Vue3 性能提升的核心编译优化。","modeTitle":"单选题"},{"n":13,"text":"React Concurrent 模式中引入的 Lane 模型，相比旧版本的 expirationTime 优先级模型，最主要的改进是什么？","opts":[{"l":"A","t":"使用位掩码（bitmask）表示优先级集合，支持更细粒度的优先级划分，并能更高效地处理批量更新与优先级合并"},{"l":"B","t":"彻底取消了时间切片（Time Slicing）机制"},{"l":"C","t":"强制所有更新都变为同步渲染"},{"l":"D","t":"移除了对 Suspense 的支持"}],"key":"A","mode":"single","expl":"Lane 用 31 位的 bitmask 表示优先级，可以同时表达多个优先级，并进行快速合并与比较，比单一的 expirationTime 数字更灵活。","modeTitle":"单选题"},{"n":14,"text":"Webpack 的 Tree-shaking（摇树优化）要真正生效，最关键、最容易被忽略的前提条件是什么？","opts":[{"l":"A","t":"代码必须使用 ES Module 语法，并且在 package.json 中正确配置 \u003ccode>sideEffects\u003c/code> 字段，告诉打包工具哪些文件是有副作用的"},{"l":"B","t":"只要开启 production mode 就会自动完整生效"},{"l":"C","t":"必须使用 Babel 进行转译"},{"l":"D","t":"必须配置 optimization.splitChunks"}],"key":"A","mode":"single","expl":"没有正确的 \u003ccode>sideEffects\u003c/code> 标记，即使是 ES Module，Webpack 也不敢随意删除代码，因为可能有副作用。","modeTitle":"单选题"},{"n":15,"text":"前端曾经广泛讨论的 HTTP/2 Server Push 功能，在现代浏览器中逐渐被弃用或不再推荐使用的最主要原因是什么？","opts":[{"l":"A","t":"推送的资源与浏览器缓存策略难以协调，容易推送浏览器已经缓存或实际不需要的资源，造成带宽浪费"},{"l":"B","t":"安全性存在重大漏洞"},{"l":"C","t":"该功能只支持 HTTPS，限制了使用场景"},{"l":"D","t":"实现复杂度过高，浏览器厂商不愿维护"}],"key":"A","mode":"single","expl":"Server Push 的最大问题是“推了但浏览器其实已经有缓存”或“推了但页面暂时用不到”，导致浪费。这也是它被 Cache Digest 等方案尝试解决、最终逐渐边缘化的原因。","modeTitle":"单选题"},{"n":16,"text":"Pinia 相比 Vuex 在设计上最核心的差异（也是它对 TypeScript 更友好的原因）是什么？","opts":[{"l":"A","t":"去除了 mutations 的概念，允许直接修改 state（内部通过 Proxy 处理），并提供了更自然的 TypeScript 类型推断"},{"l":"B","t":"强制所有 store 必须使用 class 语法编写"},{"l":"C","t":"底层仍然依赖 Vuex 的兼容层"},{"l":"D","t":"只支持 Composition API，完全不支持 Options API"}],"key":"A","mode":"single","expl":"Pinia 直接修改 state 的设计 + 完善的类型推导，是它对 Vuex 的重大改进。","modeTitle":"单选题"},{"n":17,"text":"在前端开发中，使用 WeakMap 来存储 DOM 节点与其关联数据（例如事件回调、组件实例）时，最核心的优势是什么？","opts":[{"l":"A","t":"WeakMap 的键是弱引用，当 DOM 节点被移除且没有其他强引用时，对应的数据可以被垃圾回收，有效避免内存泄漏"},{"l":"B","t":"WeakMap 支持 for...of 迭代"},{"l":"C","t":"WeakMap 的读写性能显著高于普通 Map"},{"l":"D","t":"WeakMap 可以被 JSON 序列化"}],"key":"A","mode":"single","expl":"这是 WeakMap 在前端最经典的使用场景（例如在库内部关联 DOM 与数据）。","modeTitle":"单选题"},{"n":18,"text":"Vite 的热更新（HMR）能够做到精确边界更新，而不是整页刷新，其最关键的机制是什么？","opts":[{"l":"A","t":"模块通过 \u003ccode>import.meta.hot.accept\u003c/code> 显式声明自己接受哪些更新，从而定义清晰的 HMR 边界"},{"l":"B","t":"仅依赖文件的修改时间戳进行判断"},{"l":"C","t":"通过兼容 Webpack 的 HMR runtime 实现"},{"l":"D","t":"默认对所有模块都进行全局重新加载后再局部替换"}],"key":"A","mode":"single","expl":"Vite 的 HMR 完全依赖模块自己声明 \u003ccode>import.meta.hot.accept\u003c/code>，形成明确的更新边界。","modeTitle":"单选题"},{"n":19,"text":"React 的 Reconciliation（协调）算法在处理列表时，强制要求使用稳定的 key，其本质作用是什么？","opts":[{"l":"A","t":"单纯提高列表的渲染速度"},{"l":"B","t":"帮助 reconciler 准确识别哪些节点是“同一个”节点，从而最大化地复用 DOM，最小化移动、新增和删除操作"},{"l":"C","t":"强制列表中的每个组件在更新时都重新创建"},{"l":"D","t":"优化事件委托的绑定方式"}],"key":"B","mode":"single","expl":"key 的本质是身份标识，让 Diff 算法知道“这是移动”还是“这是删除后新增”。","modeTitle":"单选题"},{"n":20,"text":"在大型前端应用中，使用 Web Worker 将复杂计算移出主线程时，最容易被开发者忽略、却经常成为实际性能瓶颈的点是什么？","opts":[{"l":"A","t":"主线程与 Worker 之间通过 \u003ccode>postMessage\u003c/code> 传递数据时，结构化克隆（structured clone）算法带来的序列化与反序列化开销"},{"l":"B","t":"创建 Worker 线程本身的 CPU 与内存成本"},{"l":"C","t":"Worker 无法使用 SharedArrayBuffer 导致的内存无法共享"},{"l":"D","t":"Worker 内部的调试工具不完善"}],"key":"A","mode":"single","expl":"结构化克隆的开销经常比计算本身还大，尤其是传递大型对象或 TypedArray 时。这也是 SharedArrayBuffer + Atomics 存在的原因。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 响应式系统中 effect、依赖收集（track）与触发更新（trigger）的机制，以下描述正确的有：","opts":[{"l":"A","t":"依赖收集（track）发生在 Proxy 的 get 拦截器中，当 effect 执行时会自动收集当前正在运行的 effect"},{"l":"B","t":"默认情况下 trigger 会同步执行所有相关 effect，但可以通过传入 scheduler 选项将其改为异步执行（如 queueJob）"},{"l":"C","t":"computed 内部实现是一个 lazy 的 effect，只有在被访问时才会执行计算函数"},{"l":"D","t":"当修改数组的 length 属性时，会触发该数组上所有索引位置的依赖"}],"key":"ABC","mode":"multiple","expl":"D 错误。修改 \u003ccode>arr.length = 0\u003c/code> 主要触发 length 依赖，并不会自动触发所有索引的依赖（除非之前访问过那些索引）。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React Fiber 架构中优先级调度与时间切片的正确说法有：","opts":[{"l":"A","t":"高优先级的更新可以中断正在进行的低优先级渲染过程"},{"l":"B","t":"Lane 模型使用位运算（bitmask）来表示一组优先级，便于进行优先级合并与判断"},{"l":"C","t":"时间切片的实现主要依赖 MessageChannel 或 setTimeout 将任务切分到多个宏任务中"},{"l":"D","t":"无论优先级如何，所有更新在最终 commit 阶段都必须同步完成 DOM 操作"}],"key":"ABC","mode":"multiple","expl":"D 错误。低优先级任务被中断后，其之前做的工作可能被丢弃，只有最终 commit 阶段是同步且不可中断的。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 高级类型与类型编程（类型体操）的正确理解有：","opts":[{"l":"A","t":"\u003ccode>infer\u003c/code> 关键字只能出现在条件类型的 \u003ccode>extends\u003c/code> 子句中"},{"l":"B","t":"过深的递归条件类型在某些 TypeScript 版本中会导致编译器性能严重下降甚至报错"},{"l":"C","t":"可以通过 Mapped Types 实现深度只读类型（DeepReadonly）"},{"l":"D","t":"在联合类型中，\u003ccode>never\u003c/code> 类型会被自动剔除（吸收）"}],"key":"ABCD","mode":"multiple","expl":"全部正确。这是 TypeScript 类型系统的基础常识。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Vite 与 Webpack 在开发体验与生产构建上的核心差异，以下正确的有：","opts":[{"l":"A","t":"Vite 开发服务器基于浏览器原生 ESM，冷启动速度极快，几乎不需要打包"},{"l":"B","t":"Webpack 的 HMR 更新粒度通常比 Vite 更精确，更新体积也更小"},{"l":"C","t":"Vite 的生产构建底层默认使用 Rollup"},{"l":"D","t":"目前 Webpack 的 Module Federation 方案在生产环境的成熟度与稳定性整体优于 Vite 的联邦方案"}],"key":"ACD","mode":"multiple","expl":"B 错误。实际上 Vite 的 HMR 通常更快、更精确，因为基于 ESM 的边界更清晰。","modeTitle":"不定项选择题"},{"n":25,"text":"关于 Koa 与 Express 在中间件机制上的主要区别，正确的描述有：","opts":[{"l":"A","t":"Koa 基于 async/await 实现了真正的洋葱模型（从外到内进入，再从内到外返回）"},{"l":"B","t":"Express 的中间件本质上是线性执行的，错误处理需要专门的错误中间件（带 4 个参数）"},{"l":"C","t":"Koa 将请求（req）和响应（res）统一封装到了 ctx 对象中"},{"l":"D","t":"两者在错误的自动传播与捕获机制上完全相同"}],"key":"ABC","mode":"multiple","expl":"D 错误。Koa 的错误会沿着洋葱模型自动向后传播，Express 需要手动 next(err)。","modeTitle":"不定项选择题"},{"n":26,"text":"关于当前主流前端状态管理库（Redux Toolkit、Pinia、Zustand）的架构特点，正确的有：","opts":[{"l":"A","t":"Redux Toolkit 内部默认集成了 Immer，允许开发者以“可变”的写法实现不可变更新"},{"l":"B","t":"Pinia 天然支持定义多个独立的 store，不再需要像 Vuex 那样嵌套 modules"},{"l":"C","t":"Zustand 基于简单的闭包 + 订阅发布模式实现，包体积非常小"},{"l":"D","t":"这三个库都强制开发者遵循严格的单向数据流，并禁止在任何情况下直接修改 state"}],"key":"ABC","mode":"multiple","expl":"D 错误。Zustand 和 Pinia 都允许直接修改 state（内部做了处理），并不强制“禁止直接修改”。","modeTitle":"不定项选择题"},{"n":27,"text":"关于前端虚拟列表（Virtual List / Windowing）的实现要点，正确的有：","opts":[{"l":"A","t":"需要精确计算当前可视区域（viewport）以及上下 buffer 区域，只渲染这部分 DOM"},{"l":"B","t":"当列表项高度不固定（动态高度）时，通常需要维护一个高度缓存或使用预估高度 + 动态测量"},{"l":"C","t":"滚动事件处理中使用 requestAnimationFrame 或 lodash.throttle 可以有效降低计算与渲染频率"},{"l":"D","t":"只有使用 Canvas 绘制才能获得最佳的虚拟列表性能"}],"key":"ABC","mode":"multiple","expl":"D 错误。目前主流虚拟列表都是基于 DOM 的，Canvas 方案（如 react-window 的某些实验）并非必须，且有无障碍和事件处理问题。","modeTitle":"不定项选择题"},{"n":28,"text":"关于前端常用网络协议与相关优化手段的正确理解有：","opts":[{"l":"A","t":"HTTP/3 基于 QUIC 协议，从根本上解决了 TCP 队头阻塞问题"},{"l":"B","t":"WebSocket 的连接建立过程本质上是一次带有 Upgrade 头的特殊 HTTP 请求"},{"l":"C","t":"GraphQL 常见的 over-fetching 问题可以通过 Persisted Queries（持久化查询）等方式缓解"},{"l":"D","t":"Server-Sent Events（SSE）天然支持客户端与服务端的双向实时通信"}],"key":"ABC","mode":"multiple","expl":"D 错误。SSE 是服务端到客户端的单向通道，双向通信需要 WebSocket。","modeTitle":"不定项选择题"},{"n":29,"text":"关于 Webpack 性能优化与其内部机制的正确说法有：","opts":[{"l":"A","t":"\u003ccode>optimization.splitChunks\u003c/code> 的 \u003ccode>cacheGroups\u003c/code> 配置可以对公共模块的提取进行非常精细的控制"},{"l":"B","t":"ModuleConcatenationPlugin（Scope Hoisting）可以把多个模块合并到一个作用域中，减少函数闭包与运行时开销"},{"l":"C","t":"生产模式下 Webpack 默认会使用 TerserPlugin 进行代码压缩，并配合 ES Module 进行 Tree-shaking"},{"l":"D","t":"Webpack 的所有 loader 都必须是同步执行的，不支持异步 loader"}],"key":"ABC","mode":"multiple","expl":"D 错误。Webpack 支持返回 Promise 的异步 loader。","modeTitle":"不定项选择题"},{"n":30,"text":"关于 React 与 Vue 在核心更新机制上的对比，正确的描述有：","opts":[{"l":"A","t":"Vue3 通过编译时的静态提升（hoistStatic）、PatchFlags 等优化，可以显著减少运行时需要 Diff 的工作量"},{"l":"B","t":"React 更依赖运行时的启发式 Diff 算法以及基于优先级的可中断调度"},{"l":"C","t":"两者在处理列表更新时，都依赖开发者提供的 key 来识别节点身份"},{"l":"D","t":"Vue3 的 Fragment 与 React 的 Fragment 在最终生成的真实 DOM 结构处理上完全一致"}],"key":"ABC","mode":"multiple","expl":"D 错误。Vue 的 Fragment 在某些情况下会处理得更接近真实 DOM 结构，两者在多根节点和空节点处理上仍有细微差异。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":2,"title":"模拟试卷 2","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 中 \u003ccode>nextTick\u003c/code> 的实现原理是什么？它如何保证在 DOM 更新完成后执行回调？","opts":[{"l":"A","t":"直接使用 \u003ccode>setTimeout(fn, 0)\u003c/code>"},{"l":"B","t":"优先使用微任务（Promise.then 或 MutationObserver），并在同一事件循环中将多个 nextTick 回调合并到一个队列中执行"},{"l":"C","t":"使用 \u003ccode>requestAnimationFrame\u003c/code> 保证在渲染前执行"},{"l":"D","t":"通过 \u003ccode>Object.defineProperty\u003c/code> 监听 DOM 变化后触发"}],"key":"B","mode":"single","expl":"Vue3 的 \u003ccode>nextTick\u003c/code> 源码优先采用微任务，并将回调推入队列，在同一 tick 内多次调用只会执行一次刷新。这保证了在数据更新触发的 DOM 更新之后执行。","modeTitle":"单选题"},{"n":2,"text":"React 18 中自动批处理（Automatic Batching）的核心实现依赖什么机制？","opts":[{"l":"A","t":"仅在事件处理函数中生效"},{"l":"B","t":"通过统一的 \u003ccode>setState\u003c/code> 调度队列，将同一事件循环内的多次更新合并，即使是在 Promise、setTimeout 或原生事件中也会批处理"},{"l":"C","t":"依赖 Fiber 的双缓冲机制"},{"l":"D","t":"通过 \u003ccode>unstable_batchedUpdates\u003c/code> 手动开启"}],"key":"B","mode":"single","expl":"React 18 把批处理从“仅事件处理函数”扩展到了所有场景，通过统一的调度队列实现，即使是 setTimeout、Promise 中的更新也会被合并。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，Proxy 的 \u003ccode>get\u003c/code> 陷阱（trap）被触发的时机，以下哪种情况描述最准确？","opts":[{"l":"A","t":"只有当属性值发生改变时才会触发"},{"l":"B","t":"只要通过 Proxy 实例访问属性（包括读取原型链上的属性），就会触发 get 陷阱"},{"l":"C","t":"仅当属性是自身可枚举属性时触发"},{"l":"D","t":"只有在严格模式下才会触发"}],"key":"B","mode":"single","expl":"只要对 Proxy 对象进行属性读取，就会触发 get 陷阱，包括访问继承来的属性（会先触发 get，再沿着原型链查找）。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 中，\u003ccode>satisfies\u003c/code> 操作符（TS 4.9+）相比传统的类型断言（\u003ccode>as\u003c/code>）最核心的优势是什么？","opts":[{"l":"A","t":"可以改变值的类型"},{"l":"B","t":"在保持值原有类型推断的同时，检查该值是否满足指定的类型约束，避免类型被拓宽或变窄过度"},{"l":"C","t":"性能更高"},{"l":"D","t":"只能用于接口类型"}],"key":"B","mode":"single","expl":"\u003ccode>satisfies\u003c/code> 的核心价值是“校验但不改变推断结果”，解决了 \u003ccode>as\u003c/code> 断言可能掩盖错误，以及直接注解类型导致字面量类型丢失的问题。","modeTitle":"单选题"},{"n":5,"text":"Vite 插件中 \u003ccode>transform\u003c/code> 钩子与 \u003ccode>load\u003c/code> 钩子的主要区别是什么？","opts":[{"l":"A","t":"\u003ccode>load\u003c/code> 用于转换代码，\u003ccode>transform\u003c/code> 用于加载模块内容"},{"l":"B","t":"\u003ccode>load\u003c/code> 钩子用于自定义模块加载逻辑（返回模块内容），\u003ccode>transform\u003c/code> 钩子用于对已加载的模块代码进行转换"},{"l":"C","t":"两者完全等价，只是命名不同"},{"l":"D","t":"\u003ccode>transform\u003c/code> 只在生产构建时生效"}],"key":"B","mode":"single","expl":"这是 Vite 插件 API 的标准分工：\u003ccode>load\u003c/code> 负责提供模块源码，\u003ccode>transform\u003c/code> 负责转换源码。","modeTitle":"单选题"},{"n":6,"text":"Webpack 中 Loader 的执行顺序是怎样的？","opts":[{"l":"A","t":"从左到右（配置数组从前往后）执行"},{"l":"B","t":"从右到左（配置数组从后往前）执行，且 pitch 阶段从左到右，normal 阶段从右到左"},{"l":"C","t":"随机顺序执行"},{"l":"D","t":"只按文件扩展名决定顺序"}],"key":"B","mode":"single","expl":"Webpack Loader 的执行遵循 pitch 从左到右、normal 从右到左的经典顺序，这是理解 loader 链式调用的关键。","modeTitle":"单选题"},{"n":7,"text":"Koa 中，当中间件抛出错误后，错误是如何传播的？","opts":[{"l":"A","t":"错误会被自动吞掉，不会影响后续中间件"},{"l":"B","t":"错误会沿着洋葱模型向后传播，直到被错误处理中间件捕获或到达最外层"},{"l":"C","t":"只会触发当前中间件的 try/catch"},{"l":"D","t":"必须手动调用 \u003ccode>ctx.throw\u003c/code> 才会传播"}],"key":"B","mode":"single","expl":"Koa 的错误会顺着 \u003ccode>await next()\u003c/code> 的返回路径向后抛出，直到被捕获。","modeTitle":"单选题"},{"n":8,"text":"Vue Router 4 中，导航守卫 \u003ccode>beforeResolve\u003c/code> 与 \u003ccode>beforeEach\u003c/code> 的主要区别是什么？","opts":[{"l":"A","t":"\u003ccode>beforeResolve\u003c/code> 在所有组件内守卫和异步路由组件被解析之后调用，而 \u003ccode>beforeEach\u003c/code> 在导航被确认之前最早调用"},{"l":"B","t":"两者执行时机完全相同"},{"l":"C","t":"\u003ccode>beforeResolve\u003c/code> 只在路由懒加载时触发"},{"l":"D","t":"\u003ccode>beforeEach\u003c/code> 不能取消导航"}],"key":"A","mode":"single","expl":"这是 Vue Router 官方文档明确的执行时机差异，\u003ccode>beforeResolve\u003c/code> 更靠后。","modeTitle":"单选题"},{"n":9,"text":"React 中 \u003ccode>useTransition\u003c/code> 返回的 \u003ccode>startTransition\u003c/code> 标记的更新，其优先级在 Lane 模型中属于哪一类？","opts":[{"l":"A","t":"同步最高优先级（SyncLane）"},{"l":"B","t":"过渡更新优先级（TransitionLane），可以被更高优先级的紧急更新打断"},{"l":"C","t":"空闲优先级（IdleLane）"},{"l":"D","t":"与普通 setState 优先级完全相同"}],"key":"B","mode":"single","expl":"\u003ccode>startTransition\u003c/code> 会创建 Transition 优先级的 Lane，允许被用户输入等更高优先级任务打断。","modeTitle":"单选题"},{"n":10,"text":"在 CSS 性能优化中，\u003ccode>content-visibility: auto\u003c/code> 的核心作用是什么？","opts":[{"l":"A","t":"强制开启 GPU 加速"},{"l":"B","t":"让浏览器跳过渲染视口外的内容，并可以跳过其样式计算与布局，从而显著提升长页面的渲染性能"},{"l":"C","t":"自动压缩图片"},{"l":"D","t":"仅对 flex 布局生效"}],"key":"B","mode":"single","expl":"\u003ccode>content-visibility: auto\u003c/code> 是现代浏览器提供的强力渲染优化手段，配合 \u003ccode>contain-intrinsic-size\u003c/code> 使用效果更佳。","modeTitle":"单选题"},{"n":11,"text":"Node.js 的 \u003ccode>worker_threads\u003c/code> 与 \u003ccode>cluster\u003c/code> 模块在适用场景上的最核心区别是什么？","opts":[{"l":"A","t":"\u003ccode>worker_threads\u003c/code> 适合 CPU 密集型任务且共享内存，\u003ccode>cluster\u003c/code> 适合创建多进程处理 I/O 密集型请求并实现负载均衡"},{"l":"B","t":"两者完全可以互换"},{"l":"C","t":"\u003ccode>cluster\u003c/code> 可以共享内存，\u003ccode>worker_threads\u003c/code> 不行"},{"l":"D","t":"\u003ccode>worker_threads\u003c/code> 只能用于主线程通信"}],"key":"A","mode":"single","expl":"这是两者定位的本质区别：线程 vs 进程，共享内存 vs 独立内存。","modeTitle":"单选题"},{"n":12,"text":"Vue3 的 \u003ccode>&lt;KeepAlive&gt;\u003c/code> 组件在内部是如何缓存组件实例的？","opts":[{"l":"A","t":"使用普通的对象字典存储 vnode"},{"l":"B","t":"通过 LRU 缓存策略管理缓存的组件实例，并在 deactivated 时保留实例而不销毁"},{"l":"C","t":"直接缓存真实 DOM"},{"l":"D","t":"只缓存组件的 props"}],"key":"B","mode":"single","expl":"KeepAlive 内部维护了一个 LRU 缓存，通过 \u003ccode>activated\u003c/code>/\u003ccode>deactivated\u003c/code> 生命周期控制缓存组件的状态。","modeTitle":"单选题"},{"n":13,"text":"React Server Components（RSC）与传统 SSR 最本质的区别是什么？","opts":[{"l":"A","t":"RSC 只是另一种 SSR 实现"},{"l":"B","t":"RSC 允许组件在服务端运行，且客户端不会下载该组件的 JavaScript 代码，数据获取与渲染都可以留在服务端"},{"l":"C","t":"RSC 必须使用流式渲染"},{"l":"D","t":"RSC 不能与客户端组件混合使用"}],"key":"B","mode":"single","expl":"RSC 的核心创新在于“零客户端打包成本”的服务端组件，与传统 SSR（仍然需要下载组件代码进行 hydrate）有本质不同。","modeTitle":"单选题"},{"n":14,"text":"Webpack 5 的持久化缓存（Persistent Caching）默认缓存位置与失效策略的关键点是什么？","opts":[{"l":"A","t":"缓存在内存中，每次启动都失效"},{"l":"B","t":"默认将缓存写入磁盘（node_modules/.cache），并根据文件内容哈希、配置哈希等决定是否失效"},{"l":"C","t":"只缓存 loader 结果"},{"l":"D","t":"需要手动配置才开启"}],"key":"B","mode":"single","expl":"Webpack 5 默认开启磁盘持久化缓存，并通过多种哈希确保缓存正确性。","modeTitle":"单选题"},{"n":15,"text":"在前端监控中，INP（Interaction to Next Paint）指标衡量的是什么？它取代了哪个旧指标？","opts":[{"l":"A","t":"衡量页面加载性能，取代了 FCP"},{"l":"B","t":"衡量用户交互到下一次绘制的延迟，取代了 FID（First Input Delay）"},{"l":"C","t":"衡量布局偏移，取代了 CLS"},{"l":"D","t":"衡量首屏时间，取代了 LCP"}],"key":"B","mode":"single","expl":"INP 是 Core Web Vitals 的新交互指标，已经正式取代 FID。","modeTitle":"单选题"},{"n":16,"text":"Zustand 中间件 \u003ccode>persist\u003c/code> 的核心实现原理是什么？","opts":[{"l":"A","t":"使用 Proxy 深度监听 state 变化并自动写入 localStorage"},{"l":"B","t":"通过订阅 store 的变化，在变更时将序列化后的状态写入存储，并在初始化时恢复"},{"l":"C","t":"依赖 Redux 的 persist 实现"},{"l":"D","t":"只支持 sessionStorage"}],"key":"B","mode":"single","expl":"Zustand 的 persist 中间件是典型的订阅 + 序列化存储模式。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 中 Generator 函数与 async 函数在执行机制上的最核心区别是什么？","opts":[{"l":"A","t":"Generator 是惰性的，需要手动调用 next() 推进，async 函数自动执行并返回 Promise"},{"l":"B","t":"两者完全相同"},{"l":"C","t":"Generator 不能使用 yield"},{"l":"D","t":"async 函数不能被中断"}],"key":"A","mode":"single","expl":"Generator 是可暂停的迭代器，async/await 是 Generator + 自动执行器（Promise）的语法糖升级版。","modeTitle":"单选题"},{"n":18,"text":"Vite 的 SSR 场景下，\u003ccode>ssrLoadModule\u003c/code> 与普通客户端模块加载的主要区别是什么？","opts":[{"l":"A","t":"没有区别"},{"l":"B","t":"\u003ccode>ssrLoadModule\u003c/code> 会以 Node.js 环境执行模块，并处理 CJS/ESM 互操作，同时不会进行客户端 HMR 相关注入"},{"l":"C","t":"只用于生产环境"},{"l":"D","t":"必须配合 Remix 使用"}],"key":"B","mode":"single","expl":"\u003ccode>ssrLoadModule\u003c/code> 是 Vite SSR 的核心 API，专门为 Node 环境设计。","modeTitle":"单选题"},{"n":19,"text":"React 的 \u003ccode>useDeferredValue\u003c/code> 与 \u003ccode>useTransition\u003c/code> 在使用场景上的主要差异是什么？","opts":[{"l":"A","t":"完全等价"},{"l":"B","t":"\u003ccode>useDeferredValue\u003c/code> 用于延迟更新某个具体的值（通常是由 props 或 state 衍生），而 \u003ccode>useTransition\u003c/code> 用于标记一次状态更新为过渡更新"},{"l":"C","t":"\u003ccode>useDeferredValue\u003c/code> 优先级更高"},{"l":"D","t":"只能在类组件中使用"}],"key":"B","mode":"single","expl":"两者都用于并发特性，但抽象层级不同：一个针对“值”，一个针对“更新”。","modeTitle":"单选题"},{"n":20,"text":"在大型应用路由设计中，采用“路由级代码分割 + 数据预加载（如 React Router loader 或 Vue Router 的异步组件 + 守卫）”时，最容易导致的性能问题是什么？","opts":[{"l":"A","t":"首屏白屏时间必然增加"},{"l":"B","t":"如果数据加载与组件加载没有做好并行或瀑布流控制，容易产生请求瀑布（waterfall），反而降低性能"},{"l":"C","t":"只会增加打包体积"},{"l":"D","t":"对 SEO 完全无影响"}],"key":"B","mode":"single","expl":"路由数据预加载如果设计成串行瀑布流，会严重拖慢页面呈现，这是实际项目中非常常见的性能陷阱。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 的调度系统（scheduler）与 \u003ccode>queueJob\u003c/code> 的正确描述有：","opts":[{"l":"A","t":"同一组件的多次更新会被去重，只执行一次"},{"l":"B","t":"默认使用微任务（Promise）进行异步更新"},{"l":"C","t":"可以通过 \u003ccode>flush: 'sync'\u003c/code> 强制同步执行"},{"l":"D","t":"父组件的更新一定会在子组件之前执行"}],"key":"ABC","mode":"multiple","expl":"D 错误。Vue 的更新顺序是子组件先于父组件（与 React 相反），这是由组件依赖收集顺序决定的。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React 18 Concurrent 特性的正确理解有：","opts":[{"l":"A","t":"\u003ccode>useTransition\u003c/code> 标记的更新可以被紧急更新打断"},{"l":"B","t":"Suspense 在 Concurrent 模式下可以更好地实现“先展示旧内容，再替换新内容”"},{"l":"C","t":"所有 setState 默认都变成了可中断的"},{"l":"D","t":"\u003ccode>startTransition\u003c/code> 内部会创建 TransitionLane"}],"key":"ABD","mode":"multiple","expl":"C 错误。只有被 \u003ccode>startTransition\u003c/code> 标记或使用了并发特性的更新才是可中断的，普通更新默认仍是同步的（在 React 18 中事件处理内仍会批处理）。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 模块增强（Module Augmentation）与声明合并的正确说法有：","opts":[{"l":"A","t":"可以对已有的接口进行扩展（declaration merging）"},{"l":"B","t":"可以对第三方库的模块进行类型增强"},{"l":"C","t":"模块增强必须写在 \u003ccode>.d.ts\u003c/code> 文件中才能生效"},{"l":"D","t":"命名空间（namespace）也支持合并"}],"key":"ABD","mode":"multiple","expl":"C 错误。模块增强可以写在普通 \u003ccode>.ts\u003c/code> 文件中，只要被包含在编译范围内即可。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Vite 插件系统的正确描述有：","opts":[{"l":"A","t":"插件钩子执行顺序受 \u003ccode>enforce: 'pre' | 'post'\u003c/code> 影响"},{"l":"B","t":"\u003ccode>config\u003c/code> 钩子可以修改 Vite 配置"},{"l":"C","t":"开发服务器与生产构建使用完全相同的插件执行逻辑"},{"l":"D","t":"支持与 Rollup 插件兼容（通过适配）"}],"key":"ABD","mode":"multiple","expl":"C 错误。开发与生产的插件执行在部分钩子上有差异（例如有些钩子仅开发生效）。","modeTitle":"不定项选择题"},{"n":25,"text":"关于 Webpack 代码分割（Code Splitting）的正确实践有：","opts":[{"l":"A","t":"动态 \u003ccode>import()\u003c/code> 是最常用的分割点"},{"l":"B","t":"\u003ccode>splitChunks.cacheGroups\u003c/code> 可以用来提取第三方库与公共业务代码"},{"l":"C","t":"过度分割会导致请求数量过多，反而影响性能"},{"l":"D","t":"入口配置多个 entry 就等于完成了最优代码分割"}],"key":"ABC","mode":"multiple","expl":"D 错误。多入口只是初步分割，真正的优化依赖 splitChunks 与动态导入。","modeTitle":"不定项选择题"},{"n":26,"text":"关于前端状态管理中选择器（Selector）与性能优化的正确理解有：","opts":[{"l":"A","t":"Reselect 或类似库通过记忆化（memoization）避免不必要的重新计算"},{"l":"B","t":"在 Redux 中，如果 mapStateToProps 返回新引用，即使数据没变也会导致组件重渲染"},{"l":"C","t":"Zustand 的 selector 如果不使用浅比较，也可能导致多余渲染"},{"l":"D","t":"所有状态管理库都内置了自动记忆化选择器"}],"key":"ABC","mode":"multiple","expl":"D 错误。大多数库需要开发者显式使用记忆化选择器或浅比较。","modeTitle":"不定项选择题"},{"n":27,"text":"关于现代 CSS 性能相关特性的正确描述有：","opts":[{"l":"A","t":"\u003ccode>content-visibility: auto\u003c/code> 可以跳过视口外内容的渲染工作"},{"l":"B","t":"CSS Containment（\u003ccode>contain\u003c/code>）可以限制样式、布局、绘制的影响范围"},{"l":"C","t":"\u003ccode>will-change\u003c/code> 使用不当会造成大量内存占用"},{"l":"D","t":"使用 CSS-in-JS 一定比 CSS Modules 性能更好"}],"key":"ABC","mode":"multiple","expl":"D 错误。CSS-in-JS 运行时方案通常性能不如静态的 CSS Modules 或原子化 CSS。","modeTitle":"不定项选择题"},{"n":28,"text":"关于 Node.js 异步上下文与监控的正确说法有：","opts":[{"l":"A","t":"\u003ccode>AsyncLocalStorage\u003c/code> 可以在异步调用链中传递上下文而不用显式传参"},{"l":"B","t":"\u003ccode>async_hooks\u003c/code> 是更底层的 API，可用于实现 AsyncLocalStorage"},{"l":"C","t":"在高并发场景下，AsyncLocalStorage 几乎没有性能开销"},{"l":"D","t":"可以用于实现请求级别的日志追踪（request id）"}],"key":"ABD","mode":"multiple","expl":"C 错误。AsyncLocalStorage 在极高并发下仍有一定开销，需要谨慎评估。","modeTitle":"不定项选择题"},{"n":29,"text":"关于前端实时通信方案对比的正确理解有：","opts":[{"l":"A","t":"WebSocket 是全双工协议，适合高频双向通信"},{"l":"B","t":"Server-Sent Events 实现更简单，自动重连，适合服务端向客户端推送"},{"l":"C","t":"长轮询（Long Polling）在连接数较多时对服务器压力通常大于 WebSocket"},{"l":"D","t":"HTTP/2 的 Server Push 可以完全替代 WebSocket"}],"key":"ABC","mode":"multiple","expl":"D 错误。Server Push 无法实现真正的双向实时通信，也不能替代 WebSocket。","modeTitle":"不定项选择题"},{"n":30,"text":"关于虚拟 DOM Diff 算法优化的正确认知有：","opts":[{"l":"A","t":"React 的 Diff 是启发式的，同层比较，时间复杂度 O(n)"},{"l":"B","t":"Vue3 通过编译时信息（PatchFlags、Block Tree）进一步减少了运行时 Diff 的节点数量"},{"l":"C","t":"key 的稳定性对列表 Diff 结果影响巨大"},{"l":"D","t":"双端比较（旧 Vue2 的做法）在任何情况下都优于 React 的从左到右比较"}],"key":"ABC","mode":"multiple","expl":"D 错误。双端比较并非在所有场景都更优，React 的简单同层比较 + key 在实践中已经足够高效，且更易实现优先级与可中断。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":3,"title":"模拟试卷 3","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 中 \u003ccode>effectScope\u003c/code> 的核心作用是什么？","opts":[{"l":"A","t":"仅用于创建独立的响应式作用域，与组件无关"},{"l":"B","t":"创建一个可以统一收集和管理内部所有 effect 的作用域，方便一次性停止（stop）这些 effect，常用于组件卸载或手动控制生命周期"},{"l":"C","t":"替代 \u003ccode>reactive\u003c/code> 和 \u003ccode>ref\u003c/code>"},{"l":"D","t":"只在 SSR 场景下生效"}],"key":"B","mode":"single","expl":"\u003ccode>effectScope\u003c/code> 是 Vue3 提供的手动控制 effect 生命周期的 API，组件内部其实也隐式使用了它，卸载时会 stop 整个 scope。","modeTitle":"单选题"},{"n":2,"text":"React 中 \u003ccode>useSyncExternalStore\u003c/code> 钩子设计的最主要目的是什么？","opts":[{"l":"A","t":"替代 \u003ccode>useState\u003c/code>"},{"l":"B","t":"让外部 store（如 Redux、Zustand、浏览器 API）能正确接入 React 的并发渲染，避免 tearing（撕裂）问题，并支持服务端渲染时的 hydration 一致性"},{"l":"C","t":"仅用于优化性能"},{"l":"D","t":"只能在客户端组件中使用"}],"key":"B","mode":"single","expl":"这是 React 18 为了让外部订阅与并发渲染安全兼容而专门设计的钩子，解决 tearing 和 SSR hydration 问题。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>FinalizationRegistry\u003c/code> 的主要使用场景是什么？","opts":[{"l":"A","t":"替代 \u003ccode>WeakMap\u003c/code>"},{"l":"B","t":"当一个对象被垃圾回收时，执行注册的清理回调，常用于清理与该对象关联的外部资源（如 WebSocket、文件句柄），但回调执行时机不确定"},{"l":"C","t":"强制立即回收对象"},{"l":"D","t":"提高对象访问性能"}],"key":"B","mode":"single","expl":"FinalizationRegistry 是弱引用清理的补充，但执行时机不保证，不能依赖它做精确的资源释放时机控制。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 中，使用 Template Literal Types 实现路由路径类型约束时，最核心的能力是什么？","opts":[{"l":"A","t":"只能做简单的字符串拼接"},{"l":"B","t":"可以在类型层面对字符串进行模式匹配、提取参数、实现类型安全的路由参数推断"},{"l":"C","t":"运行时也会生效"},{"l":"D","t":"只能用于枚举"}],"key":"B","mode":"single","expl":"Template Literal Types + infer 可以在类型系统里实现类似正则的路径参数提取，是类型安全路由的基础。","modeTitle":"单选题"},{"n":5,"text":"Vite 在依赖预构建（optimizeDeps）时，如果遇到一个依赖内部使用了动态 \u003ccode>require\u003c/code>，默认处理策略是什么？","opts":[{"l":"A","t":"直接报错退出"},{"l":"B","t":"尝试将其转换为 ESM，但动态 require 可能导致预构建失败或运行时问题，需要手动配置 \u003ccode>optimizeDeps.exclude\u003c/code> 或 \u003ccode>include\u003c/code>"},{"l":"C","t":"自动转成 CommonJS 并忽略"},{"l":"D","t":"强制使用 esbuild 的最激进转换"}],"key":"B","mode":"single","expl":"动态 require 是 ESM 预构建的常见痛点，需要开发者手动干预。","modeTitle":"单选题"},{"n":6,"text":"Webpack 5 的 Asset Modules 相比旧版 \u003ccode>file-loader\u003c/code> / \u003ccode>url-loader\u003c/code> 的核心优势是什么？","opts":[{"l":"A","t":"完全没有区别"},{"l":"B","t":"内置支持，无需额外 loader，通过 \u003ccode>type: 'asset'\u003c/code> 等配置即可自动处理资源的内联或输出，并支持更精细的条件判断"},{"l":"C","t":"只能处理图片"},{"l":"D","t":"必须配合 html-webpack-plugin 使用"}],"key":"B","mode":"single","expl":"Asset Modules 是 Webpack 5 的重要改进，减少了 loader 配置负担。","modeTitle":"单选题"},{"n":7,"text":"Koa 的 \u003ccode>ctx.state\u003c/code> 与 \u003ccode>ctx.request.body\u003c/code> 的主要区别是什么？","opts":[{"l":"A","t":"完全相同"},{"l":"B","t":"\u003ccode>ctx.state\u003c/code> 是 getter/setter，内部代理了 body，但推荐在中间件中统一使用，且需要 body parser 中间件支持；直接修改 \u003ccode>ctx.body\u003c/code> 才是设置响应体"},{"l":"C","t":"\u003ccode>ctx.state\u003c/code> 只能读取"},{"l":"D","t":"\u003ccode>ctx.request.body\u003c/code> 用于设置响应"}],"key":"B","mode":"single","expl":"Koa 的 ctx 设计统一了请求与响应，但 body 的处理仍需中间件配合。","modeTitle":"单选题"},{"n":8,"text":"在 React Router 6.4+ 的 Data Router 中，\u003ccode>loader\u003c/code> 函数的执行时机与特点是什么？","opts":[{"l":"A","t":"只在客户端路由跳转后执行"},{"l":"B","t":"在路由匹配后、组件渲染前执行，支持服务端与客户端，且可以通过 \u003ccode>defer\u003c/code> 实现延迟加载数据，与组件加载并行"},{"l":"C","t":"必须返回 Promise"},{"l":"D","t":"只能用于获取静态数据"}],"key":"B","mode":"single","expl":"Data Router 的 loader 是 React Router 向“数据优先”路由迈进的核心，支持 defer 实现流式与并行。","modeTitle":"单选题"},{"n":9,"text":"Vue3 的 Teleport 组件在实现上最关键的点是什么？","opts":[{"l":"A","t":"只是简单的 DOM 移动"},{"l":"B","t":"通过在编译阶段和运行时把内容渲染到指定的目标容器，同时保持组件逻辑树（父子关系、provide/inject、事件等）不变"},{"l":"C","t":"必须使用原生 \u003ccode>&lt;dialog&gt;\u003c/code>"},{"l":"D","t":"只支持 body 作为目标"}],"key":"B","mode":"single","expl":"Teleport 保持了逻辑树与渲染位置的分离，这是它与简单 DOM 操作的本质区别。","modeTitle":"单选题"},{"n":10,"text":"CSS View Transitions API 的核心能力是什么？","opts":[{"l":"A","t":"仅用于页面切换动画"},{"l":"B","t":"允许开发者在 DOM 更新前后捕获前后状态，并自动创建可自定义的过渡动画，可大幅简化复杂的共享元素过渡与页面切换效果"},{"l":"C","t":"替代所有 CSS 动画"},{"l":"D","t":"目前只有 Chrome 支持且无法自定义"}],"key":"B","mode":"single","expl":"View Transitions API 是原生提供的强大页面与元素过渡能力，正在快速普及。","modeTitle":"单选题"},{"n":11,"text":"Node.js 的 \u003ccode>diagnostics_channel\u003c/code> 模块主要用途是什么？","opts":[{"l":"A","t":"替代 console.log"},{"l":"B","t":"提供轻量级的诊断通道，用于在模块间发布和订阅诊断事件，常用于 APM、日志、性能追踪，对性能影响极小"},{"l":"C","t":"只用于测试"},{"l":"D","t":"强制开启所有调试信息"}],"key":"B","mode":"single","expl":"diagnostics_channel 是 Node.js 官方推荐的轻量诊断方案，比自己 hack EventEmitter 更标准。","modeTitle":"单选题"},{"n":12,"text":"在微前端架构中，Module Federation 与 qiankun（基于 single-spa）最本质的区别之一是什么？","opts":[{"l":"A","t":"没有本质区别"},{"l":"B","t":"Module Federation 更偏向构建时与运行时的模块共享与依赖协商，而 qiankun 更侧重应用的加载、沙箱隔离与生命周期管理"},{"l":"C","t":"qiankun 不支持样式隔离"},{"l":"D","t":"Module Federation 无法实现独立部署"}],"key":"B","mode":"single","expl":"两者解决的问题重心不同，实际项目中也常结合使用。","modeTitle":"单选题"},{"n":13,"text":"React 的 \u003ccode>useId\u003c/code> 钩子解决的核心问题是什么？","opts":[{"l":"A","t":"生成随机 ID"},{"l":"B","t":"在服务端渲染与客户端 hydration 过程中生成稳定且一致的唯一 ID，避免 hydration mismatch，同时支持同一组件多次调用"},{"l":"C","t":"仅用于表单"},{"l":"D","t":"性能优于 uuid 库"}],"key":"B","mode":"single","expl":"\u003ccode>useId\u003c/code> 专门解决 SSR 场景下 ID 不一致导致的 hydration 警告。","modeTitle":"单选题"},{"n":14,"text":"Vite 的 Library Mode 在打包时默认的行为特点是什么？","opts":[{"l":"A","t":"与普通应用打包完全相同"},{"l":"B","t":"会将代码打包成适合库分发的格式（如 es、cjs、umd），默认不处理 CSS 的提取方式与应用模式不同，且外部化依赖需要手动配置"},{"l":"C","t":"强制开启代码分割"},{"l":"D","t":"只能输出 ESM"}],"key":"B","mode":"single","expl":"Library Mode 有自己的默认配置与最佳实践，与应用模式有明显差异。","modeTitle":"单选题"},{"n":15,"text":"在前端性能优化中，\u003ccode>scheduler.yield()\u003c/code>（或等价的让出主线程方案）的主要价值是什么？","opts":[{"l":"A","t":"加速计算"},{"l":"B","t":"在长任务中主动让出主线程，让浏览器有机会处理用户输入和高优先级任务，从而改善 INP 和页面响应性"},{"l":"C","t":"替代 requestIdleCallback"},{"l":"D","t":"只在 Worker 中有效"}],"key":"B","mode":"single","expl":"主动让出主线程是改善交互响应性的重要现代手段。","modeTitle":"单选题"},{"n":16,"text":"Valtio 这类基于 Proxy 的状态库与传统 Redux 的核心设计差异是什么？","opts":[{"l":"A","t":"完全相同"},{"l":"B","t":"Valtio 通过 Proxy 实现可变写法的响应式更新，订阅粒度可以到属性级别，而 Redux 强调不可变数据与单向数据流"},{"l":"C","t":"Valtio 必须配合 React 使用"},{"l":"D","t":"Redux 性能一定更好"}],"key":"B","mode":"single","expl":"Proxy 可变响应式 vs 不可变单向流，是当前状态管理的两大主流思想。","modeTitle":"单选题"},{"n":17,"text":"TypeScript 中 Branded Types（品牌类型 / 名义类型模拟）的主要用途是什么？","opts":[{"l":"A","t":"提高运行时性能"},{"l":"B","t":"在结构类型系统中通过交叉唯一标识类型，实现名义类型检查，防止例如 UserId 与 OrderId 混用"},{"l":"C","t":"替代 interface"},{"l":"D","t":"只能用于 class"}],"key":"B","mode":"single","expl":"Branded Types 是在 TypeScript 结构类型系统中模拟名义类型的常用技巧。","modeTitle":"单选题"},{"n":18,"text":"Webpack 的 \u003ccode>experiments\u003c/code> 配置中，\u003ccode>lazyCompilation\u003c/code> 的作用是什么？","opts":[{"l":"A","t":"开启 Tree-shaking"},{"l":"B","t":"在开发模式下对入口和动态导入的模块进行懒编译，只有当模块真正被访问时才编译，从而显著加快冷启动速度"},{"l":"C","t":"只用于生产环境"},{"l":"D","t":"替代 HMR"}],"key":"B","mode":"single","expl":"lazyCompilation 是 Webpack 提升大型项目开发启动速度的重要实验特性。","modeTitle":"单选题"},{"n":19,"text":"在 Vue3 自定义指令中，\u003ccode>mounted\u003c/code> 与 \u003ccode>updated\u003c/code> 钩子的执行时机差异是什么？","opts":[{"l":"A","t":"没有差异"},{"l":"B","t":"\u003ccode>mounted\u003c/code> 在元素被插入父节点后调用一次，\u003ccode>updated\u003c/code> 在元素自身或子树的 VNode 更新后调用，可能多次"},{"l":"C","t":"\u003ccode>updated\u003c/code> 只在 props 变化时触发"},{"l":"D","t":"两者都会在 SSR 时执行"}],"key":"B","mode":"single","expl":"这是 Vue 自定义指令生命周期的标准行为。","modeTitle":"单选题"},{"n":20,"text":"前端使用 WebTransport 协议相比传统 WebSocket 的主要优势是什么？","opts":[{"l":"A","t":"完全兼容 HTTP/1.1"},{"l":"B","t":"基于 HTTP/3（QUIC），支持双向流、不可靠数据报、更好的拥塞控制，并减少队头阻塞，适合低延迟高吞吐场景"},{"l":"C","t":"浏览器支持度已经超过 WebSocket"},{"l":"D","t":"实现更简单，无需握手"}],"key":"B","mode":"single","expl":"WebTransport 是面向未来的高性能传输协议，尤其适合实时音视频与游戏场景。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 响应式系统中 \u003ccode>watch\u003c/code> 与 \u003ccode>watchEffect\u003c/code> 的正确描述有：","opts":[{"l":"A","t":"\u003ccode>watchEffect\u003c/code> 会立即执行，并自动收集依赖"},{"l":"B","t":"\u003ccode>watch\u003c/code> 默认是懒执行的，需要指定 source"},{"l":"C","t":"两者都支持 \u003ccode>flush: 'sync' | 'post' | 'pre'\u003c/code>"},{"l":"D","t":"\u003ccode>watch\u003c/code> 无法监听响应式对象的深层变化"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>watch\u003c/code> 通过 \u003ccode>deep: true\u003c/code> 可以监听深层变化。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React 并发渲染中“撕裂”（Tearing）问题的正确理解有：","opts":[{"l":"A","t":"撕裂是指在一次渲染中，不同组件看到的外部 store 数据不一致"},{"l":"B","t":"\u003ccode>useSyncExternalStore\u003c/code> 是解决撕裂的官方推荐方式"},{"l":"C","t":"在非并发模式下不会出现撕裂"},{"l":"D","t":"使用 \u003ccode>useState\u003c/code> 管理的数据也会出现撕裂"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>useState\u003c/code> 管理的数据在 React 内部是一致的，不会出现外部 store 那样的撕裂。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 递归类型与性能的正确认知有：","opts":[{"l":"A","t":"过深的递归类型会导致编译时间显著增加甚至达到深度限制"},{"l":"B","t":"TypeScript 对递归类型有一定的深度限制（历史上约 50 层，后续有优化）"},{"l":"C","t":"使用接口（interface）有时比 type 别名在递归场景下更高效"},{"l":"D","t":"所有递归类型都会在运行时产生开销"}],"key":"ABC","mode":"multiple","expl":"D 错误。递归类型只是编译时的，运行时没有额外开销。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Vite 与底层 esbuild / Rollup 协作的正确说法有：","opts":[{"l":"A","t":"开发阶段依赖预构建主要使用 esbuild"},{"l":"B","t":"生产构建默认使用 Rollup"},{"l":"C","t":"esbuild 对 TypeScript 的类型检查是完整的"},{"l":"D","t":"可以通过插件在开发与生产中共享大部分逻辑"}],"key":"ABD","mode":"multiple","expl":"C 错误。esbuild 只做转译，不做完整的 TypeScript 类型检查。","modeTitle":"不定项选择题"},{"n":25,"text":"关于微前端沙箱隔离方案的正确理解有：","opts":[{"l":"A","t":"快照沙箱通过记录窗口对象变化并在切换时恢复"},{"l":"B","t":"Proxy 沙箱通过代理 window 实现更细粒度的隔离"},{"l":"C","t":"样式隔离常用 CSS Module、Shadow DOM 或运行时前缀"},{"l":"D","t":"任何沙箱都能 100% 隔离所有副作用"}],"key":"ABC","mode":"multiple","expl":"D 错误。目前没有任何沙箱能做到绝对完美的隔离（例如某些原型链修改、定时器等）。","modeTitle":"不定项选择题"},{"n":26,"text":"关于现代前端状态管理中 Signal 范式（如 Solid、Vue Reactivity、Preact Signals、Angular Signals）的正确描述有：","opts":[{"l":"A","t":"Signal 通常基于拉取（pull）或推拉结合的细粒度更新"},{"l":"B","t":"可以做到只有真正用到变化数据的组件才更新"},{"l":"C","t":"与 React 的 useState 在更新粒度上完全一致"},{"l":"D","t":"实现上大多依赖 Proxy 或编译时转换"}],"key":"ABD","mode":"multiple","expl":"C 错误。Signal 的更新粒度通常远细于 React 的组件级更新。","modeTitle":"不定项选择题"},{"n":27,"text":"关于 CSS Cascade Layers（\u003ccode>@layer\u003c/code>）的正确理解有：","opts":[{"l":"A","t":"可以显式控制样式优先级，降低选择器权重带来的复杂性"},{"l":"B","t":"未分层的样式默认优先级高于已分层的样式"},{"l":"C","t":"可以用于更好地管理第三方库样式与业务样式的覆盖关系"},{"l":"D","t":"会改变 CSS 的继承规则"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>@layer\u003c/code> 主要影响层叠优先级，不改变继承。","modeTitle":"不定项选择题"},{"n":28,"text":"关于 Node.js 权限模型（Permission Model，实验性）的正确说法有：","opts":[{"l":"A","t":"可以限制文件系统访问、网络访问等"},{"l":"B","t":"通过 \u003ccode>--experimental-permission\u003c/code> 等标志开启"},{"l":"C","t":"已经完全稳定并默认开启"},{"l":"D","t":"有助于提升生产环境安全性"}],"key":"ABD","mode":"multiple","expl":"C 错误。权限模型目前仍是实验性特性。","modeTitle":"不定项选择题"},{"n":29,"text":"关于前端数据获取与缓存策略的正确实践有：","opts":[{"l":"A","t":"React Query / SWR / RTK Query 等都实现了请求去重、缓存、后台刷新等能力"},{"l":"B","t":"缓存的 key 设计对正确性与性能至关重要"},{"l":"C","t":"在 SSR 场景下需要特别注意缓存的 hydrate 与客户端一致性"},{"l":"D","t":"所有数据都应该使用永久缓存"}],"key":"ABC","mode":"multiple","expl":"D 错误。缓存策略必须根据数据新鲜度要求设计，永久缓存只适用于极少场景。","modeTitle":"不定项选择题"},{"n":30,"text":"关于长任务与主线程优化的正确认知有：","opts":[{"l":"A","t":"长任务（Long Task）会阻塞用户输入与渲染，直接影响 INP"},{"l":"B","t":"可以使用 \u003ccode>scheduler.yield()\u003c/code>、\u003ccode>isInputPending\u003c/code> 或将任务拆分到多个宏/微任务中缓解"},{"l":"C","t":"Web Worker 可以完全消除主线程长任务问题"},{"l":"D","t":"React 的时间切片与 Vue 的异步更新都是缓解长任务的手段"}],"key":"ABD","mode":"multiple","expl":"C 错误。Web Worker 适合计算密集型任务，但 DOM 操作与大部分用户交互仍必须在主线程。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":4,"title":"模拟试卷 4","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 编译器在处理静态节点时会进行“静态提升”（hoistStatic），其最核心的收益是什么？","opts":[{"l":"A","t":"减少运行时创建虚拟节点的开销，将静态 vnode 提升到渲染函数外部，实现一次创建、多次复用"},{"l":"B","t":"强制所有节点变成静态"},{"l":"C","t":"只对文本节点生效"},{"l":"D","t":"主要为了减小打包体积"}],"key":"A","mode":"single","expl":"静态提升是 Vue3 编译优化的基础手段之一，避免每次渲染都重新创建静态 vnode。","modeTitle":"单选题"},{"n":2,"text":"React Compiler（原 React Forget）的核心目标是什么？","opts":[{"l":"A","t":"完全替代 Hooks"},{"l":"B","t":"通过编译时自动对组件进行记忆化（自动添加 memo、useMemo、useCallback 等），减少开发者手动优化的负担，同时保持语义正确性"},{"l":"C","t":"只做代码压缩"},{"l":"D","t":"必须配合服务端组件使用"}],"key":"B","mode":"single","expl":"React Compiler 的目标是让“正确的代码默认就有良好性能”，自动处理记忆化。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>import attributes\u003c/code>（原 import assertions）的主要用途是什么？","opts":[{"l":"A","t":"替代动态 import"},{"l":"B","t":"在导入模块时声明模块的类型或格式（如 \u003ccode>import data from './data.json' with { type: 'json' }\u003c/code>），让运行时和打包工具能正确处理非 JS 模块"},{"l":"C","t":"用于类型检查"},{"l":"D","t":"只在 Node.js 中生效"}],"key":"B","mode":"single","expl":"import attributes 是 ES 模块支持 JSON、CSS 等模块类型的标准方式。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 5.0+ 引入的 \u003ccode>const\u003c/code> 类型参数（const type parameters）最主要的作用是什么？","opts":[{"l":"A","t":"提高运行时性能"},{"l":"B","t":"在泛型函数中更精确地推断字面量类型，避免类型被拓宽，常用于实现更严格的配置对象或事件类型"},{"l":"C","t":"替代 \u003ccode>as const\u003c/code>"},{"l":"D","t":"只能用于类"}],"key":"B","mode":"single","expl":"\u003ccode>const\u003c/code> 类型参数让泛型推断更精准，是 TypeScript 类型系统的重要增强。","modeTitle":"单选题"},{"n":5,"text":"Vite 的 Environment API（实验性）设计的主要目的是什么？","opts":[{"l":"A","t":"仅用于 CSS 处理"},{"l":"B","t":"提供统一的方式来支持多种运行时环境（客户端、SSR、边缘计算、自定义运行时），让插件和框架能更灵活地控制模块加载与转换"},{"l":"C","t":"替代现有的 SSR 方案"},{"l":"D","t":"只用于生产构建"}],"key":"B","mode":"single","expl":"Environment API 是 Vite 面向未来多运行时的重要抽象。","modeTitle":"单选题"},{"n":6,"text":"在 Webpack / Rspack 中，Module Federation 的 shared 配置里 \u003ccode>singleton: true\u003c/code> 的含义是什么？","opts":[{"l":"A","t":"强制使用最新版本"},{"l":"B","t":"确保该共享依赖在整个应用中只有一个实例，避免多版本并存导致的状态不一致或体积浪费"},{"l":"C","t":"只共享一次网络请求"},{"l":"D","t":"必须配合 eager 使用"}],"key":"B","mode":"single","expl":"\u003ccode>singleton\u003c/code> 是 Module Federation 中控制共享依赖实例数量的关键选项。","modeTitle":"单选题"},{"n":7,"text":"Koa 中间件中，\u003ccode>ctx.respond = false\u003c/code> 的作用是什么？","opts":[{"l":"A","t":"禁止所有响应"},{"l":"B","t":"告诉 Koa 不要自动处理响应（不自动发送 body、设置状态码等），由开发者完全接管响应逻辑，常用于代理、流式响应或 WebSocket 升级"},{"l":"C","t":"清空已有的 body"},{"l":"D","t":"只在错误处理时有效"}],"key":"B","mode":"single","expl":"这是 Koa 中实现流式响应、代理或协议升级的常用手段。","modeTitle":"单选题"},{"n":8,"text":"TanStack Router（或同类类型安全路由库）相比传统 React Router 的最大优势之一是什么？","opts":[{"l":"A","t":"打包体积更小"},{"l":"B","t":"通过 TypeScript 实现端到端的类型安全（路径参数、search params、loader 数据等），在编译期就能发现路由相关错误"},{"l":"C","t":"不需要配置路由表"},{"l":"D","t":"只支持文件路由"}],"key":"B","mode":"single","expl":"类型安全是 TanStack Router 等新一代路由库的核心卖点。","modeTitle":"单选题"},{"n":9,"text":"React 19 中 \u003ccode>useOptimistic\u003c/code> 钩子的核心使用场景是什么？","opts":[{"l":"A","t":"替代 useState"},{"l":"B","t":"在执行异步操作（如表单提交）时，先乐观更新 UI，等服务器响应后再回滚或确认，提升用户感知性能"},{"l":"C","t":"只用于列表删除"},{"l":"D","t":"必须配合 Server Actions 使用"}],"key":"B","mode":"single","expl":"乐观更新是提升感知性能的经典模式，\u003ccode>useOptimistic\u003c/code> 将其标准化。","modeTitle":"单选题"},{"n":10,"text":"CSS Scroll-Driven Animations 的核心能力是什么？","opts":[{"l":"A","t":"只能控制滚动条样式"},{"l":"B","t":"让动画的进度直接由滚动容器的滚动位置驱动，无需 JavaScript 监听 scroll 事件，性能更好且能实现复杂的视差与进度动画"},{"l":"C","t":"替代 IntersectionObserver"},{"l":"D","t":"目前所有浏览器都已稳定支持"}],"key":"B","mode":"single","expl":"Scroll-Driven Animations 是性能友好的声明式滚动动画方案。","modeTitle":"单选题"},{"n":11,"text":"Node.js 的 Single Executable Applications（SEA）功能的主要价值是什么？","opts":[{"l":"A","t":"加速模块加载"},{"l":"B","t":"将 Node.js 应用连同运行时打包成一个独立的可执行文件，方便分发与部署，减少对用户环境的依赖"},{"l":"C","t":"只支持 CommonJS"},{"l":"D","t":"已经完全取代 pkg 等工具且无任何限制"}],"key":"B","mode":"single","expl":"SEA 降低了 Node.js 应用的分发门槛。","modeTitle":"单选题"},{"n":12,"text":"在岛架构（Islands Architecture）中，“岛屿”的核心思想是什么？","opts":[{"l":"A","t":"整个页面都是客户端渲染"},{"l":"B","t":"页面大部分是静态 HTML，只有需要交互的部分（岛屿）才进行客户端 hydration 与 JavaScript 加载，从而显著减少客户端 JS 体积与 hydration 成本"},{"l":"C","t":"必须使用 Web Components"},{"l":"D","t":"与 SSR 完全对立"}],"key":"B","mode":"single","expl":"岛架构是 Astro 等框架推广的核心思想，平衡了静态与交互。","modeTitle":"单选题"},{"n":13,"text":"Vue3 的 Suspense 组件目前（截至稳定版本）的主要限制是什么？","opts":[{"l":"A","t":"完全不能使用"},{"l":"B","t":"对异步 setup 或异步组件提供了等待机制，但在 SSR 与错误处理边界上仍有限制，官方仍将其视为实验性或部分稳定"},{"l":"C","t":"只能包裹一个异步组件"},{"l":"D","t":"性能极差，不推荐使用"}],"key":"B","mode":"single","expl":"Suspense 在 Vue 中仍有实际使用限制，尤其在 SSR 场景。","modeTitle":"单选题"},{"n":14,"text":"React 的 \u003ccode>useActionState\u003c/code>（原 useFormState）主要解决什么问题？","opts":[{"l":"A","t":"管理普通 state"},{"l":"B","t":"简化基于表单的异步操作状态管理（pending、结果、错误），常与 Server Actions 或表单提交结合使用"},{"l":"C","t":"替代 useReducer"},{"l":"D","t":"只在客户端有效"}],"key":"B","mode":"single","expl":"它是 React 19 表单与 Actions 体系的重要组成部分。","modeTitle":"单选题"},{"n":15,"text":"在前端工程化中，Turborepo 的 Remote Caching 最核心的价值是什么？","opts":[{"l":"A","t":"只缓存 node_modules"},{"l":"B","t":"将构建与任务结果缓存到远程，使不同机器、不同 CI 流水线可以复用缓存，大幅加速 monorepo 的构建与测试"},{"l":"C","t":"替代 pnpm"},{"l":"D","t":"只支持 JavaScript 项目"}],"key":"B","mode":"single","expl":"Remote Caching 是 monorepo 规模化后的关键加速手段。","modeTitle":"单选题"},{"n":16,"text":"CSS Anchor Positioning 的主要用途是什么？","opts":[{"l":"A","t":"替代 flex 布局"},{"l":"B","t":"让元素相对于另一个“锚点”元素进行定位（无需额外 JS 计算位置），非常适合实现 tooltip、popover、下拉菜单等"},{"l":"C","t":"只对 fixed 定位生效"},{"l":"D","t":"会破坏文档流"}],"key":"B","mode":"single","expl":"Anchor Positioning 大幅简化了浮层类组件的定位逻辑。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 中 \u003ccode>Iterator Helpers\u003c/code>（提案或已实现阶段）提供的能力是什么？","opts":[{"l":"A","t":"替代 Generator"},{"l":"B","t":"为迭代器提供类似数组的声明式方法（map、filter、take、drop 等），支持惰性计算，适合处理大数据流或无限序列"},{"l":"C","t":"只用于数组"},{"l":"D","t":"运行时会自动转成数组"}],"key":"B","mode":"single","expl":"Iterator Helpers 补齐了迭代器的声明式操作能力。","modeTitle":"单选题"},{"n":18,"text":"Vite 插件中 \u003ccode>configureServer\u003c/code> 与 \u003ccode>configurePreviewServer\u003c/code> 的主要区别是什么？","opts":[{"l":"A","t":"没有区别"},{"l":"B","t":"\u003ccode>configureServer\u003c/code> 用于开发服务器，\u003ccode>configurePreviewServer\u003c/code> 用于 \u003ccode>vite preview\u003c/code> 的预览服务器，两者可分别添加中间件"},{"l":"C","t":"只在生产环境生效"},{"l":"D","t":"必须同时实现"}],"key":"B","mode":"single","expl":"两者分别对应开发与预览场景，是 Vite 插件开发的常见钩子。","modeTitle":"单选题"},{"n":19,"text":"在状态管理中，Jotai 的原子（atom）模型与 Zustand 的核心差异是什么？","opts":[{"l":"A","t":"完全相同"},{"l":"B","t":"Jotai 采用自底向上的原子化状态，原子之间可以依赖，更新粒度更细；Zustand 更接近单一 store + selector 模式"},{"l":"C","t":"Jotai 不支持 TypeScript"},{"l":"D","t":"Zustand 无法实现派生状态"}],"key":"B","mode":"single","expl":"原子化 vs 单一 store 是当前状态管理的重要分野。","modeTitle":"单选题"},{"n":20,"text":"前端使用 WebCodecs API 的主要场景是什么？","opts":[{"l":"A","t":"替代 Canvas"},{"l":"B","t":"提供对音视频编解码的底层控制，适合实现高性能视频编辑、实时通信、自定义播放器等，而不必依赖重量级的 WASM 库"},{"l":"C","t":"只用于解码，不能编码"},{"l":"D","t":"已经完全取代 WebRTC"}],"key":"B","mode":"single","expl":"WebCodecs 打开了浏览器原生高性能媒体处理的大门。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 编译优化中 PatchFlags 的正确描述有：","opts":[{"l":"A","t":"用于标记动态节点的具体动态类型（文本、class、style、props 等）"},{"l":"B","t":"运行时 patch 过程可以根据 PatchFlags 跳过不必要的比较"},{"l":"C","t":"所有节点都会被标记 PatchFlags"},{"l":"D","t":"与 Block Tree 配合使用效果最佳"}],"key":"ABD","mode":"multiple","expl":"C 错误。只有动态节点才会被标记 PatchFlags，静态节点直接跳过。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React 19 表单与 Server Actions 相关特性的正确理解有：","opts":[{"l":"A","t":"表单 action 可以直接接收异步函数"},{"l":"B","t":"\u003ccode>useFormStatus\u003c/code> 可以获取父级表单的提交状态"},{"l":"C","t":"Server Actions 只能在服务端组件中定义"},{"l":"D","t":"进度与乐观更新可以很好地结合 \u003ccode>useOptimistic\u003c/code>"}],"key":"ABD","mode":"multiple","expl":"C 错误。Server Actions 也可以在客户端组件中导入使用（通过特殊处理）。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 项目引用（Project References）的正确说法有：","opts":[{"l":"A","t":"可以将大型项目拆分成多个子项目，加快类型检查与编译速度"},{"l":"B","t":"需要配置 \u003ccode>composite: true\u003c/code>"},{"l":"C","t":"子项目之间可以声明依赖关系"},{"l":"D","t":"完全不需要构建工具配合即可在运行时生效"}],"key":"ABC","mode":"multiple","expl":"D 错误。项目引用主要作用于类型检查与构建，运行时仍需打包工具处理。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Rspack 与 Webpack 的对比，正确的有：","opts":[{"l":"A","t":"Rspack 使用 Rust 编写，冷启动与构建速度显著更快"},{"l":"B","t":"Rspack 对 Webpack 生态（loader、plugin）有较高兼容性"},{"l":"C","t":"Rspack 已经 100% 兼容所有 Webpack 配置与插件"},{"l":"D","t":"两者都支持 Module Federation"}],"key":"ABD","mode":"multiple","expl":"C 错误。Rspack 兼容性很高，但并非 100% 兼容所有 Webpack 插件与边界情况。","modeTitle":"不定项选择题"},{"n":25,"text":"关于岛架构与传统 SPA / SSR 的正确认知有：","opts":[{"l":"A","t":"岛架构可以大幅减少客户端 JavaScript 体积"},{"l":"B","t":"更适合内容型网站与部分交互场景"},{"l":"C","t":"与部分 hydration、渐进式 hydration 理念相近"},{"l":"D","t":"所有交互都必须做成岛屿，否则无法工作"}],"key":"ABC","mode":"multiple","expl":"D 错误。静态内容不需要变成岛屿，这正是岛架构的优势。","modeTitle":"不定项选择题"},{"n":26,"text":"关于现代 CSS 新特性与性能的正确描述有：","opts":[{"l":"A","t":"Scroll-Driven Animations 避免了频繁的 scroll 事件监听"},{"l":"B","t":"Anchor Positioning 减少了 JS 计算布局位置的需求"},{"l":"C","t":"\u003ccode>@property\u003c/code> 可以注册自定义属性并指定类型与继承行为"},{"l":"D","t":"使用这些新特性一定会降低首屏性能"}],"key":"ABC","mode":"multiple","expl":"D 错误。这些新特性通常有助于性能，而非必然降低首屏。","modeTitle":"不定项选择题"},{"n":27,"text":"关于前端 monorepo 工具链的正确理解有：","opts":[{"l":"A","t":"pnpm + Turborepo / Nx 是目前常见的高性能组合"},{"l":"B","t":"Remote Caching 对 CI 效率提升明显"},{"l":"C","t":"任务编排（pipeline）可以定义依赖关系与缓存策略"},{"l":"D","t":"monorepo 必然导致构建变慢"}],"key":"ABC","mode":"multiple","expl":"D 错误。正确的工具链与缓存策略下，monorepo 可以比多仓更高效。","modeTitle":"不定项选择题"},{"n":28,"text":"关于 Node.js 测试运行器（node:test）的正确说法有：","opts":[{"l":"A","t":"是 Node.js 内置的测试框架，无需额外安装"},{"l":"B","t":"支持测试套件、钩子、模拟、覆盖率等基础能力"},{"l":"C","t":"目前已经完全取代 Jest / Vitest"},{"l":"D","t":"与 TypeScript 结合时通常需要 ts-node 或类似加载器"}],"key":"ABD","mode":"multiple","expl":"C 错误。node:test 仍在快速演进，生态与插件丰富度暂不及 Jest/Vitest。","modeTitle":"不定项选择题"},{"n":29,"text":"关于前端实时音视频与编解码的正确认知有：","opts":[{"l":"A","t":"WebCodecs 提供了比 MediaRecorder / HTMLMediaElement 更底层的控制"},{"l":"B","t":"WebTransport 可作为 WebRTC 的补充或替代方案之一"},{"l":"C","t":"在浏览器中进行复杂视频处理时，WebCodecs + WebGPU / WASM 是常见组合"},{"l":"D","t":"所有浏览器对 WebCodecs 的支持已经完全一致且无限制"}],"key":"ABC","mode":"multiple","expl":"D 错误。WebCodecs 的支持度和能力在不同浏览器间仍有差异。","modeTitle":"不定项选择题"},{"n":30,"text":"关于主线程长任务治理与新指标的正确描述有：","opts":[{"l":"A","t":"Long Animation Frames（LoAF）可以提供比 Long Tasks 更详细的归因信息"},{"l":"B","t":"通过拆分任务、使用 \u003ccode>scheduler.yield()\u003c/code>、转移计算到 Worker 等方式治理"},{"l":"C","t":"Soft Navigations 是为了更好地衡量 SPA 中的“软导航”性能"},{"l":"D","t":"只要没有 Long Task，INP 就一定优秀"}],"key":"ABC","mode":"multiple","expl":"D 错误。INP 还受处理时间、呈现延迟等多种因素影响，并非只看 Long Task。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":5,"title":"模拟试卷 5","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 中 \u003ccode>defineModel\u003c/code> 宏的主要作用是什么？","opts":[{"l":"A","t":"定义全局状态"},{"l":"B","t":"简化父子组件之间 v-model 的双向绑定实现，自动处理 prop 与 emit 的生成，并支持多 v-model 与默认值"},{"l":"C","t":"替代 \u003ccode>ref\u003c/code>"},{"l":"D","t":"只在 Options API 中可用"}],"key":"B","mode":"single","expl":"\u003ccode>defineModel\u003c/code> 是 Vue 3.4+ 中显著减少 v-model 样板代码的宏，底层仍编译为 prop + emit。","modeTitle":"单选题"},{"n":2,"text":"React 19 中新的 \u003ccode>use\u003c/code> 钩子最核心的能力是什么？","opts":[{"l":"A","t":"只能读取 Context"},{"l":"B","t":"可以在渲染过程中读取 Promise（支持 Suspense）或 Context，且可以在条件语句中调用，突破了传统 Hooks 的规则限制"},{"l":"C","t":"替代 useEffect"},{"l":"D","t":"只用于服务端组件"}],"key":"B","mode":"single","expl":"\u003ccode>use\u003c/code> 是 React 19 的重要新钩子，专门为 Suspense 与更灵活的读取设计。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>Promise.withResolvers()\u003c/code> 的主要价值是什么？","opts":[{"l":"A","t":"加速 Promise 执行"},{"l":"B","t":"一次性返回一个 Promise 及其对应的 resolve 和 reject 函数，方便在外部控制该 Promise 的状态，简化某些异步流程的写法"},{"l":"C","t":"替代 async/await"},{"l":"D","t":"只在 Node.js 中可用"}],"key":"B","mode":"single","expl":"\u003ccode>Promise.withResolvers\u003c/code> 解决了需要在外部持有 resolve/reject 的常见痛点。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 中 \u003ccode>using\u003c/code> 关键字（Explicit Resource Management）的核心用途是什么？","opts":[{"l":"A","t":"声明变量"},{"l":"B","t":"实现确定性的资源清理（类似其他语言的 using / defer），当代码块结束时自动调用资源的 \u003ccode>[Symbol.dispose]\u003c/code> 方法"},{"l":"C","t":"替代 try/finally"},{"l":"D","t":"只用于文件操作"}],"key":"B","mode":"single","expl":"这是 TC39 显式资源管理提案的语法落地，提升资源安全管理。","modeTitle":"单选题"},{"n":5,"text":"Vite 未来计划用 Rolldown 替换底层打包工具的主要原因是什么？","opts":[{"l":"A","t":"只是换个名字"},{"l":"B","t":"Rolldown 使用 Rust 编写，目标是在保持与 Rollup 插件生态高度兼容的同时，显著提升生产构建性能"},{"l":"C","t":"为了完全抛弃 ESM"},{"l":"D","t":"只为了支持 CommonJS"}],"key":"B","mode":"single","expl":"Rolldown 是 Vite 团队推动的下一代高性能打包器，目标兼容 Rollup 生态。","modeTitle":"单选题"},{"n":6,"text":"在 Module Federation 中，\u003ccode>remote\u003c/code> 与 \u003ccode>host\u003c/code> 的关系描述最准确的是？","opts":[{"l":"A","t":"两者必须一一对应"},{"l":"B","t":"host 是消费方，remote 是提供方；一个应用可以同时是 host 和 remote，形成双向或网状共享"},{"l":"C","t":"remote 只能被一个 host 使用"},{"l":"D","t":"必须使用相同的 Webpack 版本"}],"key":"B","mode":"single","expl":"Module Federation 支持灵活的 host/remote 角色互换与多对多共享。","modeTitle":"单选题"},{"n":7,"text":"Koa 中实现流式响应（streaming）时，正确的做法通常是？","opts":[{"l":"A","t":"直接赋值 \u003ccode>ctx.body = bigData\u003c/code>"},{"l":"B","t":"将 \u003ccode>ctx.respond = false\u003c/code>，然后手动操作 \u003ccode>ctx.res\u003c/code> 写入流，或把可读流直接赋给 \u003ccode>ctx.body\u003c/code>"},{"l":"C","t":"只能使用 \u003ccode>ctx.throw\u003c/code>"},{"l":"D","t":"必须先把全部数据读入内存"}],"key":"B","mode":"single","expl":"流式响应需要避免 Koa 自动结束响应，这是官方推荐的方式。","modeTitle":"单选题"},{"n":8,"text":"Next.js App Router 中的 Parallel Routes（并行路由）主要解决什么问题？","opts":[{"l":"A","t":"只用于代码分割"},{"l":"B","t":"允许在同一布局下同时渲染多个页面插槽（slot），实现复杂的仪表盘、模态框与条件渲染，且支持独立的 loading 与 error 状态"},{"l":"C","t":"替代 intercepting routes"},{"l":"D","t":"只支持客户端路由"}],"key":"B","mode":"single","expl":"Parallel Routes 是 App Router 实现复杂 UI 布局的关键能力。","modeTitle":"单选题"},{"n":9,"text":"React 的 Activity（原 Offscreen）组件设计的主要目的是什么？","opts":[{"l":"A","t":"完全卸载组件"},{"l":"B","t":"在隐藏组件时保留其状态与 DOM（或可恢复状态），但降低优先级或跳过部分工作，用于实现 tabs、预渲染、返回前进等场景的流畅体验"},{"l":"C","t":"只用于动画"},{"l":"D","t":"必须配合 Suspense"}],"key":"B","mode":"single","expl":"Activity/Offscreen 用于保留隐藏 UI 的状态同时降低开销。","modeTitle":"单选题"},{"n":10,"text":"CSS Container Queries 与 Media Queries 的最本质区别是什么？","opts":[{"l":"A","t":"语法完全相同"},{"l":"B","t":"Container Queries 根据容器元素的尺寸而非视口尺寸进行响应，使组件真正具备独立的响应式能力"},{"l":"C","t":"Container Queries 性能更差"},{"l":"D","t":"只能查询宽度"}],"key":"B","mode":"single","expl":"Container Queries 真正实现了“组件级响应式”。","modeTitle":"单选题"},{"n":11,"text":"Node.js 内置的 \u003ccode>node:sqlite\u003c/code> 模块（稳定或接近稳定阶段）的主要价值是什么？","opts":[{"l":"A","t":"替代所有数据库"},{"l":"B","t":"提供官方支持的 SQLite 绑定，适合嵌入式、本地工具、小型应用或测试场景，减少对外部原生依赖的需求"},{"l":"C","t":"只能用于内存数据库"},{"l":"D","t":"性能超过 PostgreSQL"}],"key":"B","mode":"single","expl":"官方 SQLite 支持降低了嵌入式数据库的使用门槛。","modeTitle":"单选题"},{"n":12,"text":"Qwik 框架提出的 Resumability（可恢复性）与传统 Hydration 的核心区别是什么？","opts":[{"l":"A","t":"没有区别"},{"l":"B","t":"Resumability 不需要在客户端重新执行组件逻辑来恢复状态与事件绑定，而是通过序列化的方式直接“恢复”应用状态，从而大幅减少客户端启动成本"},{"l":"C","t":"必须使用 WebAssembly"},{"l":"D","t":"只适用于静态页面"}],"key":"B","mode":"single","expl":"Resumability 是 Qwik 区别于传统 Hydration 框架的核心创新。","modeTitle":"单选题"},{"n":13,"text":"Vue3 的自定义渲染器（Custom Renderer）API 的主要使用场景是什么？","opts":[{"l":"A","t":"只能用于 Web DOM"},{"l":"B","t":"允许将 Vue 的响应式与组件系统运行在非 DOM 环境（如 Canvas、WebGL、小程序、原生 UI、终端等），通过实现一组平台相关的节点操作接口即可"},{"l":"C","t":"替代 Vite 插件"},{"l":"D","t":"性能必然低于官方渲染器"}],"key":"B","mode":"single","expl":"自定义渲染器是 Vue 跨平台能力的基础。","modeTitle":"单选题"},{"n":14,"text":"Speculation Rules API 的主要作用是什么？","opts":[{"l":"A","t":"替代 Service Worker"},{"l":"B","t":"让开发者声明式地告诉浏览器哪些页面或资源可能被用户下一步访问，从而进行更智能的预取（prefetch）或预渲染（prerender），提升导航性能"},{"l":"C","t":"只用于 SEO"},{"l":"D","t":"强制浏览器立即加载所有链接"}],"key":"B","mode":"single","expl":"Speculation Rules 是浏览器原生的下一代预加载声明方式。","modeTitle":"单选题"},{"n":15,"text":"在前端性能监控中，Soft Navigations 的提出主要是为了解决什么问题？","opts":[{"l":"A","t":"衡量传统多页应用"},{"l":"B","t":"更准确地衡量 SPA 中通过客户端路由发生的“软导航”性能，弥补传统 Navigation Timing 只覆盖硬导航的不足"},{"l":"C","t":"替代 Core Web Vitals"},{"l":"D","t":"只统计加载时间"}],"key":"B","mode":"single","expl":"Soft Navigations 填补了 SPA 性能衡量的重要空白。","modeTitle":"单选题"},{"n":16,"text":"CSS \u003ccode>color-mix()\u003c/code> 函数的核心能力是什么？","opts":[{"l":"A","t":"只能混合 RGB"},{"l":"B","t":"在指定颜色空间中按比例混合两种颜色，并支持透明度，是现代 CSS 实现主题与动态颜色的重要工具"},{"l":"C","t":"替代 CSS 变量"},{"l":"D","t":"运行时性能极差"}],"key":"B","mode":"single","expl":"\u003ccode>color-mix()\u003c/code> 是 CSS 颜色处理现代化的重要进展。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 新的 Set 方法（如 \u003ccode>intersection\u003c/code>、\u003ccode>union\u003c/code>、\u003ccode>difference\u003c/code> 等）的主要意义是什么？","opts":[{"l":"A","t":"只是语法糖"},{"l":"B","t":"提供标准化的集合运算，避免开发者反复手写这些常用操作，提高可读性与一致性"},{"l":"C","t":"只能用于数字"},{"l":"D","t":"会改变原 Set"}],"key":"B","mode":"single","expl":"标准化集合运算提升了代码质量与一致性。","modeTitle":"单选题"},{"n":18,"text":"Vite 的 SSR Manifest 的主要用途是什么？","opts":[{"l":"A","t":"仅用于开发"},{"l":"B","t":"记录生产构建中客户端资源与模块的映射关系，帮助服务端渲染时正确注入资源预加载与 hydration 所需的脚本和样式"},{"l":"C","t":"替代 package.json"},{"l":"D","t":"只包含 CSS 信息"}],"key":"B","mode":"single","expl":"SSR Manifest 是 Vite SSR 生产环境正确注入资源的关键文件。","modeTitle":"单选题"},{"n":19,"text":"在状态管理中，Legend-State 或类似细粒度响应式库强调的核心优化是什么？","opts":[{"l":"A","t":"与 Redux 完全相同"},{"l":"B","t":"通过极细粒度的可观察数据与精确订阅，实现“只有真正用到的数据变化才触发更新”，并尽量减少中间层开销"},{"l":"C","t":"必须使用 Proxy"},{"l":"D","t":"不支持异步"}],"key":"B","mode":"single","expl":"细粒度响应式是当前高性能状态库的共同追求。","modeTitle":"单选题"},{"n":20,"text":"Early Hints（HTTP 103）在前端性能优化中的主要价值是什么？","opts":[{"l":"A","t":"替代 HTTP/2 Server Push"},{"l":"B","t":"在服务器最终响应（200）之前，先发送可能需要的关键资源提示（如 CSS、字体），让浏览器尽早开始加载，从而改善 LCP 等指标"},{"l":"C","t":"只支持 HTTP/1.1"},{"l":"D","t":"会增加服务器负担且无实际收益"}],"key":"B","mode":"single","expl":"Early Hints 是改善 LCP 的有效服务器端优化手段。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 \u003ccode>defineModel\u003c/code> 与传统 v-model 实现的正确描述有：","opts":[{"l":"A","t":"可以减少样板代码"},{"l":"B","t":"支持多个 v-model 绑定"},{"l":"C","t":"底层仍然是 prop + emit"},{"l":"D","t":"只能用于脚本 setup"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>defineModel\u003c/code> 主要在 \u003ccode>&lt;script setup&gt;\u003c/code> 中使用，但并非唯一限制点。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React \u003ccode>use\u003c/code> 钩子的正确理解有：","opts":[{"l":"A","t":"可以读取 Promise 并自动 Suspend"},{"l":"B","t":"可以读取 Context"},{"l":"C","t":"可以在条件判断、循环中调用"},{"l":"D","t":"完全不受 Hooks 规则约束，可以在任何地方调用"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>use\u003c/code> 虽然突破了部分规则，但仍需在组件或自定义 Hook 的渲染阶段调用，并非任意地方。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript Explicit Resource Management（\u003ccode>using\u003c/code>）的正确说法有：","opts":[{"l":"A","t":"依赖 \u003ccode>Symbol.dispose\u003c/code> 或 \u003ccode>Symbol.asyncDispose\u003c/code>"},{"l":"B","t":"可以与 \u003ccode>await using\u003c/code> 配合处理异步资源"},{"l":"C","t":"目前所有运行时都已原生支持"},{"l":"D","t":"有助于避免资源泄漏"}],"key":"ABD","mode":"multiple","expl":"C 错误。运行时支持仍在推进中，需要 polyfill 或特定环境。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Vite 与 Rolldown / Oxc 生态的正确认知有：","opts":[{"l":"A","t":"Rolldown 目标是成为高性能的 Rollup 替代品"},{"l":"B","t":"Oxc 提供解析、转换、压缩等工具链"},{"l":"C","t":"目前 Vite 已经默认全面切换到 Rolldown"},{"l":"D","t":"这些工具的目标之一是提升大型项目的构建速度"}],"key":"ABD","mode":"multiple","expl":"C 错误。Rolldown 仍在积极开发与集成中，尚未成为 Vite 默认。","modeTitle":"不定项选择题"},{"n":25,"text":"关于现代路由系统中 Parallel Routes 与 Intercepting Routes 的正确描述有：","opts":[{"l":"A","t":"Parallel Routes 适合同时展示多个独立页面区域"},{"l":"B","t":"Intercepting Routes 常用于实现模态框软导航（URL 变化但不离开当前布局）"},{"l":"C","t":"两者都依赖文件系统路由约定"},{"l":"D","t":"只能在客户端生效"}],"key":"ABC","mode":"multiple","expl":"D 错误。这些路由特性在服务端渲染场景下同样有意义。","modeTitle":"不定项选择题"},{"n":26,"text":"关于岛架构、部分 Hydration 与 Resumability 的正确对比有：","opts":[{"l":"A","t":"岛架构减少需要 Hydration 的区域"},{"l":"B","t":"Resumability 进一步追求“几乎零 Hydration 成本”"},{"l":"C","t":"三者都是为了降低客户端 JavaScript 执行与启动成本"},{"l":"D","t":"传统全量 Hydration 在复杂应用中仍然是唯一选择"}],"key":"ABC","mode":"multiple","expl":"D 错误。传统全量 Hydration 已不再是复杂应用的唯一或最优选择。","modeTitle":"不定项选择题"},{"n":27,"text":"关于 CSS 现代布局与查询能力的正确理解有：","opts":[{"l":"A","t":"Container Queries 让组件本身具备响应式能力"},{"l":"B","t":"Style Queries 可以根据容器的样式值进行查询"},{"l":"C","t":"Masonry 布局仍处于标准化进程中"},{"l":"D","t":"使用 Container Queries 必须配合 Media Queries 才能工作"}],"key":"ABC","mode":"multiple","expl":"D 错误。Container Queries 可独立使用，不必强制配合 Media Queries。","modeTitle":"不定项选择题"},{"n":28,"text":"关于前端预加载与预渲染策略的正确实践有：","opts":[{"l":"A","t":"Speculation Rules 提供了声明式的预取与预渲染能力"},{"l":"B","t":"Early Hints 可以在真正响应前就提示关键资源"},{"l":"C","t":"过度预渲染可能导致流量浪费与服务器压力"},{"l":"D","t":"所有链接都应该使用最高强度的预渲染"}],"key":"ABC","mode":"multiple","expl":"D 错误。预渲染强度需要根据实际收益与成本谨慎控制。","modeTitle":"不定项选择题"},{"n":29,"text":"关于 Node.js 现代内置能力的正确说法有：","opts":[{"l":"A","t":"内置测试运行器降低了测试的入门门槛"},{"l":"B","t":"实验性或稳定的 SQLite 支持适合特定场景"},{"l":"C","t":"Permission Model 有助于提升安全性"},{"l":"D","t":"内置能力已经完全可以替代所有第三方框架"}],"key":"ABC","mode":"multiple","expl":"D 错误。内置能力在增强，但生态框架在开发体验与完整性上仍有优势。","modeTitle":"不定项选择题"},{"n":30,"text":"关于主线程性能与新监控指标的正确认知有：","opts":[{"l":"A","t":"Long Animation Frames（LoAF）提供了比传统 Long Tasks 更丰富的归因信息"},{"l":"B","t":"Soft Navigations 帮助更好衡量 SPA 体验"},{"l":"C","t":"INP 关注的是交互到下一次绘制的全流程延迟"},{"l":"D","t":"只要把长任务拆到 Web Worker，所有交互问题都能解决"}],"key":"ABC","mode":"multiple","expl":"D 错误。Web Worker 无法处理 DOM 操作与大部分用户交互逻辑。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":6,"title":"模拟试卷 6","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 中通过编译器宏 \u003ccode>defineOptions\u003c/code> 可以做什么？","opts":[{"l":"A","t":"定义响应式数据"},{"l":"B","t":"在 \u003ccode>&lt;script setup&gt;\u003c/code> 中声明组件的 name、inheritAttrs、自定义选项等原本需要额外 \u003ccode>&lt;script&gt;\u003c/code> 块才能定义的选项"},{"l":"C","t":"替代 \u003ccode>defineProps\u003c/code>"},{"l":"D","t":"只在开发环境生效"}],"key":"B","mode":"single","expl":"\u003ccode>defineOptions\u003c/code> 解决了 \u003ccode>&lt;script setup&gt;\u003c/code> 中无法直接定义部分组件选项的问题。","modeTitle":"单选题"},{"n":2,"text":"React 19 中文档元数据（Document Metadata）支持的核心能力是什么？","opts":[{"l":"A","t":"只能修改 title"},{"l":"B","t":"允许在组件中直接渲染 \u003ccode>&lt;title&gt;\u003c/code>、\u003ccode>&lt;meta&gt;\u003c/code>、\u003ccode>&lt;link&gt;\u003c/code> 等标签，框架会自动将它们提升到文档 head 中，并正确处理优先级与去重"},{"l":"C","t":"必须使用第三方库"},{"l":"D","t":"只在服务端组件中可用"}],"key":"B","mode":"single","expl":"React 19 原生支持在组件树中声明文档元数据，是重要的 DX 与功能提升。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>Array.fromAsync()\u003c/code> 的主要用途是什么？","opts":[{"l":"A","t":"替代 Promise.all"},{"l":"B","t":"从异步可迭代对象（Async Iterable）创建数组，支持在映射函数中使用异步操作，适合处理流式或分页数据"},{"l":"C","t":"只能用于同步数组"},{"l":"D","t":"性能低于普通 from"}],"key":"B","mode":"single","expl":"\u003ccode>Array.fromAsync\u003c/code> 补齐了异步可迭代对象到数组的标准转换能力。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 的 \u003ccode>isolatedDeclarations\u003c/code> 编译选项的主要目的是什么？","opts":[{"l":"A","t":"加快运行时速度"},{"l":"B","t":"强制每个模块的声明文件可独立生成，不依赖其他模块的类型检查结果，从而支持并行生成 \u003ccode>.d.ts\u003c/code> 并提升大型项目的构建速度"},{"l":"C","t":"关闭类型检查"},{"l":"D","t":"只对 JavaScript 文件生效"}],"key":"B","mode":"single","expl":"\u003ccode>isolatedDeclarations\u003c/code> 是 TypeScript 针对大型项目声明生成性能的重要优化选项。","modeTitle":"单选题"},{"n":5,"text":"Vite 的 \u003ccode>server.warmup\u003c/code> 选项的主要作用是什么？","opts":[{"l":"A","t":"预热浏览器缓存"},{"l":"B","t":"在服务器启动时预先转换并缓存指定的文件，减少开发过程中首次请求这些文件时的延迟"},{"l":"C","t":"只用于生产环境"},{"l":"D","t":"强制开启 HMR"}],"key":"B","mode":"single","expl":"warmup 是提升开发服务器“首次打开页面”体验的实用手段。","modeTitle":"单选题"},{"n":6,"text":"在 Webpack / Rspack 的 Module Federation 中，\u003ccode>eager: true\u003c/code> 的含义是什么？","opts":[{"l":"A","t":"延迟加载共享模块"},{"l":"B","t":"将共享模块立即打包进当前应用的主包，而不是异步加载，常用于减少运行时请求但会增加初始包体积"},{"l":"C","t":"强制使用远程版本"},{"l":"D","t":"只对 CSS 生效"}],"key":"B","mode":"single","expl":"\u003ccode>eager\u003c/code> 是 Module Federation 中控制共享模块加载时机与打包位置的关键配置。","modeTitle":"单选题"},{"n":7,"text":"Koa 中正确处理文件上传并限制体积与类型的推荐做法是什么？","opts":[{"l":"A","t":"直接读取 \u003ccode>ctx.request.body\u003c/code>"},{"l":"B","t":"使用成熟的 body parser 中间件（如 \u003ccode>@koa/multer\u003c/code> 或 \u003ccode>koa-body\u003c/code>），并配置 sizeLimit、fileFilter 等选项，同时注意流式处理大文件"},{"l":"C","t":"自己用 Buffer 拼接"},{"l":"D","t":"只依赖浏览器限制"}],"key":"B","mode":"single","expl":"文件上传必须使用专门中间件并做好安全与资源限制。","modeTitle":"单选题"},{"n":8,"text":"在现代路由库中，loader 的 \u003ccode>revalidate\u003c/code> 策略（或等价机制）主要解决什么问题？","opts":[{"l":"A","t":"只用于缓存清理"},{"l":"B","t":"控制在什么情况下重新执行 loader 获取数据（如窗口聚焦、重新连接、指定间隔），以平衡数据新鲜度与请求频率"},{"l":"C","t":"强制每次都重新请求"},{"l":"D","t":"只在服务端生效"}],"key":"B","mode":"single","expl":"revalidate 策略是数据路由保持数据新鲜又不过度请求的核心机制。","modeTitle":"单选题"},{"n":9,"text":"React 的 \u003ccode>preinit\u003c/code>、\u003ccode>preload\u003c/code>、\u003ccode>preconnect\u003c/code> 等资源提示 API 的主要价值是什么？","opts":[{"l":"A","t":"替代 \u003ccode>&lt;link&gt;\u003c/code> 标签"},{"l":"B","t":"在组件渲染过程中声明式地告诉浏览器尽早加载或初始化关键资源（脚本、样式、字体等），与文档元数据配合提升性能"},{"l":"C","t":"只用于图片"},{"l":"D","t":"会阻塞渲染"}],"key":"B","mode":"single","expl":"这些 API 让资源提示可以声明式地出现在组件逻辑附近。","modeTitle":"单选题"},{"n":10,"text":"CSS \u003ccode>@scope\u003c/code> 规则的核心能力是什么？","opts":[{"l":"A","t":"替代 CSS Modules"},{"l":"B","t":"明确限定样式的作用边界（scope root 与 scope limit），降低样式泄漏风险，同时保持普通 CSS 的书写方式"},{"l":"C","t":"只提升优先级"},{"l":"D","t":"必须配合 Shadow DOM"}],"key":"B","mode":"single","expl":"\u003ccode>@scope\u003c/code> 是 CSS 原生解决样式作用域问题的重要进展。","modeTitle":"单选题"},{"n":11,"text":"Node.js 的 \u003ccode>util.styleText\u003c/code> 的主要用途是什么？","opts":[{"l":"A","t":"处理 HTTP 响应"},{"l":"B","t":"在终端中安全、便捷地输出带颜色和样式的文本，替代以往手动拼接 ANSI 码的方式"},{"l":"C","t":"用于浏览器"},{"l":"D","t":"只能设置前景色"}],"key":"B","mode":"single","expl":"\u003ccode>util.styleText\u003c/code> 是 Node.js 对终端输出体验的官方改进。","modeTitle":"单选题"},{"n":12,"text":"在混合渲染策略中，边缘 SSR（Edge SSR）与传统 Node.js SSR 的主要权衡是什么？","opts":[{"l":"A","t":"没有区别"},{"l":"B","t":"边缘 SSR 延迟更低、更接近用户，但运行时能力受限（冷启动、CPU 时间、API 兼容性），需要针对边缘环境做适配"},{"l":"C","t":"边缘 SSR 一定更慢"},{"l":"D","t":"传统 SSR 无法使用流式渲染"}],"key":"B","mode":"single","expl":"边缘 SSR 的核心是延迟与能力边界的权衡。","modeTitle":"单选题"},{"n":13,"text":"Vue3 的 \u003ccode>hydrateOnIdle\u003c/code> / \u003ccode>hydrateOnVisible\u003c/code> 等策略（或框架实现的类似能力）主要目的是什么？","opts":[{"l":"A","t":"强制立即 hydration"},{"l":"B","t":"延迟组件的 hydration 时机（空闲时或进入视口时），减少首屏主线程压力，改善交互 readiness"},{"l":"C","t":"只用于图片懒加载"},{"l":"D","t":"会破坏 SEO"}],"key":"B","mode":"single","expl":"延迟 hydration 是改善首屏可交互时间的常见高级策略。","modeTitle":"单选题"},{"n":14,"text":"Speculation Rules 中 \u003ccode>prerender\u003c/code> 与 \u003ccode>prefetch\u003c/code> 的核心区别是什么？","opts":[{"l":"A","t":"完全相同"},{"l":"B","t":"\u003ccode>prefetch\u003c/code> 主要下载资源，\u003ccode>prerender\u003c/code> 会更进一步在后台渲染页面（包括执行部分 JS），从而让后续导航几乎瞬时完成，但成本与风险更高"},{"l":"C","t":"\u003ccode>prerender\u003c/code> 只下载 HTML"},{"l":"D","t":"两者都不能跨域"}],"key":"B","mode":"single","expl":"prerender 成本更高，但导航体验更好，需要谨慎使用。","modeTitle":"单选题"},{"n":15,"text":"前端使用 \u003ccode>fetch\u003c/code> 的 \u003ccode>priority\u003c/code> 选项（或 Priority Hints）的主要作用是什么？","opts":[{"l":"A","t":"改变 HTTP 方法"},{"l":"B","t":"提示浏览器该请求的相对优先级，帮助浏览器更合理地调度资源加载顺序，改善 LCP 与关键路径性能"},{"l":"C","t":"强制最高优先级"},{"l":"D","t":"只对图片生效"}],"key":"B","mode":"single","expl":"Priority Hints 让开发者能影响浏览器的资源调度决策。","modeTitle":"单选题"},{"n":16,"text":"CSS \u003ccode>text-wrap: balance\u003c/code> 与 \u003ccode>pretty\u003c/code> 的主要用途是什么？","opts":[{"l":"A","t":"控制文字颜色"},{"l":"B","t":"改善标题与段落的换行视觉效果（平衡多行长度或避免孤立词），属于排版体验优化"},{"l":"C","t":"提升渲染性能"},{"l":"D","t":"只对英文生效"}],"key":"B","mode":"single","expl":"这是 CSS 在排版美观性上的现代增强。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 中 \u003ccode>Map.groupBy\u003c/code> / \u003ccode>Object.groupBy\u003c/code> 的核心价值是什么？","opts":[{"l":"A","t":"替代 reduce"},{"l":"B","t":"提供标准化的分组能力，将可迭代数据按回调结果分组，提高代码可读性与一致性"},{"l":"C","t":"只能分组字符串"},{"l":"D","t":"会修改原数据"}],"key":"B","mode":"single","expl":"标准化分组方法减少了重复的样板代码。","modeTitle":"单选题"},{"n":18,"text":"Vite 开发服务器中 \u003ccode>optimizeDeps.holdUntilCrawlEnd\u003c/code> 的作用是什么？","opts":[{"l":"A","t":"永久锁定依赖"},{"l":"B","t":"控制在依赖爬取完成前是否暂缓服务，避免在冷启动阶段出现“依赖尚未优化完成就被请求”的问题"},{"l":"C","t":"只用于生产"},{"l":"D","t":"强制排除所有依赖"}],"key":"B","mode":"single","expl":"该选项用于解决依赖优化与请求之间的竞态问题。","modeTitle":"单选题"},{"n":19,"text":"在细粒度状态管理中，Signal 的“拉取式”更新与传统“推送式”更新的主要区别是什么？","opts":[{"l":"A","t":"没有区别"},{"l":"B","t":"拉取式（pull）通常在读取时才决定是否重新计算，结合推送通知可以实现更精确的脏检查与更新，减少无效计算"},{"l":"C","t":"推送式一定更优"},{"l":"D","t":"Signal 只能使用推送式"}],"key":"B","mode":"single","expl":"拉取 + 推送结合是现代 Signal 实现高效更新的常见方式。","modeTitle":"单选题"},{"n":20,"text":"HTTP Early Hints（103）与传统 Link 预加载头在时机上的关键差异是什么？","opts":[{"l":"A","t":"没有差异"},{"l":"B","t":"Early Hints 可以在服务器还在生成最终响应之前就发送，让浏览器更早开始加载关键资源，进一步缩短关键路径时间"},{"l":"C","t":"Early Hints 只能用于 HTML"},{"l":"D","t":"会延后最终响应"}],"key":"B","mode":"single","expl":"Early Hints 的最大价值在于“更早”。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 \u003ccode>&lt;script setup&gt;\u003c/code> 编译宏的正确描述有：","opts":[{"l":"A","t":"\u003ccode>defineProps\u003c/code> 与 \u003ccode>defineEmits\u003c/code> 是编译时宏，不会出现在最终代码中"},{"l":"B","t":"\u003ccode>defineModel\u003c/code> 进一步简化了 v-model"},{"l":"C","t":"\u003ccode>defineOptions\u003c/code> 可用于设置 name 等选项"},{"l":"D","t":"所有宏都可以在运行时动态调用"}],"key":"ABC","mode":"multiple","expl":"D 错误。编译宏是编译时处理的，不能在运行时动态调用。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React 19 资源与元数据管理的正确理解有：","opts":[{"l":"A","t":"组件内可直接写 \u003ccode>&lt;title&gt;\u003c/code> 和 \u003ccode>&lt;meta&gt;\u003c/code>"},{"l":"B","t":"\u003ccode>preload\u003c/code>、\u003ccode>preinit\u003c/code> 等 API 可帮助控制资源加载时机"},{"l":"C","t":"框架会自动处理去重与优先级"},{"l":"D","t":"这些能力只在客户端组件中生效"}],"key":"ABC","mode":"multiple","expl":"D 错误。文档元数据与资源提示在服务端与客户端都有相应支持与处理。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 声明生成与大型项目优化的正确说法有：","opts":[{"l":"A","t":"\u003ccode>isolatedDeclarations\u003c/code> 有助于并行生成声明文件"},{"l":"B","t":"需要更明确的类型注解以满足独立生成条件"},{"l":"C","t":"可以显著改善 monorepo 的类型检查速度"},{"l":"D","t":"开启后不再需要任何类型注解"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>isolatedDeclarations\u003c/code> 通常要求更完整的显式类型注解。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Vite 开发体验优化手段的正确描述有：","opts":[{"l":"A","t":"\u003ccode>server.warmup\u003c/code> 可减少首次请求延迟"},{"l":"B","t":"依赖预构建缓存对冷启动影响很大"},{"l":"C","t":"\u003ccode>optimizeDeps.holdUntilCrawlEnd\u003c/code> 有助于避免竞态"},{"l":"D","t":"所有文件都应加入 warmup 列表"}],"key":"ABC","mode":"multiple","expl":"D 错误。warmup 应针对真正高频或关键的文件，而非全部。","modeTitle":"不定项选择题"},{"n":25,"text":"关于 Module Federation 共享策略的正确理解有：","opts":[{"l":"A","t":"\u003ccode>singleton: true\u003c/code> 保证单一实例"},{"l":"B","t":"\u003ccode>eager: true\u003c/code> 会把模块打入主包"},{"l":"C","t":"版本协商失败时可能导致运行时错误"},{"l":"D","t":"共享配置对性能与正确性都有重要影响"}],"key":"ABCD","mode":"multiple","expl":"全部正确。共享策略是 Module Federation 最需要谨慎设计的部分。","modeTitle":"不定项选择题"},{"n":26,"text":"关于延迟 Hydration 与渐进增强策略的正确认知有：","opts":[{"l":"A","t":"可降低首屏主线程占用"},{"l":"B","t":"hydrateOnVisible / hydrateOnIdle 是常见实现思路"},{"l":"C","t":"需要注意交互可用性与 SEO 的平衡"},{"l":"D","t":"延迟 Hydration 意味着完全不需要 JavaScript"}],"key":"ABC","mode":"multiple","expl":"D 错误。延迟 hydration 仍然需要 JavaScript，只是推迟执行时机。","modeTitle":"不定项选择题"},{"n":27,"text":"关于现代 CSS 作用域与排版能力的正确描述有：","opts":[{"l":"A","t":"\u003ccode>@scope\u003c/code> 提供原生样式作用域控制"},{"l":"B","t":"\u003ccode>text-wrap: balance\u003c/code> 有助于标题排版美观"},{"l":"C","t":"Container Queries 实现组件级响应式"},{"l":"D","t":"这些特性会破坏所有旧浏览器兼容性且无法渐进使用"}],"key":"ABC","mode":"multiple","expl":"D 错误。这些特性都可以通过渐进增强方式使用。","modeTitle":"不定项选择题"},{"n":28,"text":"关于预加载、预渲染与优先级提示的正确实践有：","opts":[{"l":"A","t":"Speculation Rules 支持声明式 prerender / prefetch"},{"l":"B","t":"Early Hints 可更早发送资源提示"},{"l":"C","t":"fetch priority 帮助浏览器调度请求"},{"l":"D","t":"预渲染强度越高越好，无需考虑成本"}],"key":"ABC","mode":"multiple","expl":"D 错误。预渲染必须权衡流量、服务器成本与用户收益。","modeTitle":"不定项选择题"},{"n":29,"text":"关于 Node.js 开发者体验相关能力的正确说法有：","opts":[{"l":"A","t":"\u003ccode>util.styleText\u003c/code> 简化了彩色日志输出"},{"l":"B","t":"内置测试运行器支持基础 mock 与钩子"},{"l":"C","t":"权限模型可限制文件系统与网络访问"},{"l":"D","t":"内置能力已完全覆盖生产级日志与监控需求"}],"key":"ABC","mode":"multiple","expl":"D 错误。内置能力在增强，但生产级监控与日志仍需专业方案。","modeTitle":"不定项选择题"},{"n":30,"text":"关于混合渲染与边缘计算前端架构的正确理解有：","opts":[{"l":"A","t":"边缘 SSR 可降低延迟"},{"l":"B","t":"需要评估运行时限制与冷启动影响"},{"l":"C","t":"流式渲染在边缘环境同样有价值"},{"l":"D","t":"所有应用都应无条件迁移到边缘 SSR"}],"key":"ABC","mode":"multiple","expl":"D 错误。是否迁移到边缘需要根据业务场景、状态与依赖综合评估。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":7,"title":"模拟试卷 7","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 中 \u003ccode>defineSlots\u003c/code> 宏的主要作用是什么？","opts":[{"l":"A","t":"定义组件事件"},{"l":"B","t":"为插槽提供更好的 TypeScript 类型推导，让父组件传入的插槽 props 具备类型检查与自动补全"},{"l":"C","t":"替代 \u003ccode>defineProps\u003c/code>"},{"l":"D","t":"只在运行时生效"}],"key":"B","mode":"single","expl":"\u003ccode>defineSlots\u003c/code> 是提升 Vue 插槽 TypeScript 体验的重要宏。","modeTitle":"单选题"},{"n":2,"text":"React Flight 协议在 React Server Components 中的核心作用是什么？","opts":[{"l":"A","t":"仅用于客户端路由"},{"l":"B","t":"定义服务端到客户端传递组件树、数据与指令的流式序列化格式，是 RSC 实现“服务端渲染组件并在客户端恢复”的基础"},{"l":"C","t":"替代 JSON"},{"l":"D","t":"只用于错误处理"}],"key":"B","mode":"single","expl":"Flight 协议是 RSC 的核心传输与序列化基础。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>Temporal\u003c/code> API 设计的主要目标是什么？","opts":[{"l":"A","t":"替代 Date 的简单格式化"},{"l":"B","t":"提供一套更完善、无可变性陷阱、支持时区与日历系统的现代日期时间处理标准，解决传统 Date 对象的诸多历史问题"},{"l":"C","t":"只处理时间戳"},{"l":"D","t":"目前已在所有浏览器默认开启且无 polyfill 需求"}],"key":"B","mode":"single","expl":"Temporal 是为了彻底解决 Date 的历史遗留问题而设计的新标准。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 的 \u003ccode>verbatimModuleSyntax\u003c/code> 选项的主要作用是什么？","opts":[{"l":"A","t":"加快编译速度"},{"l":"B","t":"强制导入/导出语句在类型检查与编译后的输出中保持一致（类型导入必须使用 type 修饰），减少类型导入被错误擦除或保留的问题"},{"l":"C","t":"允许任意语法"},{"l":"D","t":"只影响声明文件"}],"key":"B","mode":"single","expl":"\u003ccode>verbatimModuleSyntax\u003c/code> 让类型导入/导出行为更可预测。","modeTitle":"单选题"},{"n":5,"text":"Vite 的 \u003ccode>ssr.noExternal\u003c/code> 与 \u003ccode>ssr.external\u003c/code> 配置的核心用途是什么？","opts":[{"l":"A","t":"控制 CSS 处理"},{"l":"B","t":"精确控制哪些依赖在 SSR 环境中被打包进服务端代码，哪些保持外部 require/import，以解决 CJS/ESM 互操作与运行时兼容问题"},{"l":"C","t":"只用于开发环境"},{"l":"D","t":"强制所有依赖外部化"}],"key":"B","mode":"single","expl":"这是 Vite SSR 中处理依赖兼容性最关键的配置对。","modeTitle":"单选题"},{"n":6,"text":"在 Module Federation 运行时，共享依赖版本协商失败时最常见的后果是什么？","opts":[{"l":"A","t":"自动降级到最低版本"},{"l":"B","t":"可能导致运行时加载错误、多实例并存或应用崩溃，因此需要谨慎设置 \u003ccode>requiredVersion\u003c/code> 与 \u003ccode>singleton\u003c/code>"},{"l":"C","t":"浏览器会自动解决"},{"l":"D","t":"只会在开发环境报错"}],"key":"B","mode":"single","expl":"版本协商失败是 Module Federation 实际落地中的高频风险点。","modeTitle":"单选题"},{"n":7,"text":"Koa 中使用 \u003ccode>ctx.cookies\u003c/code> 设置 Cookie 时，安全相关的关键选项有哪些？","opts":[{"l":"A","t":"只需要设置 value"},{"l":"B","t":"\u003ccode>httpOnly\u003c/code>、\u003ccode>secure\u003c/code>、\u003ccode>sameSite\u003c/code>、\u003ccode>signed\u003c/code> 等选项对安全性至关重要，可有效降低 XSS 与 CSRF 风险"},{"l":"C","t":"Cookie 默认就是完全安全的"},{"l":"D","t":"只能设置 session Cookie"}],"key":"B","mode":"single","expl":"Cookie 安全选项是后端与前端协作中必须重视的细节。","modeTitle":"单选题"},{"n":8,"text":"在数据路由中，\u003ccode>defer\u003c/code>（或等价的延迟数据机制）的主要价值是什么？","opts":[{"l":"A","t":"强制等待所有数据"},{"l":"B","t":"允许关键数据先返回并渲染，非关键数据延迟加载，从而实现更快的首屏内容呈现与流式用户体验"},{"l":"C","t":"只用于错误边界"},{"l":"D","t":"会破坏 SEO"}],"key":"B","mode":"single","expl":"\u003ccode>defer\u003c/code> 是实现数据流式与渐进呈现的关键手段。","modeTitle":"单选题"},{"n":9,"text":"React 中 \u003ccode>useDeferredValue\u003c/code> 与直接使用 \u003ccode>startTransition\u003c/code> 更新 state 的主要适用场景差异是什么？","opts":[{"l":"A","t":"完全可以互换"},{"l":"B","t":"\u003ccode>useDeferredValue\u003c/code> 更适合对“已经存在的值”（如 props 或搜索关键词）进行延迟，而 \u003ccode>startTransition\u003c/code> 更适合标记一次主动的状态更新为过渡更新"},{"l":"C","t":"\u003ccode>useDeferredValue\u003c/code> 优先级更高"},{"l":"D","t":"只能用于列表"}],"key":"B","mode":"single","expl":"两者都服务于并发更新，但抽象层次与适用场景不同。","modeTitle":"单选题"},{"n":10,"text":"CSS 相对颜色语法（Relative Color Syntax）的核心能力是什么？","opts":[{"l":"A","t":"只能调整亮度"},{"l":"B","t":"基于一个已有颜色，通过指定颜色空间并修改其通道值来生成新颜色，极大方便主题衍生与动态颜色计算"},{"l":"C","t":"替代所有 CSS 变量"},{"l":"D","t":"运行时性能极差"}],"key":"B","mode":"single","expl":"相对颜色语法是 CSS 颜色体系现代化的重要一步。","modeTitle":"单选题"},{"n":11,"text":"Node.js 的自定义 Loader（module.register 或旧版 hooks）主要用途是什么？","opts":[{"l":"A","t":"替代 require"},{"l":"B","t":"允许拦截模块解析与加载过程，实现 TypeScript 运行时支持、模块别名、mock、字节码缓存等高级能力"},{"l":"C","t":"只用于测试"},{"l":"D","t":"已经完全被废弃"}],"key":"B","mode":"single","expl":"自定义 Loader 是 Node.js 实现高级模块加载逻辑的官方扩展点。","modeTitle":"单选题"},{"n":12,"text":"在岛架构中结合 Signal 细粒度更新的主要收益是什么？","opts":[{"l":"A","t":"没有额外收益"},{"l":"B","t":"岛屿内部可以实现更精确的更新范围，进一步减少客户端 JavaScript 执行量与重渲染成本"},{"l":"C","t":"必须使用 React"},{"l":"D","t":"会增加 hydration 成本"}],"key":"B","mode":"single","expl":"岛架构 + 细粒度 Signal 是进一步压低客户端成本的有效组合。","modeTitle":"单选题"},{"n":13,"text":"Vue3 的 \u003ccode>&lt;TransitionGroup&gt;\u003c/code> 在列表过渡时依赖的关键算法与机制是什么？","opts":[{"l":"A","t":"简单 CSS 动画"},{"l":"B","t":"通过 key 跟踪节点身份，并在 DOM 操作前后应用 FLIP（First、Last、Invert、Play）思想或绝对定位过渡，实现平滑的列表重排动画"},{"l":"C","t":"只支持淡入淡出"},{"l":"D","t":"不需要 key"}],"key":"B","mode":"single","expl":"TransitionGroup 的平滑重排依赖 key 与位置计算（FLIP 思想）。","modeTitle":"单选题"},{"n":14,"text":"Speculation Rules 的 \u003ccode>eagerness\u003c/code> 参数（或类似控制）主要影响什么？","opts":[{"l":"A","t":"只影响 SEO"},{"l":"B","t":"控制预取/预渲染的积极程度（conservative、moderate、eager 等），需要在用户体验收益与带宽/服务器成本之间做权衡"},{"l":"C","t":"强制立即执行"},{"l":"D","t":"只对同域有效"}],"key":"B","mode":"single","expl":"eagerness 是控制预渲染成本与收益的重要参数。","modeTitle":"单选题"},{"n":15,"text":"前端 INP 指标中，Input Delay、Processing Time、Presentation Delay 三段时间分别指什么？","opts":[{"l":"A","t":"只是总称"},{"l":"B","t":"Input Delay 是从用户交互到事件处理器开始执行的时间，Processing Time 是处理程序执行时间，Presentation Delay 是处理结束后到下一次绘制的时间"},{"l":"C","t":"三段时间完全重叠"},{"l":"D","t":"只关注 Processing Time"}],"key":"B","mode":"single","expl":"拆解 INP 三段是定位交互性能问题的基础。","modeTitle":"单选题"},{"n":16,"text":"CSS \u003ccode>view-timeline\u003c/code> 与 Scroll-Driven Animations 的关系是什么？","opts":[{"l":"A","t":"完全无关"},{"l":"B","t":"\u003ccode>view-timeline\u003c/code> 允许以元素在滚动容器中的可见性进度作为动画时间线，是 Scroll-Driven Animations 的重要能力之一"},{"l":"C","t":"只能用于水平滚动"},{"l":"D","t":"必须使用 JavaScript"}],"key":"B","mode":"single","expl":"\u003ccode>view-timeline\u003c/code> 扩展了滚动驱动动画的表达能力。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 中 \u003ccode>Error.isError()\u003c/code> 的主要意义是什么？","opts":[{"l":"A","t":"替代 instanceof"},{"l":"B","t":"提供跨 realm（iframe、worker 等）可靠判断一个值是否为 Error 对象的标准方法，解决 instanceof 在不同执行上下文中的失效问题"},{"l":"C","t":"只能判断内置 Error"},{"l":"D","t":"会修改 Error 原型"}],"key":"B","mode":"single","expl":"\u003ccode>Error.isError\u003c/code> 解决了跨 realm 判断的经典问题。","modeTitle":"单选题"},{"n":18,"text":"Vite 的 middleware mode 的主要使用场景是什么？","opts":[{"l":"A","t":"只用于生产"},{"l":"B","t":"将 Vite 作为现有 Node.js 服务器（如 Express、Koa、Fastify）的中间件集成，而不是让 Vite 自己接管整个服务器，适合渐进式迁移或定制服务器场景"},{"l":"C","t":"强制开启 SSR"},{"l":"D","t":"不能使用 HMR"}],"key":"B","mode":"single","expl":"middleware mode 是 Vite 集成进现有服务器的标准方式。","modeTitle":"单选题"},{"n":19,"text":"在状态管理中，Proxy 实现的深度响应式与 Signal 显式依赖声明的主要权衡是什么？","opts":[{"l":"A","t":"没有权衡"},{"l":"B","t":"Proxy 方案对已有代码侵入性低、写法更自然，但可能在大型对象与频繁读写时有隐藏开销；Signal 通常更可控、性能上限更高，但需要更显式的依赖管理"},{"l":"C","t":"Proxy 一定更快"},{"l":"D","t":"Signal 无法实现深度响应"}],"key":"B","mode":"single","expl":"两种响应式范式各有优劣，需要根据场景选择。","modeTitle":"单选题"},{"n":20,"text":"HTTP/3 中流的优先级与依赖机制相比 HTTP/2 的主要改进方向是什么？","opts":[{"l":"A","t":"完全取消优先级"},{"l":"B","t":"提供更简单、更有效的优先级表达方式，减少 HTTP/2 优先级树的复杂性与实现不一致问题，让浏览器与服务器能更好协调资源加载顺序"},{"l":"C","t":"只支持两种优先级"},{"l":"D","t":"对前端开发完全无感且无优化空间"}],"key":"B","mode":"single","expl":"HTTP/3 的优先级机制目标是更简单可靠。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 插槽类型与 \u003ccode>defineSlots\u003c/code> 的正确描述有：","opts":[{"l":"A","t":"可以提升插槽 props 的 TypeScript 体验"},{"l":"B","t":"需要显式声明插槽名称与参数类型"},{"l":"C","t":"对默认插槽与具名插槽都有效"},{"l":"D","t":"运行时会额外增加性能开销"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>defineSlots\u003c/code> 是编译时类型增强，几乎无运行时开销。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React Server Components 与 Flight 协议的正确理解有：","opts":[{"l":"A","t":"Flight 负责序列化服务端组件树"},{"l":"B","t":"客户端接收的是可流式处理的指令与数据"},{"l":"C","t":"可以穿插客户端组件的引用"},{"l":"D","t":"客户端必须完整下载所有服务端组件的源码"}],"key":"ABC","mode":"multiple","expl":"D 错误。RSC 的核心优势之一就是客户端不需要下载服务端组件的完整源码。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 模块语法与互操作选项的正确说法有：","opts":[{"l":"A","t":"\u003ccode>verbatimModuleSyntax\u003c/code> 有助于类型导入的正确擦除"},{"l":"B","t":"\u003ccode>allowImportingTsExtensions\u003c/code> 允许导入 \u003ccode>.ts\u003c/code> 扩展名"},{"l":"C","t":"这些选项对 bundler 场景尤其重要"},{"l":"D","t":"开启后不再需要任何打包工具"}],"key":"ABC","mode":"multiple","expl":"D 错误。这些选项优化的是类型与模块语法行为，打包工具仍不可或缺。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Vite SSR 依赖处理的正确描述有：","opts":[{"l":"A","t":"\u003ccode>ssr.external\u003c/code> 让依赖保持外部化"},{"l":"B","t":"\u003ccode>ssr.noExternal\u003c/code> 强制将依赖打包进 SSR 产物"},{"l":"C","t":"处理 CJS 依赖时经常需要仔细配置"},{"l":"D","t":"所有依赖都应设置为 noExternal"}],"key":"ABC","mode":"multiple","expl":"D 错误。过度 noExternal 会导致 SSR 包体积膨胀与构建变慢。","modeTitle":"不定项选择题"},{"n":25,"text":"关于列表过渡与 FLIP 技术的正确认知有：","opts":[{"l":"A","t":"FLIP 通过记录位置差并反向应用 transform 实现流畅动画"},{"l":"B","t":"Vue 的 TransitionGroup 内部使用了类似思想"},{"l":"C","t":"需要稳定的 key 才能正确跟踪元素"},{"l":"D","t":"任何情况都应优先使用 JS 动画而非 CSS"}],"key":"ABC","mode":"multiple","expl":"D 错误。CSS 过渡在性能与简洁性上通常更优，JS 动画用于更复杂需求。","modeTitle":"不定项选择题"},{"n":26,"text":"关于延迟加载数据与流式渲染的正确实践有：","opts":[{"l":"A","t":"\u003ccode>defer\u003c/code> 可让关键内容先渲染"},{"l":"B","t":"需要配合 Suspense 或等价边界处理后续数据"},{"l":"C","t":"对提升首屏内容可见时间有帮助"},{"l":"D","t":"所有数据都应延迟加载"}],"key":"ABC","mode":"multiple","expl":"D 错误。关键数据应优先加载，延迟的是非阻塞数据。","modeTitle":"不定项选择题"},{"n":27,"text":"关于现代 CSS 颜色与动画能力的正确描述有：","opts":[{"l":"A","t":"相对颜色语法方便主题衍生"},{"l":"B","t":"\u003ccode>view-timeline\u003c/code> 支持基于可见性的动画进度"},{"l":"C","t":"Scroll-Driven Animations 减少了 JS 滚动监听需求"},{"l":"D","t":"这些特性在所有目标浏览器中都已 100% 可用且无需降级"}],"key":"ABC","mode":"multiple","expl":"D 错误。需要根据目标浏览器做渐进增强与降级。","modeTitle":"不定项选择题"},{"n":28,"text":"关于 INP 拆解与优化的正确理解有：","opts":[{"l":"A","t":"Input Delay 常与主线程繁忙有关"},{"l":"B","t":"Processing Time 需优化事件处理逻辑本身"},{"l":"C","t":"Presentation Delay 与渲染工作量、样式计算相关"},{"l":"D","t":"只需优化其中一个部分即可显著改善 INP"}],"key":"ABC","mode":"multiple","expl":"D 错误。三段时间都需要关注，不同场景瓶颈不同。","modeTitle":"不定项选择题"},{"n":29,"text":"关于 Node.js 模块加载定制能力的正确说法有：","opts":[{"l":"A","t":"自定义 Loader 可拦截模块解析"},{"l":"B","t":"可用于实现 TypeScript 直接运行或路径别名"},{"l":"C","t":"需要谨慎处理缓存与性能"},{"l":"D","t":"已经可以完全替代所有构建工具"}],"key":"ABC","mode":"multiple","expl":"D 错误。自定义 Loader 强大，但构建工具在转换、优化、缓存上仍有不可替代的作用。","modeTitle":"不定项选择题"},{"n":30,"text":"关于混合渲染架构中边缘与流式策略的正确认知有：","opts":[{"l":"A","t":"边缘渲染可降低 TTFB"},{"l":"B","t":"流式渲染能更快输出首字节内容"},{"l":"C","t":"需要评估状态管理、认证与数据源的边缘亲和性"},{"l":"D","t":"边缘环境与传统 Node 环境能力完全一致"}],"key":"ABC","mode":"multiple","expl":"D 错误。边缘环境在 API、执行时间、内存与状态持久化上与传统 Node 有明显差异。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":8,"title":"模拟试卷 8","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 的 \u003ccode>&lt;KeepAlive&gt;\u003c/code> 组件在设置了 \u003ccode>max\u003c/code> 属性后，内部采用的缓存淘汰策略是什么？","opts":[{"l":"A","t":"先进先出（FIFO）"},{"l":"B","t":"最近最少使用（LRU），当缓存数量超过 max 时会淘汰最久未访问的组件实例"},{"l":"C","t":"随机淘汰"},{"l":"D","t":"只缓存第一个组件"}],"key":"B","mode":"single","expl":"KeepAlive 源码中使用 LRU 缓存管理，\u003ccode>max\u003c/code> 限制生效时会淘汰最久未用的实例。","modeTitle":"单选题"},{"n":2,"text":"React 19 中 \u003ccode>useOptimistic\u003c/code> 在表单提交场景下的正确使用模式是什么？","opts":[{"l":"A","t":"直接替换 useState"},{"l":"B","t":"在异步操作开始前先应用乐观更新，操作完成或失败后再通过返回的新状态或回滚逻辑确认最终 UI"},{"l":"C","t":"只能用于删除操作"},{"l":"D","t":"不需要处理失败情况"}],"key":"B","mode":"single","expl":"乐观更新的标准模式是“先更新 UI，再确认或回滚”。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>ArrayBuffer.prototype.transfer()\u003c/code> 的主要作用是什么？","opts":[{"l":"A","t":"复制一份 ArrayBuffer"},{"l":"B","t":"将 ArrayBuffer 的所有权转移给新的实例（原 buffer 变为不可用），实现零拷贝转移，常用于 Worker 与主线程间高效传递大数据"},{"l":"C","t":"只改变字节长度"},{"l":"D","t":"必须配合 SharedArrayBuffer 使用"}],"key":"B","mode":"single","expl":"\u003ccode>transfer\u003c/code> 是实现高效零拷贝传输的关键 API。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 中 \u003ccode>moduleResolution: \"bundler\"\u003c/code> 与 \u003ccode>\"node16\"\u003c/code> / \u003ccode>\"nodenext\"\u003c/code> 的主要区别是什么？","opts":[{"l":"A","t":"完全相同"},{"l":"B","t":"\u003ccode>\"bundler\"\u003c/code> 更适合现代打包工具场景，对 \u003ccode>package.json\u003c/code> exports 的解析更宽松且不强制完整的 Node.js ESM 解析规则；\u003ccode>\"node16\"\u003c/code>/\u003ccode>\"nodenext\"\u003c/code> 则严格模拟 Node.js 的解析行为"},{"l":"C","t":"\u003ccode>\"bundler\"\u003c/code> 只用于浏览器"},{"l":"D","t":"只能用于 declaration 文件"}],"key":"B","mode":"single","expl":"不同 \u003ccode>moduleResolution\u003c/code> 策略针对的运行时与工具链场景不同。","modeTitle":"单选题"},{"n":5,"text":"Vite 中对 Web Worker 的导入支持（\u003ccode>?worker\u003c/code> 或 \u003ccode>new Worker(new URL(...))\u003c/code>）的核心处理方式是什么？","opts":[{"l":"A","t":"将其视为普通脚本"},{"l":"B","t":"单独打包 Worker 入口，并正确处理其依赖与资源路径，开发与生产环境都能稳定工作"},{"l":"C","t":"只支持内联 Worker"},{"l":"D","t":"必须手动配置 rollupOptions"}],"key":"B","mode":"single","expl":"Vite 对 Worker 有专门的导入与打包支持。","modeTitle":"单选题"},{"n":6,"text":"Webpack / Rspack 中 magic comment \u003ccode>/* webpackPrefetch: true */\u003c/code> 与 \u003ccode>/* webpackPreload: true */\u003c/code> 的主要区别是什么？","opts":[{"l":"A","t":"没有区别"},{"l":"B","t":"Prefetch 表示未来可能需要的资源（低优先级），Preload 表示当前导航即将需要的资源（更高优先级），浏览器会据此安排加载时机"},{"l":"C","t":"只能用于 CSS"},{"l":"D","t":"会强制同步加载"}],"key":"B","mode":"single","expl":"Prefetch 与 Preload 的优先级和浏览器调度意图不同。","modeTitle":"单选题"},{"n":7,"text":"Koa 中实现请求体大小限制与超时控制的正确层级是什么？","opts":[{"l":"A","t":"只依赖浏览器"},{"l":"B","t":"应在反向代理（Nginx）、Koa body parser 中间件以及应用层逻辑中同时设置合理的限制，形成纵深防护"},{"l":"C","t":"只需要在应用层判断"},{"l":"D","t":"Koa 默认已有严格限制"}],"key":"B","mode":"single","expl":"安全限制应多层设置，而非依赖单一环节。","modeTitle":"单选题"},{"n":8,"text":"在现代路由中，\u003ccode>useBlocker\u003c/code>（或等价导航阻塞机制）的主要使用场景是什么？","opts":[{"l":"A","t":"只用于权限判断"},{"l":"B","t":"在用户有未保存的更改时，拦截路由离开行为并给出确认提示，防止数据丢失"},{"l":"C","t":"强制阻止所有导航"},{"l":"D","t":"只在服务端生效"}],"key":"B","mode":"single","expl":"这是防止用户丢失未保存数据的标准 UX 模式。","modeTitle":"单选题"},{"n":9,"text":"React 中 \u003ccode>@react-compiler\u003c/code> 相关的手动注解（如 \u003ccode>\"use no memo\"\u003c/code> 或编译器提示）主要用途是什么？","opts":[{"l":"A","t":"强制开启优化"},{"l":"B","t":"在编译器自动优化可能产生语义变化或不期望行为的边界情况下，给开发者提供显式控制手段"},{"l":"C","t":"替代所有 Hooks"},{"l":"D","t":"只用于类组件"}],"key":"B","mode":"single","expl":"编译器注解用于处理自动优化的边界情况。","modeTitle":"单选题"},{"n":10,"text":"CSS \u003ccode>@starting-style\u003c/code> 规则的核心能力是什么？","opts":[{"l":"A","t":"定义动画终点"},{"l":"B","t":"指定元素进入时的起始样式，使首次渲染或显示时也能应用过渡动画（解决传统 CSS 过渡无法对“从无到有”生效的问题）"},{"l":"C","t":"替代 @keyframes"},{"l":"D","t":"只对 hover 生效"}],"key":"B","mode":"single","expl":"\u003ccode>@starting-style\u003c/code> 补齐了 CSS 过渡的重要能力缺口。","modeTitle":"单选题"},{"n":11,"text":"Node.js 测试运行器中 \u003ccode>mock.timers\u003c/code> 的主要功能是什么？","opts":[{"l":"A","t":"加速测试执行"},{"l":"B","t":"模拟与控制 \u003ccode>setTimeout\u003c/code>、\u003ccode>setInterval\u003c/code>、\u003ccode>Date\u003c/code> 等计时器相关 API，使时间相关的测试变得可预测与快速"},{"l":"C","t":"只用于真实时间等待"},{"l":"D","t":"必须配合外部库使用"}],"key":"B","mode":"single","expl":"\u003ccode>mock.timers\u003c/code> 是测试时间相关逻辑的官方手段。","modeTitle":"单选题"},{"n":12,"text":"在 Resumability 架构中，事件处理的“懒恢复”机制通常如何工作？","opts":[{"l":"A","t":"页面加载时注册所有事件"},{"l":"B","t":"先通过全局委托或序列化信息记录事件需求，真正交互发生时再恢复对应的处理逻辑与状态，从而减少启动时的工作量"},{"l":"C","t":"完全不需要事件处理"},{"l":"D","t":"必须使用 WebAssembly"}],"key":"B","mode":"single","expl":"懒恢复是 Resumability 降低启动成本的核心机制之一。","modeTitle":"单选题"},{"n":13,"text":"Vue3 的 \u003ccode>onErrorCaptured\u003c/code> 钩子的主要作用是什么？","opts":[{"l":"A","t":"替代 try/catch"},{"l":"B","t":"在组件树中捕获后代组件的错误，可用于实现错误边界、上报与降级 UI"},{"l":"C","t":"只捕获异步错误"},{"l":"D","t":"会阻止所有错误向上传播且无法配置"}],"key":"B","mode":"single","expl":"\u003ccode>onErrorCaptured\u003c/code> 是 Vue 实现错误边界的主要方式。","modeTitle":"单选题"},{"n":14,"text":"前端使用 TransformStream 的主要场景是什么？","opts":[{"l":"A","t":"只用于字符串转换"},{"l":"B","t":"在流式数据处理管道中，对 ReadableStream 的数据块进行转换后再输出到 WritableStream，适合压缩、加解密、协议转换等场景"},{"l":"C","t":"必须一次性加载全部数据"},{"l":"D","t":"只能在 Worker 中使用"}],"key":"B","mode":"single","expl":"TransformStream 是流处理管道的核心构建块。","modeTitle":"单选题"},{"n":15,"text":"INP 优化中，减少 Presentation Delay 的常见有效手段是什么？","opts":[{"l":"A","t":"只优化网络"},{"l":"B","t":"降低事件处理后的渲染成本（减少 DOM 操作、样式重算、布局抖动），合理使用 \u003ccode>content-visibility\u003c/code>、CSS containment 等"},{"l":"C","t":"把所有工作放到 Worker"},{"l":"D","t":"强制同步渲染"}],"key":"B","mode":"single","expl":"Presentation Delay 的优化重点在渲染路径本身。","modeTitle":"单选题"},{"n":16,"text":"CSS \u003ccode>interpolate-size\u003c/code> 属性的主要用途是什么？","opts":[{"l":"A","t":"控制颜色插值"},{"l":"B","t":"允许对 \u003ccode>auto\u003c/code> 等关键字尺寸进行插值，使高度/宽度从 0 到 auto 的过渡动画成为可能"},{"l":"C","t":"替代 transform"},{"l":"D","t":"只对 flex 生效"}],"key":"B","mode":"single","expl":"\u003ccode>interpolate-size\u003c/code> 让高度动画等常见需求变得更简单。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 中使用 \u003ccode>Atomics\u003c/code> 与 \u003ccode>SharedArrayBuffer\u003c/code> 的主要场景是什么？","opts":[{"l":"A","t":"普通数组操作"},{"l":"B","t":"在多个 Worker 或主线程与 Worker 之间实现共享内存上的原子操作与同步，适合高性能并行计算与锁实现"},{"l":"C","t":"替代 postMessage"},{"l":"D","t":"浏览器默认允许无限制使用"}],"key":"B","mode":"single","expl":"SharedArrayBuffer + Atomics 是共享内存并行的基础。","modeTitle":"单选题"},{"n":18,"text":"Vite 的 \u003ccode>worker.rollupOptions\u003c/code> 配置的主要作用是什么？","opts":[{"l":"A","t":"配置主应用打包"},{"l":"B","t":"单独定制 Web Worker 的打包行为（输入输出、插件等），满足 Worker 特殊的依赖与环境需求"},{"l":"C","t":"只用于 CSS"},{"l":"D","t":"强制内联所有 Worker"}],"key":"B","mode":"single","expl":"Worker 通常需要独立的打包配置。","modeTitle":"单选题"},{"n":19,"text":"在细粒度响应式系统中，避免“派生状态连环更新”导致性能问题的常见做法是什么？","opts":[{"l":"A","t":"禁止所有派生状态"},{"l":"B","t":"使用批处理（batch）、合理的 computed 缓存、避免在渲染路径中创建新的派生信号，以及控制更新传播深度"},{"l":"C","t":"全部改为推送式更新"},{"l":"D","t":"只使用原始 state"}],"key":"B","mode":"single","expl":"派生状态管理不当容易引发更新风暴。","modeTitle":"单选题"},{"n":20,"text":"边缘缓存 RSC 或流式 HTML 时，最需要注意的正确性与安全问题是什么？","opts":[{"l":"A","t":"缓存时间越长越好"},{"l":"B","t":"必须区分用户个性化数据与可共享内容，正确设置缓存键与 Cache-Control，避免将私有数据缓存给其他用户"},{"l":"C","t":"边缘缓存不需要考虑个性化"},{"l":"D","t":"只缓存静态资源即可"}],"key":"B","mode":"single","expl":"个性化数据缓存错误是边缘缓存最严重的安全与正确性风险。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 KeepAlive 缓存机制的正确描述有：","opts":[{"l":"A","t":"默认采用 LRU 策略管理 max 限制"},{"l":"B","t":"\u003ccode>include\u003c/code> / \u003ccode>exclude\u003c/code> 可根据组件 name 过滤缓存"},{"l":"C","t":"被缓存的组件会触发 \u003ccode>activated\u003c/code> / \u003ccode>deactivated\u003c/code> 而非销毁"},{"l":"D","t":"缓存的是真实 DOM 而非组件实例"}],"key":"ABC","mode":"multiple","expl":"D 错误。KeepAlive 缓存的是组件实例（VNode 与状态），而非简单真实 DOM。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React 乐观更新与表单 Actions 的正确理解有：","opts":[{"l":"A","t":"\u003ccode>useOptimistic\u003c/code> 可提升感知性能"},{"l":"B","t":"需要妥善处理操作失败后的回滚"},{"l":"C","t":"可与 Server Actions 良好配合"},{"l":"D","t":"乐观更新意味着不需要服务器确认"}],"key":"ABC","mode":"multiple","expl":"D 错误。乐观更新后仍需要服务器最终确认，失败时必须回滚。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 模块解析策略的正确说法有：","opts":[{"l":"A","t":"\u003ccode>bundler\u003c/code> 解析更适合 Vite / Webpack 等打包场景"},{"l":"B","t":"\u003ccode>node16\u003c/code> / \u003ccode>nodenext\u003c/code> 严格遵循 Node.js ESM 规则"},{"l":"C","t":"\u003ccode>package.json\u003c/code> 的 \u003ccode>exports\u003c/code> 字段对解析结果影响很大"},{"l":"D","t":"所有策略对类型检查结果完全一致"}],"key":"ABC","mode":"multiple","expl":"D 错误。不同解析策略会导致类型检查与模块解析结果出现差异。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Web Worker 与主线程数据传递的正确认知有：","opts":[{"l":"A","t":"\u003ccode>postMessage\u003c/code> 默认使用结构化克隆，有开销"},{"l":"B","t":"\u003ccode>ArrayBuffer.transfer\u003c/code> 可实现零拷贝转移"},{"l":"C","t":"SharedArrayBuffer + Atomics 适合需要共享内存的场景"},{"l":"D","t":"所有数据传递都是零开销的"}],"key":"ABC","mode":"multiple","expl":"D 错误。结构化克隆与跨线程通信都有明确开销。","modeTitle":"不定项选择题"},{"n":25,"text":"关于导航阻塞与用户体验的正确实践有：","opts":[{"l":"A","t":"\u003ccode>useBlocker\u003c/code> 可用于未保存更改提示"},{"l":"B","t":"应避免过度阻塞导致用户无法离开页面"},{"l":"C","t":"需要考虑浏览器原生 beforeunload 的配合"},{"l":"D","t":"阻塞导航对 SEO 有正面帮助"}],"key":"ABC","mode":"multiple","expl":"D 错误。导航阻塞主要是 UX 与数据安全考虑，与 SEO 无直接正面关系。","modeTitle":"不定项选择题"},{"n":26,"text":"关于 CSS 进入动画与尺寸过渡的正确描述有：","opts":[{"l":"A","t":"\u003ccode>@starting-style\u003c/code> 解决首次渲染过渡问题"},{"l":"B","t":"\u003ccode>interpolate-size\u003c/code> 允许 auto 尺寸参与插值"},{"l":"C","t":"两者都能改善现代 UI 的动画体验"},{"l":"D","t":"这些特性可以完全替代 JavaScript 动画库"}],"key":"ABC","mode":"multiple","expl":"D 错误。复杂动画与手势场景仍需要 JavaScript 或动画库。","modeTitle":"不定项选择题"},{"n":27,"text":"关于流处理 API 的正确理解有：","opts":[{"l":"A","t":"TransformStream 适合构建数据处理管道"},{"l":"B","t":"ReadableStream 支持 BYOB（Bring Your Own Buffer）读取器以降低内存分配"},{"l":"C","t":"pipeTo / pipeThrough 可简化流的连接"},{"l":"D","t":"流处理只能用于网络请求"}],"key":"ABC","mode":"multiple","expl":"D 错误。流处理可用于文件、网络、加解密等多种场景。","modeTitle":"不定项选择题"},{"n":28,"text":"关于 INP 与 Long Animation Frames 的正确关联有：","opts":[{"l":"A","t":"LoAF 可帮助定位导致交互延迟的长帧"},{"l":"B","t":"Presentation Delay 常与渲染工作相关"},{"l":"C","t":"优化时应同时关注输入处理与渲染路径"},{"l":"D","t":"只要消除 Long Task，INP 就会自动达标"}],"key":"ABC","mode":"multiple","expl":"D 错误。INP 受多段时间影响，仅消除 Long Task 不一定足够。","modeTitle":"不定项选择题"},{"n":29,"text":"关于 Node.js 测试与模拟能力的正确说法有：","opts":[{"l":"A","t":"\u003ccode>mock.timers\u003c/code> 可控制时间流逝"},{"l":"B","t":"内置测试运行器支持并行执行"},{"l":"C","t":"可用于稳定测试时间敏感逻辑"},{"l":"D","t":"已经完全取代所有第三方测试框架的高级功能"}],"key":"ABC","mode":"multiple","expl":"D 错误。内置测试运行器在持续增强，但生态与插件丰富度仍有差距。","modeTitle":"不定项选择题"},{"n":30,"text":"关于边缘渲染与缓存策略的正确认知有：","opts":[{"l":"A","t":"必须严格区分公共内容与私有内容"},{"l":"B","t":"缓存键设计对正确性至关重要"},{"l":"C","t":"流式响应与缓存的结合需要额外小心"},{"l":"D","t":"边缘环境可以无限制地执行任意长时间的计算"}],"key":"ABC","mode":"multiple","expl":"D 错误。边缘环境通常有严格的 CPU 时间与内存限制。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":9,"title":"模拟试卷 9","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 的 \u003ccode>&lt;Teleport&gt;\u003c/code> 组件在设置 \u003ccode>disabled\u003c/code> 属性为 true 时，实际行为是什么？","opts":[{"l":"A","t":"完全销毁传送内容"},{"l":"B","t":"内容不再传送到目标容器，而是渲染在 Teleport 组件原本所在的位置，同时保持逻辑树不变"},{"l":"C","t":"只隐藏内容"},{"l":"D","t":"强制传送到 body"}],"key":"B","mode":"single","expl":"Teleport 的 \u003ccode>disabled\u003c/code> 是官方支持的动态控制手段，逻辑树始终保持不变。","modeTitle":"单选题"},{"n":2,"text":"React 中 \u003ccode>useActionState\u003c/code>（原 useFormState）返回值的核心组成是什么？","opts":[{"l":"A","t":"只有一个 state"},{"l":"B","t":"返回 \u003ccode>[state, formAction, isPending]\u003c/code>（或类似结构），其中 state 是 action 的返回值，formAction 可直接绑定到 form 的 action，isPending 表示提交中状态"},{"l":"C","t":"只返回 pending 状态"},{"l":"D","t":"必须配合 useFormStatus 使用才能工作"}],"key":"B","mode":"single","expl":"\u003ccode>useActionState\u003c/code> 是 React 19 表单与 Actions 体系的核心钩子之一。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>Promise.try()\u003c/code> 的主要价值是什么？","opts":[{"l":"A","t":"替代 Promise.resolve"},{"l":"B","t":"统一处理同步抛错与异步 Promise 的错误捕获，将可能同步抛出的函数安全地包装进 Promise 链路"},{"l":"C","t":"只用于 async 函数"},{"l":"D","t":"性能高于普通调用"}],"key":"B","mode":"single","expl":"\u003ccode>Promise.try\u003c/code> 解决了同步错误与异步错误处理不一致的经典问题。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 中 \u003ccode>NoInfer&lt;T&gt;\u003c/code> 工具类型的主要作用是什么？","opts":[{"l":"A","t":"禁止类型推断"},{"l":"B","t":"阻止 TypeScript 在泛型参数中对指定位置进行推断，强制从其他位置推断或要求显式传入，常用于优化函数重载与配置对象的类型体验"},{"l":"C","t":"只用于类"},{"l":"D","t":"运行时生效"}],"key":"B","mode":"single","expl":"\u003ccode>NoInfer\u003c/code> 是控制泛型推断位置的高级工具类型。","modeTitle":"单选题"},{"n":5,"text":"Vite 的 \u003ccode>css.codeSplit\u003c/code> 配置在生产构建中的默认行为与影响是什么？","opts":[{"l":"A","t":"强制所有 CSS 打成一个文件"},{"l":"B","t":"默认开启，异步 chunk 的 CSS 会跟随 JS chunk 进行代码分割，有利于按需加载，但可能增加请求数"},{"l":"C","t":"只影响开发环境"},{"l":"D","t":"必须手动关闭才能使用 CSS Modules"}],"key":"B","mode":"single","expl":"CSS 代码分割是生产环境按需加载的重要一环。","modeTitle":"单选题"},{"n":6,"text":"在打包工具中，\u003ccode>sideEffects\u003c/code> 字段配置为 \u003ccode>false\u003c/code> 与配置为具体文件数组的主要区别是什么？","opts":[{"l":"A","t":"没有区别"},{"l":"B","t":"\u003ccode>false\u003c/code> 表示整个包都没有副作用，打包工具可以更激进地 tree-shake；数组则精确声明哪些文件含有副作用，其余可被安全删除"},{"l":"C","t":"数组方式会被忽略"},{"l":"D","t":"只对 CSS 生效"}],"key":"B","mode":"single","expl":"精确的 \u003ccode>sideEffects\u003c/code> 配置是 Tree-shaking 正确性与激进程度的关键。","modeTitle":"单选题"},{"n":7,"text":"Koa 中正确实现优雅关闭（graceful shutdown）时，需要处理的关键点是什么？","opts":[{"l":"A","t":"直接 process.exit"},{"l":"B","t":"停止接收新请求、等待现有请求完成（或超时）、关闭数据库连接与定时器等资源，再退出进程"},{"l":"C","t":"只需要关闭 HTTP 服务器"},{"l":"D","t":"Node.js 会自动处理所有清理"}],"key":"B","mode":"single","expl":"优雅关闭是生产服务必须实现的可靠性实践。","modeTitle":"单选题"},{"n":8,"text":"现代路由库中 scroll restoration 的常见实现策略是什么？","opts":[{"l":"A","t":"总是滚动到顶部"},{"l":"B","t":"根据导航类型（push / replace / pop）决定恢复到历史位置还是顶部，并结合 key 或 location 状态保存滚动位置"},{"l":"C","t":"只依赖浏览器默认行为"},{"l":"D","t":"必须使用 JavaScript 强制平滑滚动"}],"key":"B","mode":"single","expl":"良好的滚动恢复是 SPA 体验的重要细节。","modeTitle":"单选题"},{"n":9,"text":"React Compiler 在处理“反模式”或无法安全优化的代码时，通常会采取什么策略？","opts":[{"l":"A","t":"强制优化并可能改变语义"},{"l":"B","t":"跳过优化或根据注解（如 \u003ccode>\"use no memo\"\u003c/code>）保守处理，保证语义正确性优先于性能"},{"l":"C","t":"直接报错并终止编译"},{"l":"D","t":"只优化类组件"}],"key":"B","mode":"single","expl":"语义正确性永远优先于自动优化。","modeTitle":"单选题"},{"n":10,"text":"CSS \u003ccode>masonry\u003c/code> 布局（目前标准化进程中）的主要目标是什么？","opts":[{"l":"A","t":"替代 Grid"},{"l":"B","t":"实现类似 Pinterest 的瀑布流布局，让内容按多列自动填充，同时保持更合理的源顺序与可访问性"},{"l":"C","t":"只用于图片"},{"l":"D","t":"已经在所有浏览器稳定实现且无前缀"}],"key":"B","mode":"single","expl":"masonry 是 CSS 原生瀑布流的标准化方向。","modeTitle":"单选题"},{"n":11,"text":"Node.js 内置测试运行器支持并行执行时，默认的隔离方式是什么？","opts":[{"l":"A","t":"所有测试共享同一进程"},{"l":"B","t":"每个测试文件通常在独立的进程或 Worker 中运行，以获得更好的隔离性与稳定性"},{"l":"C","t":"只支持单线程"},{"l":"D","t":"必须手动创建集群"}],"key":"B","mode":"single","expl":"隔离是并行测试正确性的基础。","modeTitle":"单选题"},{"n":12,"text":"在混合架构中，将 RSC 与岛架构结合使用的主要收益是什么？","opts":[{"l":"A","t":"没有收益"},{"l":"B","t":"服务端组件负责数据获取与静态结构，岛屿负责高交互区域，进一步降低客户端 JavaScript 体积与 hydration 范围"},{"l":"C","t":"必须使用同一框架"},{"l":"D","t":"会增加服务端负担且无客户端收益"}],"key":"B","mode":"single","expl":"RSC + 岛屿是当前降低客户端成本的有效组合架构。","modeTitle":"单选题"},{"n":13,"text":"Vue3 的 \u003ccode>effect\u003c/code> 调试接口（如 \u003ccode>onTrack\u003c/code> / \u003ccode>onTrigger\u003c/code>）的主要用途是什么？","opts":[{"l":"A","t":"替代 console.log"},{"l":"B","t":"在开发环境中追踪依赖收集与触发更新的具体过程，帮助定位不必要的更新或响应式丢失问题"},{"l":"C","t":"只在生产环境可用"},{"l":"D","t":"会显著影响生产性能"}],"key":"B","mode":"single","expl":"响应式调试接口是排查更新问题的重要工具。","modeTitle":"单选题"},{"n":14,"text":"前端使用 WebSocket Stream API（或标准流封装）的主要优势是什么？","opts":[{"l":"A","t":"完全替代普通 WebSocket"},{"l":"B","t":"将 WebSocket 消息与 Streams 标准结合，方便进行背压控制、管道处理与取消操作"},{"l":"C","t":"只支持文本消息"},{"l":"D","t":"浏览器支持已完全统一"}],"key":"B","mode":"single","expl":"Streams 与 WebSocket 结合可获得标准的背压与管道能力。","modeTitle":"单选题"},{"n":15,"text":"使用 Event Timing API 帮助分析 INP 时，最有价值的信息通常包括什么？","opts":[{"l":"A","t":"只返回总时间"},{"l":"B","t":"交互的开始时间、处理开始时间、下一帧绘制时间等，可据此拆分 Input Delay、Processing Duration 与 Presentation Delay"},{"l":"C","t":"只能测量点击事件"},{"l":"D","t":"与 PerformanceObserver 无关"}],"key":"B","mode":"single","expl":"Event Timing 是拆解 INP 的核心数据来源。","modeTitle":"单选题"},{"n":16,"text":"CSS \u003ccode>text-box-trim\u003c/code> / \u003ccode>text-box-edge\u003c/code>（标准化中）试图解决的主要问题是什么？","opts":[{"l":"A","t":"文字颜色"},{"l":"B","t":"更精确地控制文字的盒模型与基线对齐，减少额外的空白空间，改善排版一致性"},{"l":"C","t":"替代 line-height"},{"l":"D","t":"只对标题生效"}],"key":"B","mode":"single","expl":"文字盒模型精确控制是高质量排版的需求。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 中 \u003ccode>Iterator\u003c/code> 辅助方法（map、filter、take 等）采用惰性计算的主要好处是什么？","opts":[{"l":"A","t":"立即生成全部结果"},{"l":"B","t":"只有在实际迭代消费时才计算，适合处理大数据集、无限序列或需要短路的场景，节省内存与计算"},{"l":"C","t":"只能用于数组"},{"l":"D","t":"性能必然低于手写循环"}],"key":"B","mode":"single","expl":"惰性计算是 Iterator Helpers 的重要优势。","modeTitle":"单选题"},{"n":18,"text":"Vite 的 \u003ccode>define\u003c/code> 选项在替换过程中需要注意的关键点是什么？","opts":[{"l":"A","t":"可以随意替换任何字符串"},{"l":"B","t":"替换是全局文本替换，需要避免误伤，常用于注入环境变量，且值必须是 JSON 可序列化的"},{"l":"C","t":"只在开发环境生效"},{"l":"D","t":"会自动处理类型"}],"key":"B","mode":"single","expl":"\u003ccode>define\u003c/code> 是全局替换，使用时必须谨慎。","modeTitle":"单选题"},{"n":19,"text":"在长生命周期的全局状态（如用户 session、主题）中，最容易出现的内存泄漏模式是什么？","opts":[{"l":"A","t":"使用了 const"},{"l":"B","t":"订阅了外部事件或 store 却未在合适的时机取消订阅，导致回调与闭包长期持有引用"},{"l":"C","t":"使用了 WeakMap"},{"l":"D","t":"只发生在 React 中"}],"key":"B","mode":"single","expl":"未清理的订阅是长生命周期应用中最常见的泄漏源。","modeTitle":"单选题"},{"n":20,"text":"对 RSC 载荷或流式 HTML 进行 CDN / 边缘缓存时，正确的 Cache-Control 策略原则是什么？","opts":[{"l":"A","t":"全部使用 max-age=31536000"},{"l":"B","t":"公共可共享部分使用较长缓存，私有或用户相关部分使用 private 或不缓存，并配合适当的 Vary 与缓存键"},{"l":"C","t":"全部使用 no-store"},{"l":"D","t":"缓存策略对安全性无影响"}],"key":"B","mode":"single","expl":"缓存安全与正确性是边缘策略的第一原则。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 Teleport 的正确描述有：","opts":[{"l":"A","t":"可以指定多个目标（通过多次使用或动态 to）"},{"l":"B","t":"\u003ccode>disabled\u003c/code> 时内容回退到原位置渲染"},{"l":"C","t":"逻辑父子关系与 provide/inject 保持不变"},{"l":"D","t":"传送后事件冒泡目标会改变为物理 DOM 父级"}],"key":"ABC","mode":"multiple","expl":"D 错误。Teleport 虽然改变了物理 DOM 位置，但 Vue 的事件系统仍按逻辑树处理，冒泡行为与预期逻辑一致。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React 表单状态管理新 API 的正确理解有：","opts":[{"l":"A","t":"\u003ccode>useActionState\u003c/code> 适合管理 action 返回的状态"},{"l":"B","t":"\u003ccode>useFormStatus\u003c/code> 可获取上层表单的 pending 状态"},{"l":"C","t":"两者常与 Server Actions 配合使用"},{"l":"D","t":"可以完全替代所有客户端表单库"}],"key":"ABC","mode":"multiple","expl":"D 错误。复杂表单场景仍可能需要专门的表单库或额外状态管理。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 推断控制工具的正确说法有：","opts":[{"l":"A","t":"\u003ccode>NoInfer&lt;T&gt;\u003c/code> 可阻止特定位置的推断"},{"l":"B","t":"\u003ccode>const\u003c/code> 类型参数有助于保留字面量类型"},{"l":"C","t":"合理使用可提升 API 的类型体验"},{"l":"D","t":"这些工具会改变运行时行为"}],"key":"ABC","mode":"multiple","expl":"D 错误。这些都是编译时类型工具，无运行时影响。","modeTitle":"不定项选择题"},{"n":24,"text":"关于打包工具 sideEffects 与 Tree-shaking 的正确认知有：","opts":[{"l":"A","t":"\u003ccode>sideEffects: false\u003c/code> 声明最激进"},{"l":"B","t":"精确的数组配置更安全"},{"l":"C","t":"CSS 与 polyfill 文件常需要被标记为有副作用"},{"l":"D","t":"只要是 ESM 就一定能被完整 tree-shake"}],"key":"ABC","mode":"multiple","expl":"D 错误。副作用标记不正确或有副作用的模块会导致 tree-shake 不彻底。","modeTitle":"不定项选择题"},{"n":25,"text":"关于滚动恢复与路由的正确实践有：","opts":[{"l":"A","t":"前进/后退通常应恢复历史滚动位置"},{"l":"B","t":"新导航通常滚动到顶部或指定锚点"},{"l":"C","t":"需要保存与恢复滚动位置的机制"},{"l":"D","t":"完全依赖浏览器即可满足所有 SPA 场景"}],"key":"ABC","mode":"multiple","expl":"D 错误。浏览器默认行为在 SPA 中通常不足以满足复杂滚动恢复需求。","modeTitle":"不定项选择题"},{"n":26,"text":"关于 CSS 现代布局与文字排版特性的正确描述有：","opts":[{"l":"A","t":"masonry 目标是实现瀑布流并保持可访问性"},{"l":"B","t":"text-box 相关属性试图更精确控制文字盒模型"},{"l":"C","t":"这些特性多数仍处于标准化或逐步支持阶段"},{"l":"D","t":"可以无顾虑地在生产环境依赖所有最新特性"}],"key":"ABC","mode":"multiple","expl":"D 错误。新特性需要渐进增强与兼容性处理。","modeTitle":"不定项选择题"},{"n":27,"text":"关于 Streams 与实时通信结合的正确理解有：","opts":[{"l":"A","t":"TransformStream 可用于消息转换管道"},{"l":"B","t":"背压控制对流式场景很重要"},{"l":"C","t":"WebSocket 与 Streams 结合可获得更好的控制力"},{"l":"D","t":"所有浏览器对 WebSocket Stream 的支持已经完全一致"}],"key":"ABC","mode":"multiple","expl":"D 错误。WebSocket Stream 相关标准仍在推进，支持度并不统一。","modeTitle":"不定项选择题"},{"n":28,"text":"关于 INP 测量与 Event Timing 的正确关联有：","opts":[{"l":"A","t":"Event Timing API 提供交互各阶段时间戳"},{"l":"B","t":"可据此拆分 Input Delay、Processing、Presentation"},{"l":"C","t":"PerformanceObserver 可观察 event timing 条目"},{"l":"D","t":"只测量成功的交互即可，失败交互可忽略"}],"key":"ABC","mode":"multiple","expl":"D 错误。失败或取消的交互有时也能提供有价值的性能信息。","modeTitle":"不定项选择题"},{"n":29,"text":"关于 Node.js 测试隔离与并行的正确说法有：","opts":[{"l":"A","t":"并行执行通常以文件为粒度进行隔离"},{"l":"B","t":"可提高多核利用率"},{"l":"C","t":"需要注意测试间的共享状态污染"},{"l":"D","t":"并行一定比串行更快且无副作用"}],"key":"ABC","mode":"multiple","expl":"D 错误。并行可能引入竞态与资源竞争，并非无条件更快。","modeTitle":"不定项选择题"},{"n":30,"text":"关于 RSC / 流式内容缓存安全的正确认知有：","opts":[{"l":"A","t":"必须区分 public 与 private 内容"},{"l":"B","t":"缓存键应包含影响响应的关键维度"},{"l":"C","t":"错误的缓存可能导致数据泄露"},{"l":"D","t":"边缘缓存可以忽略用户登录状态"}],"key":"ABC","mode":"multiple","expl":"D 错误。用户登录状态通常是缓存键或 private 判定的重要维度。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]},{"n":10,"title":"模拟试卷 10","subject":"前端专家架构师方向","sections":[{"mode":"single","name":"一、单选题（每题只有一个正确答案）","items":[{"n":1,"text":"Vue3 中 \u003ccode>v-memo\u003c/code> 指令的核心作用是什么？","opts":[{"l":"A","t":"替代 \u003ccode>v-if\u003c/code>"},{"l":"B","t":"根据依赖数组决定是否跳过该节点及其子树的更新，实现更细粒度的模板级记忆化，适合优化列表中静态或低频变化的部分"},{"l":"C","t":"只对组件生效"},{"l":"D","t":"强制每次都重新渲染"}],"key":"B","mode":"single","expl":"\u003ccode>v-memo\u003c/code> 是 Vue 提供的模板级优化手段，适合列表中局部静态内容。","modeTitle":"单选题"},{"n":2,"text":"React 中使用 \u003ccode>use(Promise)\u003c/code> 时，如果 Promise 处于 pending 状态，组件会如何表现？","opts":[{"l":"A","t":"直接抛出错误"},{"l":"B","t":"挂起（Suspend），并向上寻找最近的 Suspense 边界显示 fallback，直到 Promise resolve"},{"l":"C","t":"返回 undefined"},{"l":"D","t":"阻塞整个应用渲染"}],"key":"B","mode":"single","expl":"\u003ccode>use\u003c/code> 读取 Promise 是 React Suspense 数据获取的标准集成方式。","modeTitle":"单选题"},{"n":3,"text":"在 JavaScript 中，\u003ccode>Error\u003c/code> 对象的 \u003ccode>cause\u003c/code> 属性主要用途是什么？","opts":[{"l":"A","t":"替代 message"},{"l":"B","t":"用于链式保存原始错误，方便在捕获并重新抛出时保留完整的错误因果链，便于调试与日志分析"},{"l":"C","t":"只在 TypeError 中可用"},{"l":"D","t":"会自动被 JSON.stringify 序列化"}],"key":"B","mode":"single","expl":"\u003ccode>cause\u003c/code> 是现代错误链的标准做法，极大方便调试。","modeTitle":"单选题"},{"n":4,"text":"TypeScript 中 \u003ccode>package.json\u003c/code> 的 \u003ccode>exports\u003c/code> 字段与 \u003ccode>types\u003c/code> / \u003ccode>typesVersions\u003c/code> 配合时，最关键的解析原则是什么？","opts":[{"l":"A","t":"只看 \u003ccode>main\u003c/code> 字段"},{"l":"B","t":"条件导出（exports）优先，类型解析会跟随对应的条件路径，需要正确配置 \u003ccode>\"types\"\u003c/code> 条件或默认类型入口，否则容易出现类型与运行时不一致"},{"l":"C","t":"类型文件总是从根目录查找"},{"l":"D","t":"可以忽略 exports 直接写 types"}],"key":"B","mode":"single","expl":"\u003ccode>exports\u003c/code> 与类型入口的正确配置是库作者必须重视的细节。","modeTitle":"单选题"},{"n":5,"text":"Vite 的 \u003ccode>renderBuiltUrl\u003c/code> 选项的主要使用场景是什么？","opts":[{"l":"A","t":"只用于开发服务器"},{"l":"B","t":"自定义生产构建中资源（JS、CSS、图片等）最终生成的 URL，常用于 CDN 路径、公共路径动态计算或特殊部署需求"},{"l":"C","t":"替代 base 配置"},{"l":"D","t":"只能返回相对路径"}],"key":"B","mode":"single","expl":"\u003ccode>renderBuiltUrl\u003c/code> 是处理复杂部署路径的灵活钩子。","modeTitle":"单选题"},{"n":6,"text":"在 Tree-shaking 过程中，\u003ccode>/*#__PURE__*/\u003c/code> 注释的主要作用是什么？","opts":[{"l":"A","t":"强制保留代码"},{"l":"B","t":"告诉压缩工具（Terser、esbuild 等）该函数调用没有副作用，可以在结果未被使用时安全删除，辅助更激进的 dead-code elimination"},{"l":"C","t":"只对箭头函数生效"},{"l":"D","t":"会被 TypeScript 类型检查使用"}],"key":"B","mode":"single","expl":"\u003ccode>/*#__PURE__*/\u003c/code> 是帮助压缩工具做更优 tree-shake 的重要注解。","modeTitle":"单选题"},{"n":7,"text":"Koa 中处理 CORS 时，除了设置 \u003ccode>Access-Control-Allow-Origin\u003c/code>，还需要特别注意的安全相关点是什么？","opts":[{"l":"A","t":"只需要允许所有源"},{"l":"B","t":"动态反射 Origin 时必须做好白名单校验，并正确处理 \u003ccode>Access-Control-Allow-Credentials\u003c/code>、预检请求方法与头信息，避免安全漏洞"},{"l":"C","t":"CORS 完全由浏览器保证安全"},{"l":"D","t":"只需要处理 GET 请求"}],"key":"B","mode":"single","expl":"CORS 配置不当是常见安全风险来源。","modeTitle":"单选题"},{"n":8,"text":"数据路由中，在窗口重新获得焦点（window focus）时触发 revalidate 的主要目的是什么？","opts":[{"l":"A","t":"增加服务器压力"},{"l":"B","t":"在用户切回页面时获取最新数据，提升数据新鲜度，同时可通过配置避免过于频繁的请求"},{"l":"C","t":"只用于移动端"},{"l":"D","t":"强制刷新整个页面"}],"key":"B","mode":"single","expl":"focus revalidate 是提升 SPA 数据新鲜度的常用策略。","modeTitle":"单选题"},{"n":9,"text":"React 的 Activity 组件在 \u003ccode>mode=\"hidden\"\u003c/code> 时，通常会做出哪些优化？","opts":[{"l":"A","t":"完全卸载组件并丢失状态"},{"l":"B","t":"保留状态与 DOM（或可恢复表示），但降低更新优先级、跳过部分副作用或不进行完整提交，以减少后台资源消耗"},{"l":"C","t":"与 \u003ccode>display: none\u003c/code> 完全等价"},{"l":"D","t":"必须配合 Suspense 才能使用"}],"key":"B","mode":"single","expl":"Activity hidden 模式的核心是“保留但降本”。","modeTitle":"单选题"},{"n":10,"text":"CSS \u003ccode>@property\u003c/code> 规则的核心能力是什么？","opts":[{"l":"A","t":"只定义颜色变量"},{"l":"B","t":"注册自定义属性并指定语法类型、是否继承、初始值，使该属性可被动画、过渡，并获得更强的类型校验"},{"l":"C","t":"替代所有 CSS 变量"},{"l":"D","t":"只在运行时通过 JS 生效"}],"key":"B","mode":"single","expl":"\u003ccode>@property\u003c/code> 让 CSS 变量真正具备类型与动画能力。","modeTitle":"单选题"},{"n":11,"text":"Node.js 的 \u003ccode>fs.glob\u003c/code> / \u003ccode>fs.globSync\u003c/code>（或等效实现）相比外部 glob 库的主要优势是什么？","opts":[{"l":"A","t":"功能更多"},{"l":"B","t":"官方内置，减少外部依赖，并与 Node.js 文件系统 API 更好地集成，适合工具链与脚本场景"},{"l":"C","t":"性能必然更差"},{"l":"D","t":"只支持同步调用"}],"key":"B","mode":"single","expl":"内置 glob 减少了工具链对外部依赖的需求。","modeTitle":"单选题"},{"n":12,"text":"在岛架构中实现“部分 Hydration”时，最关键的控制维度是什么？","opts":[{"l":"A","t":"只控制图片懒加载"},{"l":"B","t":"精确决定哪些组件需要在客户端激活（hydrate），哪些保持静态 HTML，从而最小化客户端 JavaScript 执行"},{"l":"C","t":"必须让所有组件都 hydrate"},{"l":"D","t":"与 SEO 完全无关"}],"key":"B","mode":"single","expl":"部分 Hydration 的核心就是精准控制激活范围。","modeTitle":"单选题"},{"n":13,"text":"Vue3 自定义指令的 \u003ccode>getSSRProps\u003c/code> 钩子主要解决什么问题？","opts":[{"l":"A","t":"客户端动画"},{"l":"B","t":"在服务端渲染时为指令提供可序列化的 props（通常是属性或 class/style），避免指令在 SSR 阶段因缺少 DOM 而失效"},{"l":"C","t":"只用于客户端"},{"l":"D","t":"替代 mounted 钩子"}],"key":"B","mode":"single","expl":"\u003ccode>getSSRProps\u003c/code> 是自定义指令支持 SSR 的关键钩子。","modeTitle":"单选题"},{"n":14,"text":"前端使用 \u003ccode>fetch\u003c/code> 的 \u003ccode>keepalive\u003c/code> 选项的主要场景是什么？","opts":[{"l":"A","t":"保持 WebSocket 连接"},{"l":"B","t":"在页面卸载时仍能发送完请求（如日志上报、分析数据），浏览器会尽力完成这些请求"},{"l":"C","t":"加速所有请求"},{"l":"D","t":"只对 POST 生效"}],"key":"B","mode":"single","expl":"\u003ccode>keepalive\u003c/code> 专门解决页面卸载时的上报问题。","modeTitle":"单选题"},{"n":15,"text":"Long Animation Frames（LoAF）相比传统 Long Tasks，额外提供的重要归因信息通常包括什么？","opts":[{"l":"A","t":"只多了时间戳"},{"l":"B","t":"脚本执行、布局、绘制等更细致的耗时分布与责任方信息，有助于更精准定位交互卡顿原因"},{"l":"C","t":"只能测量动画"},{"l":"D","t":"与 INP 完全无关"}],"key":"B","mode":"single","expl":"LoAF 的细粒度归因是其相比 Long Tasks 的重要升级。","modeTitle":"单选题"},{"n":16,"text":"CSS \u003ccode>scroll-state\u003c/code> 查询（或类似滚动状态查询能力）试图实现的目标是什么？","opts":[{"l":"A","t":"只检测滚动条是否存在"},{"l":"B","t":"根据滚动容器的状态（是否滚动到边缘、是否正在滚动等）应用样式，减少对 JavaScript 滚动监听的依赖"},{"l":"C","t":"替代 IntersectionObserver"},{"l":"D","t":"已经完全标准化并强制开启"}],"key":"B","mode":"single","expl":"滚动状态查询是减少 JS 滚动监听的方向之一。","modeTitle":"单选题"},{"n":17,"text":"JavaScript 中可调整大小的 ArrayBuffer（\u003ccode>resizable: true\u003c/code>）的主要使用场景是什么？","opts":[{"l":"A","t":"替代普通数组"},{"l":"B","t":"在需要动态扩展或收缩二进制数据容量时避免重新分配与拷贝，适合某些流处理与协议实现"},{"l":"C","t":"性能总是更高"},{"l":"D","t":"必须与 SharedArrayBuffer 一起使用"}],"key":"B","mode":"single","expl":"可调整大小的 ArrayBuffer 适合动态二进制场景。","modeTitle":"单选题"},{"n":18,"text":"Vite 的 \u003ccode>assetsInclude\u003c/code> 配置的主要作用是什么？","opts":[{"l":"A","t":"排除资源"},{"l":"B","t":"额外指定哪些文件类型应被视为静态资源并参与资源管道处理（哈希、路径转换等），补充默认资源类型列表"},{"l":"C","t":"只影响 CSS"},{"l":"D","t":"强制内联所有匹配文件"}],"key":"B","mode":"single","expl":"\u003ccode>assetsInclude\u003c/code> 用于扩展资源管道的处理范围。","modeTitle":"单选题"},{"n":19,"text":"Zustand 的 \u003ccode>subscribeWithSelector\u003c/code> 中间件的核心价值是什么？","opts":[{"l":"A","t":"替代所有 selector"},{"l":"B","t":"允许基于 selector 的精确订阅，只有当选中的状态切片发生变化时才通知监听者，进一步减少无效更新"},{"l":"C","t":"只用于持久化"},{"l":"D","t":"会增加内存泄漏风险"}],"key":"B","mode":"single","expl":"精确订阅是进一步降低更新频率的有效手段。","modeTitle":"单选题"},{"n":20,"text":"在边缘中间件（Edge Middleware）中执行 A/B 测试或个性化重写时，最需要注意的正确性风险是什么？","opts":[{"l":"A","t":"性能一定更好"},{"l":"B","t":"避免将私有用户数据泄露到缓存键或日志中，并确保重写逻辑在边缘与源站行为一致，防止缓存污染"},{"l":"C","t":"可以随意读取所有 Cookie"},{"l":"D","t":"边缘中间件没有安全限制"}],"key":"B","mode":"single","expl":"边缘中间件的缓存与个性化必须高度重视安全与一致性。","modeTitle":"单选题"}],"modeTitle":"第一部分 · 单选题"},{"mode":"multiple","name":"二、不定项选择题（每题至少有一个正确答案，可能多选）","items":[{"n":21,"text":"关于 Vue3 \u003ccode>v-memo\u003c/code> 的正确描述有：","opts":[{"l":"A","t":"依赖数组不变时跳过更新"},{"l":"B","t":"可与 \u003ccode>v-for\u003c/code> 结合优化列表"},{"l":"C","t":"是模板级的记忆化手段"},{"l":"D","t":"可以替代所有 \u003ccode>computed\u003c/code> 与 \u003ccode>React.memo\u003c/code>"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>v-memo\u003c/code> 是特定场景的优化工具，不能替代所有记忆化手段。","modeTitle":"不定项选择题"},{"n":22,"text":"关于 React \u003ccode>use\u003c/code> 钩子与 Suspense 的正确理解有：","opts":[{"l":"A","t":"读取 pending Promise 会触发 Suspend"},{"l":"B","t":"可以读取 Context"},{"l":"C","t":"支持在条件语句中调用"},{"l":"D","t":"可以在任意异步回调中随意调用"}],"key":"ABC","mode":"multiple","expl":"D 错误。\u003ccode>use\u003c/code> 仍需在渲染阶段调用，不能在任意异步回调中随意使用。","modeTitle":"不定项选择题"},{"n":23,"text":"关于 TypeScript 类型入口与 package exports 的正确说法有：","opts":[{"l":"A","t":"exports 条件导出优先于旧的 types 字段"},{"l":"B","t":"需要正确配置 types 条件以保证类型与实现一致"},{"l":"C","t":"错误配置容易导致类型检查通过但运行时报错"},{"l":"D","t":"只影响开发环境，不影响构建"}],"key":"ABC","mode":"multiple","expl":"D 错误。类型入口错误也会影响编辑器体验与构建时的类型检查。","modeTitle":"不定项选择题"},{"n":24,"text":"关于 Tree-shaking 辅助手段的正确认知有：","opts":[{"l":"A","t":"\u003ccode>/*#__PURE__*/\u003c/code> 注释帮助压缩工具删除无用调用"},{"l":"B","t":"\u003ccode>sideEffects\u003c/code> 声明影响打包工具的删除决策"},{"l":"C","t":"两者结合可获得更好的摇树效果"},{"l":"D","t":"有了这些手段就可以忽略代码本身的副作用"}],"key":"ABC","mode":"multiple","expl":"D 错误。注解与声明只是辅助，代码本身的副作用管理仍是基础。","modeTitle":"不定项选择题"},{"n":25,"text":"关于数据重新验证策略的正确实践有：","opts":[{"l":"A","t":"窗口聚焦时 revalidate 可提升新鲜度"},{"l":"B","t":"网络重新连接时也是常见触发点"},{"l":"C","t":"需要防抖或节流避免请求风暴"},{"l":"D","t":"所有数据都应实时轮询"}],"key":"ABC","mode":"multiple","expl":"D 错误。实时轮询成本高，应根据业务对新鲜度的要求选择策略。","modeTitle":"不定项选择题"},{"n":26,"text":"关于 CSS 自定义属性与动画的正确描述有：","opts":[{"l":"A","t":"\u003ccode>@property\u003c/code> 可让自定义属性支持动画"},{"l":"B","t":"需要声明语法类型与初始值"},{"l":"C","t":"比普通 CSS 变量具备更强的类型约束"},{"l":"D","t":"注册后在所有浏览器中行为完全一致且无需降级"}],"key":"ABC","mode":"multiple","expl":"D 错误。需要考虑浏览器兼容性与渐进增强。","modeTitle":"不定项选择题"},{"n":27,"text":"关于页面卸载时数据上报的正确理解有：","opts":[{"l":"A","t":"\u003ccode>fetch\u003c/code> + \u003ccode>keepalive\u003c/code> 是常见手段"},{"l":"B","t":"\u003ccode>navigator.sendBeacon\u003c/code> 也是经典方案"},{"l":"C","t":"需要考虑请求体积与浏览器限制"},{"l":"D","t":"可以保证 100% 送达"}],"key":"ABC","mode":"multiple","expl":"D 错误。任何卸载时上报都无法保证 100% 送达。","modeTitle":"不定项选择题"},{"n":28,"text":"关于 LoAF 与交互性能分析的正确关联有：","opts":[{"l":"A","t":"LoAF 提供更细的脚本与渲染归因"},{"l":"B","t":"有助于定位 INP 高的根本原因"},{"l":"C","t":"可与 Event Timing 数据互补"},{"l":"D","t":"只要存在 LoAF，INP 就一定不合格"}],"key":"ABC","mode":"multiple","expl":"D 错误。LoAF 的存在需要结合实际时长与用户体验判断，并非绝对对应不合格。","modeTitle":"不定项选择题"},{"n":29,"text":"关于状态精确订阅的正确说法有：","opts":[{"l":"A","t":"\u003ccode>subscribeWithSelector\u003c/code> 可减少无效通知"},{"l":"B","t":"需要正确处理 selector 的稳定性"},{"l":"C","t":"与浅比较结合效果更好"},{"l":"D","t":"精确订阅可以完全消除所有重渲染"}],"key":"ABC","mode":"multiple","expl":"D 错误。精确订阅减少的是通知与计算，组件是否重渲染还取决于使用方式。","modeTitle":"不定项选择题"},{"n":30,"text":"关于边缘中间件与缓存安全的正确认知有：","opts":[{"l":"A","t":"个性化逻辑必须谨慎设计缓存键"},{"l":"B","t":"避免在缓存中存储敏感用户数据"},{"l":"C","t":"重写规则需要考虑缓存一致性"},{"l":"D","t":"边缘中间件可以无限制地执行阻塞式重计算"}],"key":"ABC","mode":"multiple","expl":"D 错误。边缘环境有严格的执行时间与资源限制。","modeTitle":"不定项选择题"}],"modeTitle":"第二部分 · 不定项选择题"}]}]</script>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ data & store ============ */
+var PAPERS = JSON.parse(document.getElementById('quizData').textContent);
+var LS_KEY = 'arch-frontend-quiz-v1';
+var store = { current: 0, papers: {} };
+try{
+  var saved = JSON.parse(localStorage.getItem(LS_KEY)||'null');
+  if(saved && saved.papers){ store = saved; }
+}catch(e){}
+if(!store.current || store.current<0 || store.current>=PAPERS.length) store.current = 0;
+if(!store.papers) store.papers = {};
+
+function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(store)); }catch(e){} }
+
+function flat(p){
+  var r=[];
+  p.sections.forEach(function(s){ s.items.forEach(function(it){ r.push(it); }); });
+  return r;
+}
+var ITEMS = PAPERS.map(flat);
+
+function ps(pi){ if(!store.papers[pi]) store.papers[pi]={answers:{},graded:false}; return store.papers[pi]; }
+function sel(pi,qn){ var s=ps(pi).answers[qn]||[]; return s; }
+function answeredN(pi){
+  return ITEMS[pi].filter(function(it){ return (ps(pi).answers[it.n]||[]).length>0; }).length;
+}
+function isOk(it,arr){ return (arr||[]).join('') === it.key; }
+
+/* reveal override map */
+var forceOpen = {};
+
+/* ============ dom ============ */
+function $(s){ return document.querySelector(s); }
+
+function sheetClass(pi, it, ans){
+  var st = ps(pi);
+  if(st.graded){
+    if(isOk(it,ans)) return 'right';
+    if(ans.length) return 'wrong';
+    return 'skip';
+  }
+  return ans.length ? 'fill' : '';
+}
+
+function buildHero(pi){
+  var p = PAPERS[pi];
+  var nS = p.sections[0].items.length;
+  var nM = p.sections.length>1 ? p.sections[1].items.length : 0;
+  return '<div class="paper-hero"><div class="kicker">Front-end Expert · Architecture Level</div>'+
+   '<h2>模拟试卷 <em>'+p.n+'</em> —— '+esc(p.subject)+'</h2>'+
+   '<div class="sub">深度考察「核心原理 · 源码机制 · 构建工具 · 性能体系 · 架构决策」的面试级模拟题，作答后自动判分并逐题复盘。</div>'+
+   '<div class="hero-meta"><span class="mstat"><span class="dg">'+nS+'</span> 道单选题</span>'+
+   '<span class="mstat"><span class="dg">'+nM+'</span> 道不定项</span>'+
+   '<span class="mstat">满分 <span class="dg">30</span></span>'+
+   '<span class="mstat">建议 60 分钟</span></div>'+
+   '<div class="hintline"><span class="dotchip"><i></i>点击选项即可作答</span>'+
+   '<span class="dotchip"><i></i>不定项须完全选对</span>'+
+   '<span class="dotchip"><i></i>交卷后自动判分并展示解析</span></div></div>';
+}
+function esc(s){ return String(s).replace(/"/g,'&quot;'); }
+
+function buildQuestions(pi){
+  var st = ps(pi);
+  var items = ITEMS[pi];
+  var html = '';
+  var prev = null;
+  items.forEach(function(it){
+    if(prev && it.mode!==prev){
+      var lo = it.mode==='single' ? 1 : 21, hi = it.mode==='single' ? 20 : 30;
+      html += '<div class="part-band"><span class="pill"><b>'+it.modeTitle+'</b><span>'+lo+'–'+hi+'</span></span><span class="bar"></span></div>';
+    }
+    prev = it.mode;
+    html += questionCard(pi, it);
+  });
+  return html;
+}
+
+function questionCard(pi, it){
+  var st = ps(pi);
+  var ans = st.answers[it.n]||[];
+  var graded = !!st.graded;
+  var ok = isOk(it, ans);
+  var tag;
+  if(!graded) tag = ans.length ? ['s-answered','已作答'] : ['s-none','未作答'];
+  else if(ok) tag = ['s-right','✓ 回答正确'];
+  else if(ans.length) tag = ['s-wrong','✗ 回答错误'];
+  else tag = ['s-none','未作答'];
+
+  var optsHtml = it.opts.map(function(o){
+    var chosen = ans.indexOf(o.l)>=0;
+    var cls='', mark='';
+    if(graded){
+      var isK = it.key.indexOf(o.l)>=0;
+      if(isK){ cls='st-correct'; }
+      else if(chosen){ cls='st-wrong'; }
+      mark = chosen ? (isK?'✓':'✗') : (isK ? '✓ 漏选':'');
+    } else if(chosen){ cls='selected'; mark='✓'; }
+    return '<button type="button" class="opt '+cls+'" data-q="'+it.n+'" data-l="'+o.l+'">'+
+      '<span class="oval '+(graded?'plain':o.l.toLowerCase())+'">'+o.l+'</span>'+
+      '<span class="txt">'+o.t+'</span>'+
+      '<span class="mark">'+mark+'</span></button>';
+  }).join('');
+
+  return '<article class="qcard'+(graded?(ok?' good':' bad'):'')+(graded?' locked':'')+'" id="q-'+it.n+'" data-q="'+it.n+'">'+
+    '<div class="q-head"><div class="qtags"><span class="schip '+it.mode+'">'+(it.mode==='single'?'单选题':'不定项')+'</span>'+
+    '<span class="qno"><small>Q</small>'+it.n+'</span></div>'+
+    '<span class="qstate '+tag[0]+'">'+tag[1]+'</span></div>'+
+    '<h3 class="q-text">'+it.text+'</h3>'+
+    '<div class="opts">'+optsHtml+'</div>'+
+    '<div class="q-explain hidden"><div class="ex-head"><span class="ex-title">答案解析</span>'+
+    '<span class="ex-keys"><span class="klab">正确答案</span>'+
+    it.key.split('').map(function(l){ return '<span class="kpill">'+l+'</span>'; }).join('')+'</span></div>'+
+    '<div class="ex-text">'+(it.expl||'（本题暂无补充解析）')+'</div></div>'+
+    '</article>';
+}
+
+function buildResult(pi){
+  var items = ITEMS[pi];
+  var correct = 0; var wrong = [];
+  items.forEach(function(it){ if(isOk(it, ps(pi).answers[it.n]||[])) correct++; else wrong.push(Number(it.n)); });
+  var total = items.length;
+  var pct = Math.round(correct/total*100);
+  var color = pct>=85 ? 'var(--ok)' : (pct>=60 ? 'var(--warn)' : 'var(--bad)');
+  var R=45, CIRC=2*Math.PI*R;
+  var html = '<div class="paper-hero result" id="resultCard"><div class="res-top">'+
+    '<div class="ringwrap"><svg width="120" height="120">'+
+    '<circle class="ring-bg" cx="60" cy="60" r="'+R+'" fill="none" stroke-width="11"/>'+
+    '<circle class="ring-fg" cx="60" cy="60" r="'+R+'" fill="none" stroke-width="11" stroke="'+color+'" '+
+    'stroke-dasharray="'+CIRC+'" stroke-dashoffset="'+CIRC+'" style="transition:none"/></svg>'+
+    '<div class="ring-num"><div><b>'+correct+'</b><span>/ '+total+' 题正确</span></div></div></div>'+
+    '<div class="res-stats">'+
+    '<div class="stat ok"><b>'+correct+'</b><span>答对</span></div>'+
+    '<div class="stat bad"><b>'+(total-correct)+'</b><span>未全对</span></div>'+
+    '<div class="stat gain"><b>'+correct+'</b><span>得分 / '+total+'</span></div>'+
+    '</div></div>'+
+    '<div class="res-note">判分完成。绿色为<b>正确答案</b>，红色为你的<b>错误选择</b>，虚线描边为<b>漏选的正确答案</b>；作答错误的题目解析已自动展开，其余可点击「展开全部解析」复盘。</div>'+
+    (wrong.length?'<div class="wronglist"><span class="wlab">未全对的题号</span>'+
+      wrong.map(function(n){ return '<span class="wchip" data-jump="'+n+'">'+n+'</span>'; }).join('')+'</div>':'')+
+    '</div>';
+  setTimeout(function(){
+    var fg = document.querySelector('#resultCard .ring-fg');
+    if(fg){ fg.style.strokeDashoffset = CIRC*(1-pct/100); }
+  }, 80);
+  return html;
+}
+
+function buildSidebar(pi){
+  var st = ps(pi);
+  var items = ITEMS[pi];
+  var n = answeredN(pi);
+  var cells = items.map(function(it){
+    var a = st.answers[it.n]||[];
+    return '<span class="cell '+sheetClass(pi,it,a)+'" data-jump="'+it.n+'">'+it.n+'</span>';
+  }).join('');
+  var panel;
+  if(!st.graded){
+    panel = '<div class="score-panel"><div class="sp-num" style="--p:'+(n/items.length*100)+'"><b>'+n+'<i>/'+items.length+'</i></b></div>'+
+      '<div class="sp-txt"><b>答题进度</b><span>已作答 '+n+' / '+items.length+' 题</span></div>'+
+      '<span class="grade-badge ing">作答中</span></div>';
+  }else{
+    var correct = 0; items.forEach(function(it){ if(isOk(it, st.answers[it.n]||[])) correct++; });
+    panel = '<div class="score-panel"><div class="sp-num" style="--p:'+(correct/items.length*100)+'"><b>'+correct+'<i>分</i></b></div>'+
+      '<div class="sp-txt"><b>本卷得分</b><span>正确 '+correct+' / '+items.length+' 题</span></div>'+
+      '<span class="grade-badge">已判分</span></div>';
+  }
+  var actions = st.graded
+    ? '<button class="btn btn-ghost" id="againBtn">重新作答本卷</button>'+
+      '<button class="btn btn-soft" id="revealAllBtn">收起全部解析</button>'
+    : '<button class="btn btn-primary" id="gradeBtn">交卷 · 判分</button>'+
+      '<button class="btn btn-ghost" id="clearBtn">清空本卷答案</button>';
+  return panel +
+    '<div class="sheet"><div class="sheet-head"><h3><span class="ico">&#9776;</span>答题卡</h3>'+
+    '<span class="answered"><b>'+n+'</b> / '+items.length+'</span></div>'+
+    '<div class="sheet-body"><div class="grid30" id="grid30">'+cells+'</div></div>'+
+    '<div class="legend"><span><i class="c1"></i>已作答</span><span><i class="c2"></i>正确</span>'+
+    '<span><i class="c3"></i>错误</span><span><i class="c4"></i>未答</span></div>'+
+    '<div class="sheet-actions">'+actions+'</div></div>';
+}
+
+function buildDock(pi){
+  var st = ps(pi);
+  var items = ITEMS[pi];
+  var n = answeredN(pi);
+  var cells = items.map(function(it){
+    var a = st.answers[it.n]||[];
+    return '<span class="dgcell '+sheetClass(pi,it,a)+'" data-jump="'+it.n+'">'+it.n+'</span>';
+  }).join('');
+  var btn = st.graded
+    ? '<button class="btn btn-ghost" id="d-againBtn">重新作答</button>'
+    : '<button class="btn btn-primary" id="d-gradeBtn">交卷判分</button>';
+  return '<div class="dock-top"><span class="d-count">已答 <b>'+n+'</b>/'+items.length+'</span>'+
+    '<div class="d-actions">'+btn+'</div></div><div class="dock-grid">'+cells+'</div>';
+}
+
+function refreshExpl(){
+  var pi = store.current, st = ps(pi);
+  var items = ITEMS[pi];
+  document.querySelectorAll('#qcolWrap .qcard').forEach(function(card){
+    var qn = card.getAttribute('data-q');
+    var it = items[Number(qn)-1];
+    var ok = isOk(it, st.answers[qn]||[]);
+    var exp = card.querySelector('.q-explain');
+    var open = false;
+    if(st.graded){
+      var answered = (st.answers[qn]||[]).length>0;
+      open = (forceOpen[qn]!==undefined) ? forceOpen[qn] : (answered && !ok);
+    }
+    exp.classList.toggle('hidden', !open);
+  });
+}
+
+function render(){
+  var pi = store.current;
+  var st = ps(pi);
+
+  // tabs
+  var tabs = $('#paperTabs');
+  tabs.innerHTML = PAPERS.map(function(p){
+    var done = ps(p.n-1).graded;
+    return '<button class="tabbtn'+(p.n-1===pi?' active':'')+'" data-paper="'+(p.n-1)+'">'+
+      (done?'<span class="done"></span>':'')+
+      '<span class="no">'+String(p.n).padStart(2,'0')+'</span>第 '+p.n+' 套</button>';
+  }).join('');
+
+  // questions
+  var html = buildHero(pi);
+  if(st.graded) html += buildResult(pi);
+  html += buildQuestions(pi);
+  $('#qcolWrap').innerHTML = html;
+
+  $('#sidebar').innerHTML = buildSidebar(pi);
+  $('#dock').innerHTML = buildDock(pi);
+
+  refreshExpl();
+}
+
+/* ============ interactions ============ */
+function jump(qn){
+  var card = document.getElementById('q-'+qn);
+  if(!card) return;
+  document.querySelectorAll('.qcard.is-current').forEach(function(c){ c.classList.remove('is-current'); });
+  card.scrollIntoView({behavior:'smooth', block:'start'});
+  card.classList.add('is-current');
+  setTimeout(function(){ card.classList.remove('is-current'); }, 1700);
+}
+
+function wire(){
+  $('#qcolWrap').addEventListener('click', function(e){
+    var t = e.target.closest('[data-jump]');
+    if(t){ jump(t.getAttribute('data-jump')); return; }
+    var opt = e.target.closest('.opt');
+    if(!opt) return;
+    var pi = store.current, st = ps(pi);
+    if(st.graded) return;
+    var qn = opt.getAttribute('data-q');
+    var l = opt.getAttribute('data-l');
+    var it = ITEMS[pi][Number(qn)-1];
+    var cur = st.answers[qn]||[];
+    var arr;
+    if(it.mode==='single') arr = cur.indexOf(l)>=0 ? [] : [l];
+    else arr = cur.indexOf(l)>=0 ? cur.filter(function(x){return x!==l;}) : cur.concat([l]);
+    arr = arr.slice().sort();
+    st.answers[qn] = arr;
+    persist();
+    updateCard(pi, qn);
+    updatePanels(pi);
+  });
+
+  $('#dock').addEventListener('click', function(e){
+    var t = e.target.closest('[data-jump]');
+    if(t){ jump(t.getAttribute('data-jump')); return; }
+    if(e.target.closest('#d-gradeBtn')){ grade(); }
+    else if(e.target.closest('#d-againBtn')){ resetAll(); }
+  });
+
+  $('#sidebar').addEventListener('click', function(e){
+    var t = e.target.closest('[data-jump]');
+    if(t){ jump(t.getAttribute('data-jump')); return; }
+    if(e.target.closest('#gradeBtn')){ grade(); }
+    else if(e.target.closest('#clearBtn')){ clearOnly(); }
+    else if(e.target.closest('#againBtn')){ resetAll(); }
+    else if(e.target.closest('#revealAllBtn')){ toggleRevealAll(); }
+  });
+
+  function grade(){
+    var pi = store.current, st = ps(pi);
+    var total = ITEMS[pi].length, n = answeredN(pi);
+    if(n < total && !confirm('还有 '+(total-n)+' 题未作答，确定直接交卷判分吗？')) return;
+    st.graded = true;
+    forceOpen = {};
+    persist();
+    render();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function clearOnly(){
+    var pi = store.current, st = ps(pi);
+    if(!confirm('确定清空本卷全部作答？')) return;
+    st.answers = {}; st.graded = false; forceOpen = {};
+    persist(); render();
+  }
+  function resetAll(){
+    var pi = store.current, st = ps(pi);
+    if(!confirm('重新作答将清空本卷作答与判分结果，是否继续？')) return;
+    st.answers = {}; st.graded = false; forceOpen = {};
+    persist(); render();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function toggleRevealAll(){
+    var pi = store.current;
+    var btn = $('#revealAllBtn');
+    var anyHidden = false;
+    document.querySelectorAll('#qcolWrap .qcard').forEach(function(card){
+      if(card.querySelector('.q-explain').classList.contains('hidden')) anyHidden = true;
+    });
+    var open = anyHidden; // if something is hidden -> open all, else collapse all
+    document.querySelectorAll('#qcolWrap .qcard').forEach(function(card){
+      forceOpen[card.getAttribute('data-q')] = open;
+    });
+    refreshExpl();
+    if(btn) btn.textContent = open ? '收起全部解析' : '展开全部解析';
+  }
+}
+
+function updateCard(pi, qn){
+  var st = ps(pi);
+  var it = ITEMS[pi][Number(qn)-1];
+  var ans = st.answers[qn]||[];
+  var card = document.getElementById('q-'+qn);
+  var tag = ans.length ? ['s-answered','已作答'] : ['s-none','未作答'];
+  var qs = card.querySelector('.qstate');
+  qs.className = 'qstate '+tag[0]; qs.textContent = tag[1];
+  card.querySelectorAll('.opt').forEach(function(b){
+    var l = b.getAttribute('data-l');
+    var chosen = ans.indexOf(l)>=0;
+    b.classList.toggle('selected', chosen);
+    var mk = b.querySelector('.mark');
+    if(chosen){ mk.textContent='✓'; mk.style.opacity=''; mk.style.transform=''; }
+    else { mk.textContent=''; }
+  });
+}
+
+function updatePanels(pi){
+  var st = ps(pi);
+  var items = ITEMS[pi];
+  var n = answeredN(pi);
+  // sheet cells
+  document.querySelectorAll('#grid30 .cell').forEach(function(c){
+    var qn = c.getAttribute('data-jump');
+    var a = st.answers[qn]||[];
+    c.className = 'cell '+sheetClass(pi, items[Number(qn)-1], a);
+  });
+  // progress panel number
+  var num = $('#sidebar .score-panel .sp-num');
+  if(num){
+    num.style.setProperty('--p', (n/items.length*100));
+    var b = num.querySelector('b'); if(b) b.innerHTML = n+'<i>/'+items.length+'</i>';
+    var sp = $('#sidebar .score-panel .sp-txt span');
+    if(sp) sp.textContent = '已作答 '+n+' / '+items.length+' 题';
+  }
+  var hb = $('#sidebar .sheet .answered b'); if(hb) hb.textContent = n;
+  var dc = $('#dock .d-count'); if(dc) dc.innerHTML = '已答 <b>'+n+'</b>/'+items.length;
+  document.querySelectorAll('#dock .dgcell').forEach(function(c){
+    var qn = c.getAttribute('data-jump');
+    var a = st.answers[qn]||[];
+    c.className = 'dgcell '+sheetClass(pi, items[Number(qn)-1], a);
+  });
+}
+
+/* tabs + theme */
+$('#paperTabs').addEventListener('click', function(e){
+  var t = e.target.closest('.tabbtn');
+  if(!t) return;
+  var idx = Number(t.getAttribute('data-paper'));
+  if(idx===store.current) return;
+  store.current = idx;
+  forceOpen = {};
+  persist();
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+$('#themeBtn').addEventListener('click', function(){
+  var root = document.documentElement;
+  var next = root.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  try{ localStorage.setItem('quiz-theme', next); }catch(e){}
+});
+
+/* init */
+try{
+  var th = localStorage.getItem('quiz-theme');
+  if(th) document.documentElement.setAttribute('data-theme', th);
+}catch(e){}
+wire();
+render();
+
+})();
+</script>
+</body>
+</html>
