@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instagram × 富士胶片滤镜 · 纯 JS + Canvas</title>
+  <style>
+    :root {
+      --bg: #0c0e14;
+      --card: #161b26;
+      --border: #2a3142;
+      --text: #e8edf5;
+      --muted: #8b95a8;
+      --accent: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    h1 { font-size: 1.45rem; font-weight: 600; margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      background: var(--card); padding: 14px 16px; border-radius: 12px;
+      border: 1px solid var(--border); margin-bottom: 16px;
+    }
+    input[type="file"] { color: var(--muted); font-size: 13px; }
+    button {
+      background: var(--accent); color: white; border: none;
+      padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px;
+      font-weight: 500; transition: background 0.15s;
+    }
+    button:hover { background: #2563eb; }
+    button.secondary { background: #334155; }
+    button.secondary:hover { background: #475569; }
+
+    .preset-section { margin-bottom: 18px; }
+    .preset-title {
+      font-size: 12px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+    .preset-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+    .preset-bar button {
+      background: #1e293b; border: 1px solid var(--border);
+      padding: 7px 14px; font-size: 13px;
+    }
+    .preset-bar button:hover { background: #334155; border-color: #475569; }
+    .preset-bar button.active {
+      background: #1d4ed8; border-color: #3b82f6;
+    }
+
+    .params {
+      display: flex; flex-wrap: wrap; gap: 18px;
+      background: var(--card); padding: 14px 16px; border-radius: 12px;
+      border: 1px solid var(--border); margin-bottom: 18px;
+    }
+    .params label {
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 12px; color: var(--muted);
+    }
+    input[type="range"] { width: 130px; accent-color: var(--accent); }
+
+    .preview {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 800px) {
+      .preview { grid-template-columns: 1fr; }
+    }
+    .canvas-card {
+      background: var(--card); border-radius: 12px; padding: 12px;
+      border: 1px solid var(--border); text-align: center;
+    }
+    .canvas-card .label {
+      font-size: 12px; color: var(--muted); margin-bottom: 8px;
+    }
+    canvas {
+      max-width: 100%; max-height: 460px; border-radius: 8px;
+      background: #0a0c12; display: block; margin: 0 auto;
+    }
+    .status {
+      margin-top: 14px; font-size: 13px; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Instagram × 富士胶片滤镜</h1>
+    <p class="subtitle">纯 JS + Canvas · 零依赖 · 可直接用于公众号配图预处理</p>
+
+    <div class="toolbar">
+      <input type="file" id="fileInput" accept="image/*" />
+      <button id="resetBtn" class="secondary">重置</button>
+      <button id="exportBtn">导出 PNG</button>
+    </div>
+
+    <div class="preset-section">
+      <div class="preset-title">富士 Film Simulation</div>
+      <div class="preset-bar" id="fujiBar"></div>
+    </div>
+
+    <div class="preset-section">
+      <div class="preset-title">Instagram 经典滤镜</div>
+      <div class="preset-bar" id="igBar"></div>
+    </div>
+
+    <div class="params">
+      <label>强度 <input type="range" id="strength" min="0" max="100" value="100"></label>
+      <label>亮度 <input type="range" id="brightness" min="-50" max="50" value="0"></label>
+      <label>对比度 <input type="range" id="contrast" min="-50" max="50" value="0"></label>
+      <label>饱和度 <input type="range" id="saturation" min="-50" max="50" value="0"></label>
+      <label>暗角 <input type="range" id="vignette" min="0" max="80" value="0"></label>
+    </div>
+
+    <div class="preview">
+      <div class="canvas-card">
+        <div class="label">原图</div>
+        <canvas id="originCanvas"></canvas>
+      </div>
+      <div class="canvas-card">
+        <div class="label">滤镜结果</div>
+        <canvas id="resultCanvas"></canvas>
+      </div>
+    </div>
+    <div class="status" id="status">请选择一张图片开始体验</div>
+  </div>
+
+  <script>
+    // ==================== 工具函数 ====================
+    function clamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+
+    // 颜色矩阵应用（4x5）
+    function applyColorMatrix(data, m) {
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i+1], b = data[i+2];
+        data[i]   = clamp(m[0]*r + m[1]*g + m[2]*b + m[4]*255);
+        data[i+1] = clamp(m[5]*r + m[6]*g + m[7]*b + m[9]*255);
+        data[i+2] = clamp(m[10]*r + m[11]*g + m[12]*b + m[14]*255);
+      }
+    }
+
+    // 简单亮度/对比度/饱和度
+    function adjustBCS(data, brightness, contrast, saturation) {
+      const b = brightness / 100 * 255;
+      const c = (259 * (contrast + 255)) / (255 * (259 - contrast));
+      const s = saturation / 100 + 1;
+
+      for (let i = 0; i < data.length; i += 4) {
+        let r = data[i], g = data[i+1], bl = data[i+2];
+
+        // 对比度
+        r = c * (r - 128) + 128;
+        g = c * (g - 128) + 128;
+        bl = c * (bl - 128) + 128;
+
+        // 亮度
+        r += b; g += b; bl += b;
+
+        // 饱和度
+        const gray = 0.2989 * r + 0.587 * g + 0.114 * bl;
+        r = gray + s * (r - gray);
+        g = gray + s * (g - gray);
+        bl = gray + s * (bl - gray);
+
+        data[i] = clamp(r);
+        data[i+1] = clamp(g);
+        data[i+2] = clamp(bl);
+      }
+    }
+
+    // 暗角
+    function applyVignette(data, width, height, amount) {
+      if (amount <= 0) return;
+      const cx = width / 2, cy = height / 2;
+      const maxDist = Math.sqrt(cx*cx + cy*cy);
+      const strength = amount / 100;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const dx = x - cx, dy = y - cy;
+          const dist = Math.sqrt(dx*dx + dy*dy) / maxDist;
+          const factor = 1 - strength * Math.pow(dist, 1.8);
+          const i = (y * width + x) * 4;
+          data[i]   = clamp(data[i] * factor);
+          data[i+1] = clamp(data[i+1] * factor);
+          data[i+2] = clamp(data[i+2] * factor);
+        }
+      }
+    }
+
+    // 简单颗粒（用于 Acros 等）
+    function applyGrain(data, amount) {
+      if (amount <= 0) return;
+      for (let i = 0; i < data.length; i += 4) {
+        const noise = (Math.random() - 0.5) * amount;
+        data[i]   = clamp(data[i] + noise);
+        data[i+1] = clamp(data[i+1] + noise);
+        data[i+2] = clamp(data[i+2] + noise);
+      }
+    }
+
+    // ==================== 滤镜预设定义 ====================
+    // 每个预设返回一个处理函数 (data, width, height) => void
+    const FILTERS = {
+      // ---------- 富士 Film Simulation ----------
+      '原图': null,
+
+      'Velvia': (data, w, h) => {
+        // 高饱和、高对比、偏冷绿蓝，经典风景片
+        applyColorMatrix(data, [
+          1.15, -0.05, 0.05, 0, 0.02,
+          -0.05, 1.20, 0.05, 0, 0.01,
+          0.05, 0.05, 1.25, 0, 0.03,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 5, 25, 35);
+        applyVignette(data, w, h, 18);
+      },
+
+      'Classic Chrome': (data, w, h) => {
+        // 低饱和、偏青、电影感、轻微褪色
+        applyColorMatrix(data, [
+          0.95, 0.05, 0.05, 0, 0.02,
+          0.05, 0.95, 0.08, 0, 0.01,
+          0.08, 0.05, 1.05, 0, 0.04,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 0, 12, -22);
+        applyVignette(data, w, h, 22);
+      },
+
+      'Provia': (data, w, h) => {
+        // 自然、中性、肤色友好
+        applyColorMatrix(data, [
+          1.05, 0.02, 0.02, 0, 0.01,
+          0.01, 1.05, 0.02, 0, 0.01,
+          0.02, 0.02, 1.08, 0, 0.02,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 3, 8, 5);
+      },
+
+      'Astia': (data, w, h) => {
+        // 柔和、低对比、适合人像
+        applyColorMatrix(data, [
+          1.08, 0.04, 0.02, 0, 0.02,
+          0.03, 1.05, 0.03, 0, 0.01,
+          0.02, 0.03, 1.06, 0, 0.01,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 6, -8, 8);
+      },
+
+      'Acros': (data, w, h) => {
+        // 高质量黑白 + 轻微颗粒
+        for (let i = 0; i < data.length; i += 4) {
+          const g = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+          data[i] = data[i+1] = data[i+2] = g;
+        }
+        adjustBCS(data, 2, 18, 0);
+        applyGrain(data, 12);
+        applyVignette(data, w, h, 15);
+      },
+
+      'Classic Neg': (data, w, h) => {
+        // 富士经典负片：柔和对比 + 偏暖阴影
+        applyColorMatrix(data, [
+          1.10, 0.05, 0.00, 0, 0.03,
+          0.03, 1.05, 0.05, 0, 0.02,
+          0.00, 0.03, 1.00, 0, 0.01,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 4, 5, -5);
+        applyVignette(data, w, h, 12);
+      },
+
+      // ---------- Instagram 经典 ----------
+      'Clarendon': (data, w, h) => {
+        // 高对比 + 冷色调 + 提亮阴影
+        applyColorMatrix(data, [
+          1.05, 0.00, 0.08, 0, 0.02,
+          0.00, 1.05, 0.08, 0, 0.01,
+          0.08, 0.05, 1.15, 0, 0.04,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 8, 22, 12);
+      },
+
+      'Juno': (data, w, h) => {
+        // 暖色、高饱和、偏黄红
+        applyColorMatrix(data, [
+          1.15, 0.05, 0.00, 0, 0.03,
+          0.05, 1.08, 0.00, 0, 0.02,
+          0.00, 0.05, 0.95, 0, 0.00,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 5, 15, 25);
+        applyVignette(data, w, h, 10);
+      },
+
+      'Lark': (data, w, h) => {
+        // 明亮、偏青、低对比
+        applyColorMatrix(data, [
+          0.95, 0.05, 0.10, 0, 0.04,
+          0.05, 1.05, 0.10, 0, 0.03,
+          0.08, 0.05, 1.10, 0, 0.05,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 12, -5, 8);
+      },
+
+      'Reyes': (data, w, h) => {
+        // 复古褪色、低饱和、偏黄
+        applyColorMatrix(data, [
+          1.05, 0.08, 0.05, 0, 0.04,
+          0.08, 1.00, 0.05, 0, 0.03,
+          0.05, 0.05, 0.90, 0, 0.02,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 5, -10, -25);
+        applyVignette(data, w, h, 25);
+      },
+
+      'Moon': (data, w, h) => {
+        // 黑白高对比
+        for (let i = 0; i < data.length; i += 4) {
+          const g = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+          data[i] = data[i+1] = data[i+2] = g;
+        }
+        adjustBCS(data, 0, 30, 0);
+        applyVignette(data, w, h, 20);
+      },
+
+      'Gingham': (data, w, h) => {
+        // 柔和、偏暖、轻微褪色
+        applyColorMatrix(data, [
+          1.08, 0.06, 0.02, 0, 0.03,
+          0.04, 1.05, 0.04, 0, 0.02,
+          0.02, 0.04, 1.00, 0, 0.02,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 8, -5, -8);
+      },
+
+      'Ludwig': (data, w, h) => {
+        // 冷色、高对比、电影感
+        applyColorMatrix(data, [
+          0.95, 0.02, 0.10, 0, 0.01,
+          0.02, 1.00, 0.08, 0, 0.01,
+          0.10, 0.05, 1.15, 0, 0.04,
+          0, 0, 0, 1, 0
+        ]);
+        adjustBCS(data, 0, 20, 5);
+        applyVignette(data, w, h, 18);
+      }
+    };
+
+    // ==================== 主逻辑 ====================
+    const originCanvas = document.getElementById('originCanvas');
+    const resultCanvas = document.getElementById('resultCanvas');
+    const originCtx = originCanvas.getContext('2d', { willReadFrequently: true });
+    const resultCtx = resultCanvas.getContext('2d');
+    const statusEl = document.getElementById('status');
+
+    let originImageData = null;
+    let currentFilter = '原图';
+    let width = 0, height = 0;
+
+    // 渲染预设按钮
+    const fujiNames = ['原图', 'Velvia', 'Classic Chrome', 'Provia', 'Astia', 'Acros', 'Classic Neg'];
+    const igNames = ['Clarendon', 'Juno', 'Lark', 'Reyes', 'Moon', 'Gingham', 'Ludwig'];
+
+    function createPresetButtons(containerId, names) {
+      const bar = document.getElementById(containerId);
+      names.forEach(name => {
+        const btn = document.createElement('button');
+        btn.textContent = name;
+        btn.dataset.filter = name;
+        btn.onclick = () => {
+          currentFilter = name;
+          document.querySelectorAll('.preset-bar button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          // 重置微调滑块
+          document.getElementById('brightness').value = 0;
+          document.getElementById('contrast').value = 0;
+          document.getElementById('saturation').value = 0;
+          document.getElementById('vignette').value = 0;
+          document.getElementById('strength').value = 100;
+          render();
+        };
+        bar.appendChild(btn);
+      });
+    }
+    createPresetButtons('fujiBar', fujiNames);
+    createPresetButtons('igBar', igNames);
+
+    // 监听参数变化
+    ['strength', 'brightness', 'contrast', 'saturation', 'vignette'].forEach(id => {
+      document.getElementById(id).addEventListener('input', render);
+    });
+
+    function render() {
+      if (!originImageData) return;
+
+      const start = performance.now();
+      const data = new Uint8ClampedArray(originImageData.data);
+      const strength = +document.getElementById('strength').value / 100;
+
+      // 1. 应用滤镜
+      if (FILTERS[currentFilter]) {
+        // 先复制一份做强度混合
+        const filtered = new Uint8ClampedArray(data);
+        FILTERS[currentFilter](filtered, width, height);
+
+        // 强度混合
+        for (let i = 0; i < data.length; i++) {
+          data[i] = data[i] * (1 - strength) + filtered[i] * strength;
+        }
+      }
+
+      // 2. 用户微调
+      const b = +document.getElementById('brightness').value;
+      const c = +document.getElementById('contrast').value;
+      const s = +document.getElementById('saturation').value;
+      const v = +document.getElementById('vignette').value;
+
+      if (b !== 0 || c !== 0 || s !== 0) {
+        adjustBCS(data, b, c, s);
+      }
+      if (v > 0) {
+        applyVignette(data, width, height, v);
+      }
+
+      resultCtx.putImageData(new ImageData(data, width, height), 0, 0);
+      const cost = (performance.now() - start).toFixed(1);
+      statusEl.textContent = `${currentFilter} · ${width}×${height} · ${cost} ms`;
+    }
+
+    // 加载图片
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const bitmap = await createImageBitmap(file);
+      const maxSide = 1400;
+      let w = bitmap.width, h = bitmap.height;
+      if (Math.max(w, h) > maxSide) {
+        const scale = maxSide / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+
+      originCanvas.width = resultCanvas.width = width = w;
+      originCanvas.height = resultCanvas.height = height = h;
+
+      originCtx.drawImage(bitmap, 0, 0, w, h);
+      originImageData = originCtx.getImageData(0, 0, w, h);
+
+      currentFilter = '原图';
+      document.querySelectorAll('.preset-bar button').forEach(b => b.classList.remove('active'));
+      render();
+      statusEl.textContent = `已加载 ${w}×${h}`;
+    });
+
+    document.getElementById('resetBtn').onclick = () => {
+      currentFilter = '原图';
+      document.querySelectorAll('.preset-bar button').forEach(b => b.classList.remove('active'));
+      ['brightness', 'contrast', 'saturation', 'vignette'].forEach(id => {
+        document.getElementById(id).value = 0;
+      });
+      document.getElementById('strength').value = 100;
+      render();
+    };
+
+    document.getElementById('exportBtn').onclick = () => {
+      if (!originImageData) return;
+      const a = document.createElement('a');
+      a.download = `filter-${currentFilter.replace(/\s+/g, '-')}.png`;
+      a.href = resultCanvas.toDataURL('image/png');
+      a.click();
+    };
+  </script>
+</body>
+</html>
