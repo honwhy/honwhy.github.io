@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>GTA 深圳 - 福田益田路（完整版）</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #141a22; font-family: sans-serif; touch-action: none; }
+    #hud {
+      position: fixed; top: 12px; left: 12px; color: #fff;
+      background: rgba(0, 0, 0, 0.78); padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; line-height: 1.55; pointer-events: none; max-width: 340px;
+      z-index: 10;
+    }
+    .hud-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .hud-btn {
+      pointer-events: auto;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      font-size: 12px;
+    }
+    .hud-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    #bgm-toggle {
+      margin-top: 6px;
+    }
+    #hud-tips {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #eceff1;
+    }
+    #hud.collapsed #hud-tips {
+      display: none;
+    }
+    #status { color: #4fc3f7; font-weight: bold; font-size: 12px; margin-top: 2px; }
+    #click-info { color: #ffd54f; margin-top: 4px; font-weight: bold; font-size: 12px; }
+    #mode { font-size: 12px; margin-top: 4px; }
+
+    /* 移动端/通用右下角快捷控制区 */
+    #mobile-controls {
+      position: fixed;
+      right: 14px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .action-btn {
+      pointer-events: auto;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(15, 23, 42, 0.82);
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .action-btn:active {
+      transform: scale(0.96);
+      background: rgba(79, 195, 247, 0.35);
+    }
+
+    @media (max-width: 768px) {
+      #hud {
+        max-width: calc(100vw - 24px);
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <audio id="bgm" src="./gta-100bpm.mp3" loop preload="auto"></audio>
+
+  <div id="hud">
+    <div class="hud-header">
+      <strong>GTA 深圳 · 福田益田路</strong>
+      <button id="tips-toggle" class="hud-btn" type="button">收起说明</button>
+    </div>
+    <div id="status">正在加载 OpenStreetMap 数据...</div>
+
+    <div id="hud-tips">
+      <div>点击/轻触地面：自动前往 ｜ 点车：前往上车 ｜ 点楼：看信息</div>
+      <div>单指拖拽：旋转镜头 ｜ 滚轮/双指捏合：缩放 ｜ 右下角按钮/V：切换视角</div>
+      <div>WASD / 方向键：手动移动/驾驶 ｜ 空格：刹车 ｜ E：上下车</div>
+      <div><strong>M：静音 / 恢复 BGM（100 BPM）</strong></div>
+    </div>
+
+    <button id="bgm-toggle" class="hud-btn" type="button">BGM：已暂停（点击播放）</button>
+    <div id="mode">状态：步行中</div>
+    <div id="click-info">提示：点击任意建筑、车辆或地面试试</div>
+  </div>
+
+  <div id="mobile-controls">
+    <button id="view-toggle" class="action-btn" type="button">视角：常规跟随</button>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    // --- 0. 提示面板折叠与 BGM 控制 ---
+    const hudEl = document.getElementById('hud');
+    const tipsToggleBtn = document.getElementById('tips-toggle');
+
+    function setTipsCollapsed(collapsed) {
+      hudEl.classList.toggle('collapsed', collapsed);
+      tipsToggleBtn.textContent = collapsed ? '展开说明' : '收起说明';
+    }
+
+    setTipsCollapsed(window.innerWidth <= 768);
+
+    tipsToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setTipsCollapsed(!hudEl.classList.contains('collapsed'));
+    });
+
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-toggle');
+    bgm.volume = 0.45;
+
+    function syncBgmLabel() {
+      bgmBtn.textContent = bgm.paused
+        ? 'BGM：已暂停（点击播放）'
+        : 'BGM：100 BPM 播放中（点击/M 暂停）';
+    }
+
+    function toggleBgm() {
+      if (bgm.paused) {
+        bgm.play().then(syncBgmLabel).catch((err) => {
+          console.warn('BGM 播放失败（请检查 ./gta-100bpm.mp3 是否存在或使用本地服务器打开）:', err);
+          syncBgmLabel();
+        });
+      } else {
+        bgm.pause();
+        syncBgmLabel();
+      }
+    }
+
+    bgm.addEventListener('play', syncBgmLabel);
+    bgm.addEventListener('pause', syncBgmLabel);
+
+    bgmBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleBgm();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'KeyM') {
+        toggleBgm();
+      }
+    });
+
+    syncBgmLabel();
+
+    // --- 1. 坐标转换与场景初始化 ---
+    const CENTER_LAT = 22.5335;
+    const CENTER_LON = 114.0558;
+    const METERS_PER_DEG_LAT = 111320;
+    const METERS_PER_DEG_LON = 111320 * Math.cos(CENTER_LAT * Math.PI / 180);
+
+    function geoToWorld(lon, lat) {
+      return new THREE.Vector2(
+        (lon - CENTER_LON) * METERS_PER_DEG_LON,
+        -(lat - CENTER_LAT) * METERS_PER_DEG_LAT
+      );
+    }
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x8ecae6);
+    scene.fog = new THREE.Fog(0x8ecae6, 300, 1200);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 2000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    dirLight.position.set(150, 300, 150);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+    scene.add(new THREE.AmbientLight(0x90a4ae, 1.0));
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(2000, 2000),
+      new THREE.MeshLambertMaterial({ color: 0x263238 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    ground.name = 'ground';
+    scene.add(ground);
+
+    const cityGroup = new THREE.Group();
+    scene.add(cityGroup);
+
+    const obstacles = [];
+    const buildingMeshes = [];
+    const statusEl = document.getElementById('status');
+    const clickInfoEl = document.getElementById('click-info');
+
+    const targetMarker = new THREE.Mesh(
+      new THREE.RingGeometry(0.8, 1.4, 32),
+      new THREE.MeshBasicMaterial({ color: 0x00e5ff, side: THREE.DoubleSide })
+    );
+    targetMarker.rotation.x = -Math.PI / 2;
+    targetMarker.position.y = 0.25;
+    targetMarker.visible = false;
+    scene.add(targetMarker);
+
+    // --- 2. 道路与建筑构建 ---
+    function buildRoad(points, width, isYitianRoad = false) {
+      const mat = new THREE.MeshLambertMaterial({
+        color: isYitianRoad ? 0x546e7a : 0x37474f,
+        side: THREE.DoubleSide
+      });
+      const lineMat = new THREE.MeshBasicMaterial({ color: 0xffd54f, side: THREE.DoubleSide });
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const dx = p2.x - p1.x;
+        const dz = p2.y - p1.y;
+        const len = Math.hypot(dx, dz);
+        if (len < 0.5) continue;
+
+        const roadMesh = new THREE.Mesh(new THREE.PlaneGeometry(width, len + width * 0.4), mat);
+        roadMesh.rotation.x = -Math.PI / 2;
+        roadMesh.rotation.y = -Math.atan2(dx, dz);
+        roadMesh.position.set((p1.x + p2.x) / 2, isYitianRoad ? 0.15 : 0.1, (p1.y + p2.y) / 2);
+        cityGroup.add(roadMesh);
+
+        if (isYitianRoad && len > 5) {
+          const stripe = new THREE.Mesh(new THREE.PlaneGeometry(0.45, len * 0.7), lineMat);
+          stripe.rotation.x = -Math.PI / 2;
+          stripe.rotation.y = -Math.atan2(dx, dz);
+          stripe.position.set((p1.x + p2.x) / 2, 0.2, (p1.y + p2.y) / 2);
+          cityGroup.add(stripe);
+        }
+      }
+    }
+
+    function buildExtrudedBuilding(points, height, color, name = '福田商业建筑') {
+      if (!points || points.length < 3) return false;
+      const shape = new THREE.Shape();
+      shape.moveTo(points[0].x, -points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        shape.lineTo(points[i].x, -points[i].y);
+      }
+      shape.closePath();
+
+      const geo = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false });
+      geo.rotateX(-Math.PI / 2);
+
+      const mat = new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.userData = {
+        type: 'building',
+        name,
+        height: Math.round(height),
+        origColor: color
+      };
+      cityGroup.add(mesh);
+      buildingMeshes.push(mesh);
+
+      const box = new THREE.Box3().setFromObject(mesh);
+      if (!box.isEmpty()) {
+        box.min.x += 0.5; box.min.z += 0.5;
+        box.max.x -= 0.5; box.max.z -= 0.5;
+        obstacles.push(box);
+      }
+      return true;
+    }
+
+    // --- 3. 玩家（带自然摆臂的占位角色 + jason.glb 骨骼动画）与载具 ---
+    const player = new THREE.Group();
+    player.position.set(0, 0, 0);
+    scene.add(player);
+
+    const fallbackRig = new THREE.Group();
+    player.add(fallbackRig);
+
+    const torso = new THREE.Mesh(
+      new THREE.BoxGeometry(1.3, 1.5, 0.8),
+      new THREE.MeshStandardMaterial({ color: 0xff3b30, emissive: 0x330000 })
+    );
+    torso.position.y = 1.65;
+    torso.castShadow = true;
+    fallbackRig.add(torso);
+
+    const head = new THREE.Mesh(
+      new THREE.BoxGeometry(0.85, 0.85, 0.85),
+      new THREE.MeshStandardMaterial({ color: 0xffcc99 })
+    );
+    head.position.y = 2.85;
+    head.castShadow = true;
+    fallbackRig.add(head);
+
+    function createArmPivot(side) {
+      const pivot = new THREE.Group();
+      pivot.position.set(side * 0.92, 2.3, 0);
+      const armMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(0.45, 1.35, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x1e88e5 })
+      );
+      armMesh.position.y = -0.62;
+      armMesh.castShadow = true;
+      pivot.add(armMesh);
+      fallbackRig.add(pivot);
+      return pivot;
+    }
+
+    const leftArmPivot = createArmPivot(-1);
+    const rightArmPivot = createArmPivot(1);
+
+    const headBeacon = new THREE.Mesh(
+      new THREE.ConeGeometry(0.65, 1.4, 16),
+      new THREE.MeshBasicMaterial({ color: 0x00ffaa })
+    );
+    headBeacon.rotation.x = Math.PI;
+    headBeacon.position.y = 4.6;
+    player.add(headBeacon);
+
+    const gltfLoader = new GLTFLoader();
+    let mixer = null;
+    let idleAction = null;
+    let runAction = null;
+    let currentAction = null;
+    let hasGlbAnimation = false;
+
+    function switchCharacterAnim(nextAction) {
+      if (!nextAction || currentAction === nextAction) return;
+      nextAction.reset().fadeIn(0.15).play();
+      if (currentAction) currentAction.fadeOut(0.15);
+      currentAction = nextAction;
+    }
+
+    gltfLoader.load(
+      './jason.glb',
+      (gltf) => {
+        const model = gltf.scene;
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const targetHeight = 3.2;
+        const scaleFactor = size.y > 0.001 ? targetHeight / size.y : 2.2;
+        model.scale.setScalar(scaleFactor);
+
+        box.setFromObject(model);
+        model.position.y -= box.min.y;
+
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        fallbackRig.visible = false;
+        headBeacon.position.y = targetHeight + 1.2;
+        player.add(model);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          hasGlbAnimation = true;
+          mixer = new THREE.AnimationMixer(model);
+          const idleClip = gltf.animations.find((a) => /idle/i.test(a.name)) || gltf.animations[0];
+          const runClip = gltf.animations.find((a) => /run|walk/i.test(a.name)) || gltf.animations[1] || idleClip;
+
+          idleAction = mixer.clipAction(idleClip);
+          runAction = mixer.clipAction(runClip);
+          idleAction.play();
+          currentAction = idleAction;
+        }
+        console.log('已加载 ./jason.glb，动画数量:', gltf.animations?.length || 0);
+      },
+      undefined,
+      (err) => {
+        console.warn('未找到 ./jason.glb，使用可摆臂角色模型:', err);
+      }
+    );
+
+    function createCar(x, z, color, label) {
+      const car = new THREE.Group();
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(2.4, 1.1, 4.6),
+        new THREE.MeshLambertMaterial({ color })
+      );
+      body.position.y = 0.9;
+      body.userData.parentCar = car;
+      car.add(body);
+
+      const cabin = new THREE.Mesh(
+        new THREE.BoxGeometry(2.0, 0.8, 2.2),
+        new THREE.MeshLambertMaterial({ color: 0xe1f5fe })
+      );
+      cabin.position.set(0, 1.75, -0.2);
+      cabin.userData.parentCar = car;
+      car.add(cabin);
+
+      car.position.set(x, 0.15, z);
+      car.userData.speed = 0;
+      car.userData.label = label;
+      scene.add(car);
+      return car;
+    }
+
+    const cars = [
+      createCar(3, 4, 0x29b6f6, '深圳蓝的 BYD 出租车'),
+      createCar(-3, -16, 0xffca28, '黄色巡游出租车'),
+      createCar(4, 24, 0xef5350, '红色跑车')
+    ];
+
+    // --- 4. OSM 数据加载 + localStorage 缓存 ---
+    const OSM_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function getOsmCacheKey(q) {
+      let hash = 0;
+      for (let i = 0; i < q.length; i++) {
+        hash = ((hash << 5) - hash + q.charCodeAt(i)) | 0;
+      }
+      return `gta_sz_osm_v1_${hash}`;
+    }
+
+    function readOsmCache(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.timestamp || !parsed.data) return null;
+        if (Date.now() - parsed.timestamp > OSM_CACHE_TTL_MS) {
+          localStorage.removeItem(key);
+          return null;
+        }
+        return parsed.data;
+      } catch {
+        return null;
+      }
+    }
+
+    function writeOsmCache(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function loadYitianOSM() {
+      const query = `
+        [out:json][timeout:15];
+        (
+          way["highway"](22.5290,114.0505,22.5380,114.0610);
+          way["building"](22.5290,114.0505,22.5380,114.0610);
+          relation["building"](22.5290,114.0505,22.5380,114.0610);
+        );
+        out body;
+        >;
+        out skel qt;
+      `;
+
+      const cacheKey = getOsmCacheKey(query);
+
+      try {
+        let data = readOsmCache(cacheKey);
+        let fromCache = false;
+
+        if (data) {
+          fromCache = true;
+        } else {
+          const res = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: 'data=' + encodeURIComponent(query)
+          });
+          if (!res.ok) throw new Error('Overpass HTTP ' + res.status);
+          data = await res.json();
+          writeOsmCache(cacheKey, data);
+        }
+
+        const nodes = new Map();
+        const ways = new Map();
+
+        for (const el of data.elements) {
+          if (el.type === 'node') nodes.set(el.id, geoToWorld(el.lon, el.lat));
+          else if (el.type === 'way') ways.set(el.id, el);
+        }
+
+        let roadCount = 0;
+        let buildingCount = 0;
+        let spawnPoint = null;
+
+        function parseHeight(tags, fallbackId) {
+          if (!tags) return 18;
+          if (tags.height) {
+            const h = parseFloat(String(tags.height).replace(/[^\d.]/g, ''));
+            if (!isNaN(h) && h > 0) return Math.min(h, 220);
+          }
+          if (tags['building:levels']) {
+            const lv = parseInt(tags['building:levels'], 10);
+            if (!isNaN(lv) && lv > 0) return Math.min(lv * 3.6, 220);
+          }
+          return 14 + (fallbackId % 30);
+        }
+
+        for (const el of ways.values()) {
+          if (!el.nodes) continue;
+          const pts = el.nodes.map((id) => nodes.get(id)).filter(Boolean);
+          if (pts.length < 2) continue;
+
+          if (el.tags && el.tags.highway) {
+            const name = el.tags.name || '';
+            const isYitian = name.includes('益田') || name.includes('Yitian');
+            const hw = el.tags.highway;
+            const width = isYitian ? 20 : (hw === 'primary' || hw === 'trunk' ? 16 : 9);
+            buildRoad(pts, width, isYitian);
+            roadCount++;
+            if (isYitian && !spawnPoint) spawnPoint = pts[Math.floor(pts.length / 2)];
+          } else if (el.tags && el.tags.building) {
+            const h = parseHeight(el.tags, el.id);
+            const bName = el.tags.name || el.tags['name:zh'] || `福田楼宇 #${el.id}`;
+            const color = h > 80 ? 0x4dabf7 : (el.id % 2 === 0 ? 0xb0bec5 : 0x90a4ae);
+            if (buildExtrudedBuilding(pts, h, color, bName)) buildingCount++;
+          }
+        }
+
+        for (const el of data.elements) {
+          if (el.type === 'relation' && el.tags && el.tags.building && el.members) {
+            const h = parseHeight(el.tags, el.id);
+            const bName = el.tags.name || el.tags['name:zh'] || `福田综合体 #${el.id}`;
+            const color = h > 80 ? 0x339af0 : 0x78909c;
+            for (const m of el.members) {
+              if (m.type === 'way' && (m.role === 'outer' || m.role === '')) {
+                const w = ways.get(m.ref);
+                if (w && w.nodes) {
+                  const pts = w.nodes.map((id) => nodes.get(id)).filter(Boolean);
+                  if (buildExtrudedBuilding(pts, h, color, bName)) buildingCount++;
+                }
+              }
+            }
+          }
+        }
+
+        if (spawnPoint) {
+          player.position.set(spawnPoint.x, 0, spawnPoint.y);
+          cars[0].position.set(spawnPoint.x + 3.5, 0.15, spawnPoint.y + 4);
+          cars[1].position.set(spawnPoint.x - 3.5, 0.15, spawnPoint.y - 12);
+          cars[2].position.set(spawnPoint.x + 3.5, 0.15, spawnPoint.y + 20);
+        }
+
+        statusEl.textContent = `${fromCache ? '已从本地缓存读取' : '已从 OSM 拉取'}：${roadCount} 条道路，${buildingCount} 栋建筑`;
+      } catch (err) {
+        statusEl.textContent = '加载异常：' + err.message;
+      }
+    }
+
+    loadYitianOSM();
+
+    // --- 5. 指针/鼠标/触屏拖拽旋转视角 + 点击/轻触前进与拾取 + 双指缩放/滚轮缩放 ---
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    let moveTarget = null;
+    let targetCarToBoard = null;
+    let highlightedBuilding = null;
+
+    let camYaw = 0;
+    let camPitch = 0.55;
+    let camZoom = 1.0;
+
+    let isPointerDragging = false;
+    let hasDragged = false;
+    let downX = 0;
+    let downY = 0;
+    let prevX = 0;
+    let prevY = 0;
+
+    let pinchStartDist = 0;
+    let pinchStartZoom = 1.0;
+    let isPinching = false;
+
+    window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    function getTouchDist(t1, t2) {
+      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    }
+
+    function handlePointerDown(clientX, clientY) {
+      isPointerDragging = true;
+      hasDragged = false;
+      downX = prevX = clientX;
+      downY = prevY = clientY;
+    }
+
+    function handlePointerMove(clientX, clientY) {
+      if (!isPointerDragging || isPinching) return;
+      const dx = clientX - prevX;
+      const dy = clientY - prevY;
+      if (Math.hypot(clientX - downX, clientY - downY) > 6) {
+        hasDragged = true;
+      }
+      if (hasDragged) {
+        camYaw -= dx * 0.007;
+        camPitch = THREE.MathUtils.clamp(camPitch + dy * 0.005, 0.15, 1.35);
+      }
+      prevX = clientX;
+      prevY = clientY;
+    }
+
+    function handlePointerUp(clientX, clientY) {
+      if (!isPointerDragging) return;
+      const wasDrag = hasDragged;
+      isPointerDragging = false;
+      hasDragged = false;
+
+      if (wasDrag || isPinching) return;
+
+      pointer.x = (clientX / window.innerWidth) * 2 - 1;
+      pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+
+      const carMeshes = cars.flatMap((c) => c.children);
+      const carHits = raycaster.intersectObjects(carMeshes, false);
+      if (carHits.length > 0) {
+        const clickedCar = carHits[0].object.userData.parentCar;
+        if (!drivingCar) {
+          targetCarToBoard = clickedCar;
+          moveTarget = clickedCar.position.clone();
+          targetMarker.position.set(moveTarget.x, 0.25, moveTarget.z);
+          targetMarker.visible = true;
+          clickInfoEl.textContent = `正在前往上车：${clickedCar.userData.label}`;
+        }
+        return;
+      }
+
+      const buildingHits = raycaster.intersectObjects(buildingMeshes, false);
+      if (buildingHits.length > 0) {
+        const bMesh = buildingHits[0].object;
+        if (highlightedBuilding && highlightedBuilding !== bMesh) {
+          highlightedBuilding.material.color.setHex(highlightedBuilding.userData.origColor);
+        }
+        highlightedBuilding = bMesh;
+        bMesh.material.color.setHex(0xffa726);
+        clickInfoEl.textContent = `建筑：${bMesh.userData.name}（约 ${bMesh.userData.height} 米）`;
+        return;
+      }
+
+      const groundHits = raycaster.intersectObject(ground, false);
+      if (groundHits.length > 0) {
+        const pt = groundHits[0].point;
+        if (!drivingCar) {
+          targetCarToBoard = null;
+          moveTarget = new THREE.Vector3(pt.x, 0, pt.z);
+          targetMarker.position.set(pt.x, 0.25, pt.z);
+          targetMarker.visible = true;
+          clickInfoEl.textContent = `正在前往：(${pt.x.toFixed(1)}, ${pt.z.toFixed(1)})`;
+        } else {
+          clickInfoEl.textContent = `驾驶中（点击坐标 ${pt.x.toFixed(1)}, ${pt.z.toFixed(1)}）`;
+        }
+      }
+    }
+
+    renderer.domElement.addEventListener('mousedown', (e) => {
+      if (e.button === 0) handlePointerDown(e.clientX, e.clientY);
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (isPointerDragging) handlePointerMove(e.clientX, e.clientY);
+    });
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 0) handlePointerUp(e.clientX, e.clientY);
+    });
+
+    renderer.domElement.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isPinching = false;
+        handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
+      } else if (e.touches.length >= 2) {
+        isPinching = true;
+        isPointerDragging = false;
+        pinchStartDist = Math.max(10, getTouchDist(e.touches[0], e.touches[1]));
+        pinchStartZoom = camZoom;
+      }
+    }, { passive: true });
+
+    renderer.domElement.addEventListener('touchmove', (e) => {
+      if (isPinching && e.touches.length >= 2) {
+        const dist = Math.max(10, getTouchDist(e.touches[0], e.touches[1]));
+        camZoom = THREE.MathUtils.clamp(pinchStartZoom * (pinchStartDist / dist), 0.35, 3.5);
+      } else if (e.touches.length === 1) {
+        handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    renderer.domElement.addEventListener('touchend', (e) => {
+      if (e.touches.length === 0) {
+        if (!isPinching && e.changedTouches.length > 0) {
+          handlePointerUp(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        }
+        isPinching = false;
+      } else if (e.touches.length === 1) {
+        isPinching = false;
+        handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    });
+
+    window.addEventListener('wheel', (e) => {
+      camZoom = THREE.MathUtils.clamp(camZoom + e.deltaY * 0.001, 0.35, 3.5);
+    });
+
+    // --- 6. 视角切换（V 键 + 右下角按钮）、键盘控制与碰撞 ---
+    const keys = {};
+    let drivingCar = null;
+    let birdEye = false;
+    const modeEl = document.getElementById('mode');
+    const viewToggleBtn = document.getElementById('view-toggle');
+
+    function syncViewLabel() {
+      viewToggleBtn.textContent = birdEye ? '视角：俯瞰视角' : '视角：常规跟随';
+    }
+
+    function toggleBirdEye() {
+      birdEye = !birdEye;
+      syncViewLabel();
+    }
+
+    viewToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleBirdEye();
+    });
+
+    syncViewLabel();
+
+    function boardCar(car) {
+      drivingCar = car;
+      player.visible = false;
+      moveTarget = null;
+      targetCarToBoard = null;
+      targetMarker.visible = false;
+      modeEl.textContent = `状态：驾驶中 - ${car.userData.label}（按 E 下车）`;
+    }
+
+    window.addEventListener('keydown', (e) => {
+      keys[e.code] = true;
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        moveTarget = null;
+        targetCarToBoard = null;
+        targetMarker.visible = false;
+      }
+      if (e.code === 'KeyV') toggleBirdEye();
+      if (e.code === 'KeyE') {
+        if (drivingCar) {
+          player.visible = true;
+          player.position.set(drivingCar.position.x + 2.6, 0, drivingCar.position.z);
+          drivingCar.userData.speed = 0;
+          drivingCar = null;
+          modeEl.textContent = '状态：步行中';
+        } else {
+          for (const car of cars) {
+            if (player.position.distanceTo(car.position) < 5.5) {
+              boardCar(car);
+              break;
+            }
+          }
+        }
+      }
+    });
+    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+    function hitsBuilding(pos, r) {
+      const test = new THREE.Box3(
+        new THREE.Vector3(pos.x - r, 0, pos.z - r),
+        new THREE.Vector3(pos.x + r, 3, pos.z + r)
+      );
+      return obstacles.some((b) => b.intersectsBox(test));
+    }
+
+    // --- 7. 主循环 ---
+    const clock = new THREE.Clock();
+    const camPos = new THREE.Vector3(0, 20, 25);
+    const camTarget = new THREE.Vector3();
+    let walkPhase = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.05);
+      const forward = (keys['KeyW'] || keys['ArrowUp'] ? 1 : 0) - (keys['KeyS'] || keys['ArrowDown'] ? 1 : 0);
+      const turn = (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0) - (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0);
+
+      if (targetMarker.visible) {
+        const s = 1 + Math.sin(performance.now() * 0.008) * 0.2;
+        targetMarker.scale.set(s, s, 1);
+      }
+
+      headBeacon.position.y = 4.4 + Math.sin(performance.now() * 0.006) * 0.25;
+
+      let focusPos = player.position.clone().add(new THREE.Vector3(0, 1.6, 0));
+      let isMoving = false;
+
+      if (drivingCar) {
+        drivingCar.userData.speed += forward * 38 * dt;
+        if (keys['Space']) drivingCar.userData.speed *= Math.pow(0.04, dt);
+        drivingCar.userData.speed *= Math.pow(0.5, dt);
+        drivingCar.userData.speed = THREE.MathUtils.clamp(drivingCar.userData.speed, -16, 36);
+
+        if (Math.abs(drivingCar.userData.speed) > 0.3) {
+          const dir = drivingCar.userData.speed >= 0 ? 1 : -1;
+          drivingCar.rotation.y += turn * 2.3 * dir * dt;
+        }
+
+        const nextPos = drivingCar.position.clone();
+        nextPos.x -= Math.sin(drivingCar.rotation.y) * drivingCar.userData.speed * dt;
+        nextPos.z -= Math.cos(drivingCar.rotation.y) * drivingCar.userData.speed * dt;
+
+        if (!hitsBuilding(nextPos, 1.8)) {
+          drivingCar.position.copy(nextPos);
+        } else {
+          drivingCar.userData.speed *= -0.25;
+        }
+
+        focusPos = drivingCar.position.clone().add(new THREE.Vector3(0, 1.2, 0));
+      } else {
+        let move = new THREE.Vector3(-turn, 0, -forward);
+
+        if (move.lengthSq() === 0 && moveTarget) {
+          const toTarget = new THREE.Vector3(
+            moveTarget.x - player.position.x,
+            0,
+            moveTarget.z - player.position.z
+          );
+          const dist = toTarget.length();
+          if (targetCarToBoard && player.position.distanceTo(targetCarToBoard.position) < 4.5) {
+            boardCar(targetCarToBoard);
+          } else if (dist > 0.7) {
+            move.copy(toTarget.normalize());
+          } else {
+            moveTarget = null;
+            targetCarToBoard = null;
+            targetMarker.visible = false;
+            clickInfoEl.textContent = '已到达目标点';
+          }
+        }
+
+        if (move.lengthSq() > 0) {
+          move.normalize();
+          player.rotation.y = Math.atan2(move.x, move.z);
+          const nextPos = player.position.clone().addScaledVector(move, 14 * dt);
+          if (!hitsBuilding(nextPos, 0.8)) {
+            player.position.copy(nextPos);
+            isMoving = true;
+          } else {
+            moveTarget = null;
+            targetCarToBoard = null;
+            targetMarker.visible = false;
+            clickInfoEl.textContent = '前方有建筑阻挡，已停止';
+          }
+        }
+
+        focusPos = player.position.clone().add(new THREE.Vector3(0, 1.6, 0));
+      }
+
+      if (mixer && hasGlbAnimation) {
+        switchCharacterAnim(isMoving ? runAction : idleAction);
+        mixer.update(dt);
+      } else if (fallbackRig.visible) {
+        if (isMoving) {
+          walkPhase += dt * 11;
+          const swingAngle = Math.sin(walkPhase) * 0.75;
+          leftArmPivot.rotation.x = swingAngle;
+          rightArmPivot.rotation.x = -swingAngle;
+          torso.position.y = 1.65 + Math.abs(Math.cos(walkPhase)) * 0.08;
+        } else {
+          leftArmPivot.rotation.x = THREE.MathUtils.lerp(leftArmPivot.rotation.x, 0, 1 - Math.pow(0.001, dt));
+          rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, 0, 1 - Math.pow(0.001, dt));
+          torso.position.y = THREE.MathUtils.lerp(torso.position.y, 1.65, 1 - Math.pow(0.001, dt));
+        }
+      }
+
+      camTarget.copy(focusPos);
+      const baseDist = (birdEye ? 240 : (drivingCar ? 18 : 16)) * camZoom;
+      const horizDist = Math.cos(camPitch) * baseDist;
+      const vertDist = Math.sin(camPitch) * baseDist;
+      const totalYaw = (drivingCar ? drivingCar.rotation.y : 0) + camYaw;
+
+      const desiredCam = focusPos.clone().add(new THREE.Vector3(
+        Math.sin(totalYaw) * horizDist,
+        Math.max(3, vertDist),
+        Math.cos(totalYaw) * horizDist
+      ));
+
+      camPos.lerp(desiredCam, 1 - Math.pow(0.001, dt));
+      camera.position.copy(camPos);
+      camera.lookAt(camTarget);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
